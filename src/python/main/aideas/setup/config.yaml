@@ -1,5 +1,6 @@
 browser:
   chrome:
+    wait-timeout-seconds: 7
     options:
       args:
         #- disable-dev-shm-usage - We have shm_size: 2g, specified in docker-compose.yml
@@ -25,7 +26,7 @@ agents:
           submit: //*[@type="submit"]
       text-input:
         url: https://app.pictory.ai/textinput
-        pivot:
-          xpath: //*[@data-testid="AutoStoriesOutlinedIcon"]
-          # We start searching for element after counting up n levels from the pivot element
-          start-at-nth-ancestor: 5
+        xpath:
+          pivot: //*[@data-testid="AutoStoriesOutlinedIcon"]
+          # We apply this xpath from the pivot
+          search-root: .//..//..//..//..//..

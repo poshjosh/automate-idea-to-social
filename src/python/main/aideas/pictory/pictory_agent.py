@@ -32,12 +32,12 @@ def _login(browser: Browser, config: dict[str, any]) -> bool:
 
 
 def _open_script_input(browser: Browser, config: dict[str, any]) -> bool:
-    success: bool = browser.open(config['url'])
-    if success is False:
+    page_body: WebElement = browser.load_page_body(config['url'], None)
+    if page_body is None:
         return False
-    pivot_config: dict = config['pivot']
+    xpath_config: dict[str, str] = config['xpath']
     selected: WebElement = browser.select_element_by_pivot(
-        pivot_config['xpath'], pivot_config['start-at-nth-ancestor'],
+        page_body, xpath_config['pivot'], xpath_config['search-root'],
         lambda element: is_button(element), None)
     if selected is None:
         return False
