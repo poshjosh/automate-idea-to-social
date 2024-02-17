@@ -1,0 +1,32 @@
+version: '3'
+services:
+  # To see what is happening inside the container after launching it,
+  # head to http://localhost:7900/?autoconnect=1&resize=scale&password=secret
+  selenium-chrome:
+    image: selenium/standalone-chrome-debug
+    expose:
+      - "4444"
+      - "7900"
+    ports:
+      - "4444:4444"
+      - "7900:7900"
+    shm_size: 2gb
+    networks:
+      - browser-network
+
+  aideas:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - selenium-chrome
+#    environment:
+#      selenium.webdriver.url: http://selenium-chrome:4444
+    networks:
+      - browser-network
+    env_file:
+      - .env
+
+networks:
+  browser-network:
+    driver: bridge

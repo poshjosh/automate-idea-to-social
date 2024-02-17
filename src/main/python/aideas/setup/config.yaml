@@ -1,0 +1,31 @@
+browser:
+  chrome:
+    options:
+      args:
+        #- disable-dev-shm-usage - We have shm_size: 2g, specified in docker-compose.yml
+        #- headless - This option led to some page not fully loading despite clickability tests
+        - user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36
+        - no-sandbox
+        - start-maximized
+        - disable-infobars
+        - disable-extensions
+        - disable-web-security
+        - allow-running-insecure-content
+        - remote-allow-origins=*
+
+agents:
+  pictory:
+    ui:
+      login:
+        url: https://app.pictory.ai/login
+        xpath:
+          form: //form
+          username: //*[@id="mui-1"]
+          password: //*[@id="outlined-adornment-password"]
+          submit: //*[@type="submit"]
+      text-input:
+        url: https://app.pictory.ai/textinput
+        pivot:
+          xpath: //*[@data-testid="AutoStoriesOutlinedIcon"]
+          # We start searching for element after counting up n levels from the pivot element
+          start-at-nth-ancestor: 5
