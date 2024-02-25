@@ -1,0 +1,3 @@
+https://pypi.org/project/selenium/
+https://chromedriver.chromium.org/downloads
+https://googlechromelabs.github.io/chrome-for-testing/
