@@ -46,7 +46,9 @@ class App:
             for agent_name in agent_names:
                 agent = self.__agent_factory.get_agent(agent_name)
                 logger.debug(f"Starting agent: {agent_name}")
+
                 curr_result: ActionResultSet = agent.run(self.__agent_inputs.get(agent_name))
+
                 logger.debug(f"Result: {curr_result}, agent: {agent_name}")
                 execution_result.add_all(curr_result)
         except Exception as ex:

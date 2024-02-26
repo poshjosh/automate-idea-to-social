@@ -20,6 +20,7 @@ class BrowserAgentTest(unittest.TestCase):
         print(f'Will run agent with inputs: {inputs}')
         result = agent.run(inputs)
         print(f'Completed.\nResult: {result.pretty_str()}')
+        self.assertTrue(result.is_successful())
 
 
 if __name__ == '__main__':

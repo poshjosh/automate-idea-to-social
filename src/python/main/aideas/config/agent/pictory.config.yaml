@@ -1,4 +1,5 @@
-define: &default_wait 'wait 5'
+define:
+  &default_wait 'wait 5'
 browser:
   chrome:
     prefs:
@@ -19,111 +20,121 @@ stages:
         actions:
           - click
           - *default_wait
-#  script-input:
-#    url: https://app.pictory.ai/textinput
-#    events:
-#      on_error:
-#        - *default_wait
-#        - retry 1
-#    ui:
-#      select-script-input:
-#        xpath: //*[@id="root"]/div[1]/div[4]/div[1]/div[3]/div[1]/div[1]/div[3]/button
-#      title:
-#        xpath: //*[@id="root"]/div[1]/div[4]/div/main/div/div/div[4]/input
-#        actions: enter_text
-#      text:
-#        xpath: //*[@id="root"]/div[1]/div[4]/div/main/div/div/div[5]
-#        actions:
-#          - enter_text
-#          # Without this we got redirected back
-#          # Probably because submit button is only enabled a short while after entering text
-#          - wait 5
-#      script-input-submit:
-#        xpath: //*[@id="root"]/div[1]/div[4]/div/main/div/div/div[2]/span[2]/div/div[2]/button[contains(text(), "Proceed")]
-#        actions:
-#          - click
-#          - wait 15 # TODO - Change to 30, also check if we event need this
-#  branding:
-#    url: https://app.pictory.ai/storyboard/scripttovideo
-#    ui:
-#      branding-tab:
-#        xpath: //*[@id="templates-tab"]
-#        actions:
-#          - click
-#      expand-brand-options:
-#        xpath: //*[@id="step-3-fixed-height"]/div[1]/div/div[6]/div/div[1]/div[1]/div/div/div
-#      select-brand:
-#        # We first identify the brand by its name, then we work upwards to the selectable element
-#        xpath: //*[@id="menu-"]/div[3]/ul/li[2]/div/div/div[2]/span[contains(text(), "LiveAbove3D")]//..//..//..//..
-#      accept-brand-changes-prompt:
-#        events:
-#          onerror: continue
-#        xpath: /html/body/div[11]/div[3]/div/div/p/div/div/div[2]/div/div[3]/div/div[2]/button[2]
-#      select-brand-background-music:
-#        xpath: //*[@id="step-3-fixed-height"]/div[1]/div/div[6]/div/div[2]/div[3]/div/div/div/div/span[contains(text(), "Savage Grace")]//..
-#        actions:
-#          - click
-#          - wait 2
-#      select-brand-voice:
-#        #      //*[@id="step-3-fixed-height"]/div[1]/div/div[6]/div/div[2]/div[4]/div/div/div/div
-#        xpath: //*[@id="step-3-fixed-height"]/div[1]/div/div[6]/div/div[2]/div[4]/div/div/div/div/span[contains(text(), "Daniel")]//..
-#        actions:
-#          - move_to_center_offset 18 18
-#          - click_and_hold_current_position
-#          - wait 1
-#          - release
-#          # After clicking an alert is displayed for a few seconds informing us of changes
-#          # After the first alert another is displayed when the changes have been applied
-#          # The second alert is handled by the next target
-#      dismiss-brand-notice:
-#        events:
-#          onerror: continue
-#        # There will be some default waiting for this element to appear
-#        wait-timeout-seconds: 30  # TODO - Change to 120
-#        xpath: /div/div[contains(text(), "applied")]
-#  download-video:
-#    ui:
-#      expand-download-options:
-#        xpath: //*[@id="generate-button-dropdown"]/a
-#        actions:
-#          - move_to_element
-#      select-video-download:
-#        xpath: //*[@id="btnGenerate"]
-#      download-video:
-#        wait-timeout-seconds: 600
-#        xpath: /html/body/div[10]/div[3]/div/div[3]/div[2]/button
-#        actions:
-#          - click
-#          - *default_wait
-#      close-download-prompt:
-#        xpath: /html/body/div[10]/div[3]/div/div[1]/*[name()="svg"]
-
-#  download-video-portrait-layout:
-#    ui:
-#      expand-layout-options:
-#        xpath: &expand_layout_options //*[@id="step-3-fixed-height"]/div[2]/div[1]/div/div[2]/div/div/div[2]/div/div/input
-#      select-portrait-layout:
-#        xpath: //*[@id="menu-"]/div[3]/ul/li[2]/div/div[1]/div[2]/span[contains(text(), "Portrait")]//..//..//..//..
-#        actions:
-#          - click
-#          - wait 5 # TODO - Change to 20 after confirming that it takes longer for longer videos
-#          - run-stages:
-#              - download-video
-#  download-video-square-layout:
-#    ui:
-#      expand-layout-options:
-#        xpath: *expand_layout_options
-#      select-square-layout:
-#        xpath: //*[@id="menu-"]/div[3]/ul/li[2]/div/div[1]/div[2]/span[contains(text(), "Square")]//..//..//..//..
-#        actions:
-#          - click
-#          - wait 5 # TODO - Change to 20 after confirming that it takes longer for longer videos
-#          - run-stages:
-#              - download-video
-#  wait-for-download:
-#    actions:
-#      - wait 5 # TODO - Change to 20
-
+  script-input:
+    url: https://app.pictory.ai/textinput
+    events:
+      on_error:
+        - *default_wait
+        - retry 1
+    ui:
+      select-script-input:
+        xpath: //*[@id="root"]/div[1]/div[4]/div[1]/div[3]/div[1]/div[1]/div[3]/button
+      title:
+        xpath: //*[@id="root"]/div[1]/div[4]/div/main/div/div/div[4]/input
+        actions: enter_text
+      text:
+        xpath: //*[@id="root"]/div[1]/div[4]/div/main/div/div/div[5]
+        actions:
+          - enter_text
+          # Without this we got redirected back
+          # Probably because submit button is only enabled a short while after entering text
+          - wait 5
+      script-input-submit:
+        xpath: //*[@id="root"]/div[1]/div[4]/div/main/div/div/div[2]/span[2]/div/div[2]/button[contains(text(), "Proceed")]
+        actions:
+          - click
+          - wait 15 # TODO - Change to 30, also check if we event need this
+  branding:
+    url: https://app.pictory.ai/storyboard/scripttovideo
+    ui:
+      branding-tab:
+        xpath: //*[@id="templates-tab"]
+        actions:
+          - click
+      expand-brand-options:
+        xpath: //*[@id="step-3-fixed-height"]/div[1]/div/div[6]/div/div[1]/div[1]/div/div/div
+      select-brand:
+        # We first identify the brand by its name, then we work upwards to the selectable element
+        xpath: //*[@id="menu-"]/div[3]/ul/li[2]/div/div/div[2]/span[contains(text(), "LiveAbove3D")]//..//..//..//..
+      accept-brand-changes-prompt:
+        events:
+          onerror: continue
+        xpath: /html/body/div[11]/div[3]/div/div/p/div/div/div[2]/div/div[3]/div/div[2]/button[2]
+      select-brand-background-music:
+        xpath: //*[@id="step-3-fixed-height"]/div[1]/div/div[6]/div/div[2]/div[3]/div/div/div/div/span[contains(text(), "Savage Grace")]//..
+        actions:
+          - click
+          - wait 2
+      select-brand-voice:
+        #      //*[@id="step-3-fixed-height"]/div[1]/div/div[6]/div/div[2]/div[4]/div/div/div/div
+        xpath: //*[@id="step-3-fixed-height"]/div[1]/div/div[6]/div/div[2]/div[4]/div/div/div/div/span[contains(text(), "Daniel")]//..
+        actions:
+          - move_to_center_offset 18 18
+          - click_and_hold_current_position
+          - wait 1
+          - release
+          # After clicking an alert is displayed for a few seconds informing us of changes
+          # After the first alert another is displayed when the changes have been applied
+          # The second alert is handled by the next target
+      dismiss-brand-voice-notice:
+        events:
+          onerror: continue
+        # There will be some default waiting for this element to appear
+        wait-timeout-seconds: 45  # TODO - Change to 120
+        xpath: /div/div[contains(text(), "applied")]
+  download-video:
+    ui:
+      expand-download-options:
+        xpath: //*[@id="generate-button-dropdown"]/a
+        actions:
+          - move_to_element
+      select-video-download:
+        xpath: //*[@id="btnGenerate"]
+      download-video:
+        wait-timeout-seconds: 600
+        xpath: /html/body/div[10]/div[3]/div/div[3]/div[2]/button
+        actions:
+          - click
+          - *default_wait
+      close-download-notice:
+        xpath: /html/body/div[10]/div[3]/div/div[1]/*[name()="svg"]
+        actions:
+          - click
+          - wait 2
+          - dismiss_alert 10
+          - wait 2
+      close-download-alert:
+        when:
+          xpath: //*[@id="notification-bell-dropdown"]/ul/div/div[1]/span[contains(text(), "Notifications")]//..
+          actions: is_displayed
+          events:
+            onerror: continue
+        xpath: //*[@id="notification-bell-dropdown"]
+        actions:
+          - click
+          - wait 2
+  download-video-layout-2:
+    events:
+      onsuccess: run_stages download-video
+    ui:
+      expand-layout-2-options:
+        xpath: //*[@id="step-3-fixed-height"]/div[2]/div[1]/div/div[2]/div/div/div[2]/div/div/div
+      select-layout-2:
+        xpath: //*[@id="menu-"]/div[3]/ul/li[2]
+        actions:
+          - click
+          - wait 30
+  download-video-layout-3:
+    events:
+      onsuccess: run_stages download-video
+    ui:
+      expand-layout-3-options:
+        xpath: //*[@id="step-3-fixed-height"]/div[2]/div[1]/div/div[2]/div/div/div[2]/div/div/div
+      select-layout-3:
+        xpath: //*[@id="menu-"]/div[3]/ul/li[3]
+        actions:
+          - click
+          - wait 30
   download-subtitles:
     url: https://app.pictory.ai/myvideos
     ui:

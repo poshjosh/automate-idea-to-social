@@ -14,10 +14,11 @@ class ActionResultSetTest(unittest.TestCase):
         self.failure_0 = ActionResult(Action.of('failure_0', action_signature), False)
         self.failure_1 = ActionResult(Action.of('failure_1', action_signature), False)
 
-    def test_add_should_fail_given_existing_action(self):
-        first: ActionResult = self.success_0
-        copy: ActionResult = ActionResult(first.get_action(), first.is_success(), first.get_result())
-        self.assertRaises(ValueError, lambda: ActionResultSet().add(first).add(copy))
+    # We allow duplicate actions, because some stages and their actions may be repeated
+    # def test_add_should_fail_given_existing_action(self):
+    #     first: ActionResult = self.success_0
+    #     copy: ActionResult = ActionResult(first.get_action(), first.is_success(), first.get_result())
+    #     self.assertRaises(ValueError, lambda: ActionResultSet().add(first).add(copy))
 
     def test_add_given_one_failure_after_success_should_be_failure(self):
         result_set = ActionResultSet().add(self.success_0).add(self.failure_0)

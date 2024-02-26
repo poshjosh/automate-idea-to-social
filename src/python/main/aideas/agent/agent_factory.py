@@ -14,5 +14,5 @@ class AgentFactory:
         if agent_name == AgentNames.PICTORY:
             return BrowserAgent.of_config(self.__config, agent_config)
         elif agent_name == AgentNames.TRANSLATION:
-            return TranslationAgent.of_config(self.__config)
+            return TranslationAgent.of_config(agent_config)
         raise ValueError(f'Agent named `{agent_name}` is not supported')

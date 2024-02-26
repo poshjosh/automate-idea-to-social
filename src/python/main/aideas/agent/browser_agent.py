@@ -22,6 +22,7 @@ class BrowserAgent(Agent):
             
         BrowserAgent.of_dynamic(config, agent_config, BrowserAgentSubclass)
     """
+
     @staticmethod
     def of_dynamic(config: dict[str, any], agent_config: dict[str, any], init) -> 'BrowserAgent':
         browser_automator = BrowserAutomator.of(config, agent_config)
@@ -30,34 +31,32 @@ class BrowserAgent(Agent):
 
     def __init__(self,
                  browser_automator: BrowserAutomator,
-                 config: dict[str, any],
+                 agent_config: dict[str, any],
                  interval_seconds: int = 0):
+        super().__init__(agent_config)
         self.__browser_automator = browser_automator
         self.__event_handler = browser_automator.get_event_handler()
-        self.__config = config
         self.__interval_seconds = interval_seconds
 
     def run(self, run_config: dict[str, any]) -> ActionResultSet:
-        stages_config: dict = self.__config['stages']
-        result_set: ActionResultSet = ActionResultSet()
-        for stage_name in stages_config.keys():
-            result = self.run_stage(stages_config, stage_name, run_config)
-            logger.debug(f"Stage: {stage_name}, result: {result_set}")
-            result_set.add_all(result)
-            # We raise an exception if we want to stop the process
-            # so no need to do this.
-            # if result_set.is_successful() is False:
-            #     break
-
-            self.__sleep()
-
-        return result_set.close()
+        try:
+            return super().run(run_config)
+        finally:
+            self.__browser_automator.quit()
 
     def run_stage(self,
                   stages_config: dict[str, any],
                   stage_name: str,
-                  run_config: dict[str, any],
-                  trials: int = 1) -> ActionResultSet:
+                  run_config: dict[str, any]) -> ActionResultSet:
+        result = self.__run_stage(stages_config, stage_name, run_config, 1)
+        self.__sleep()
+        return result
+
+    def __run_stage(self,
+                    stages_config: dict[str, any],
+                    stage_name: str,
+                    run_config: dict[str, any],
+                    trials) -> ActionResultSet:
         logger.debug(f"Executing stage: {stage_name}")
 
         result_set = ActionResultSet.none()
@@ -68,15 +67,18 @@ class BrowserAgent(Agent):
         except Exception as ex:
             exception = ex
 
-        if result_set.is_successful():
-            return result_set
+        def retry_action(_trials: int) -> ActionResultSet:
+            return self.__run_stage(stages_config, stage_name, run_config, _trials)
 
-        def on_retry(_trials: int) -> ActionResultSet:
-            return self.run_stage(stages_config, stage_name, run_config, _trials)
+        def run_stages_action(stage_names: [str]) -> ActionResultSet:
+            return self.run_stages(run_config, stage_names)
+
+        event_name = 'onsuccess' if result_set.is_successful() else 'onerror'
 
         # This will return an onerror based result set
-        return self.__event_handler.on_execution_error(
-            exception, result_set, stages_config, stage_name, on_retry, trials)
+        return self.__event_handler.handle_event(
+            event_name, exception, result_set, stages_config,
+            stage_name, retry_action, run_stages_action, trials)
 
     def __sleep(self):
         if self.__interval_seconds < 1:

@@ -51,18 +51,36 @@ class BrowserAutomator:
 
         body_elements: List[WebElement] = self.__element_selector.load_page_bodies(link)
 
-        ui_config: dict[str, any] = stage_config['ui']
+        elem_parent_cfg: dict[str, any] = stage_config['ui']
 
         result_set: ActionResultSet = ActionResultSet()
 
-        for key in ui_config.keys():
+        for key in elem_parent_cfg.keys():
             if key == ElementActionConfig.DEFAULT_ACTIONS_KEY:
                 continue
 
+            may_proceed = self.may_proceed(body_elements[0], elem_parent_cfg, key, action_values)
+
+            if may_proceed is False:
+                logger.debug(f"Skipping actions for: {key} due to specified condition")
+                continue
+
             result_set.add_all(self.act_on_element(
-                body_elements[0], ui_config, key, action_values))
+                body_elements[0], elem_parent_cfg, key, action_values))
 
         return result_set.close()
+
+    def may_proceed(self,
+                    body_element: WebElement,
+                    elem_parent_cfg: dict[str, any], element_name: str,
+                    action_values: dict[str, any]) -> bool:
+        # This key does not have to be unique, since it is not included in the result set
+        when_key = 'when'
+        when_config = None if type(elem_parent_cfg[element_name]) is str \
+            else elem_parent_cfg[element_name].get(when_key)
+        return True if when_config is None else self.act_on_element(
+            body_element, elem_parent_cfg[element_name],
+            when_key, action_values).is_successful()
 
     """
         ########################
@@ -76,12 +94,12 @@ class BrowserAutomator:
     """
     def act_on_element(self,
                        body_element: WebElement,
-                       ui_config: dict[str, any],
+                       elem_parent_cfg: dict[str, any],
                        element_name: str,
                        action_values: dict[str, any],
                        trials: int = 1) -> ActionResultSet:
-        element_actions: list[str] = ElementActionConfig.get(ui_config, element_name)
-        element_config: dict[str, any] = ui_config[element_name]
+        element_actions: list[str] = ElementActionConfig.get(elem_parent_cfg, element_name)
+        element_config: dict[str, any] = elem_parent_cfg[element_name]
         search_config = ElementSearchConfig.of(element_config)
 
         result_set = ActionResultSet.none()
@@ -91,24 +109,27 @@ class BrowserAutomator:
                 else element_config.get('wait-timeout-seconds', self.__wait_timeout_seconds)
 
             selector = self.__element_selector.with_timeout(timeout)
-            found: WebElement = selector.select_element(
+            element: WebElement = selector.select_element(
                 body_element, element_name, search_config)
 
             result_set: ActionResultSet = self.execute_all_actions(
-                found, timeout, element_name, element_actions, action_values)
+                element, timeout, element_name, element_actions, action_values)
         except Exception as ex:
             exception = ex
 
-        if result_set.is_successful():
-            return result_set
-
-        def on_retry(_trials: int) -> ActionResultSet:
+        def retry_action(_trials: int) -> ActionResultSet:
             return (self.act_on_element
-                    (body_element, ui_config, element_name, action_values, _trials))
+                    (body_element, elem_parent_cfg, element_name, action_values, _trials))
+
+        def run_stages_action(stage_names: [str]) -> ActionResultSet:
+            raise ValueError(f"Event: run_stages is not supported for: {element_name}")
+
+        event_name = 'onsuccess' if result_set.is_successful() else 'onerror'
 
         # This will return an onerror based result set
-        return self.__event_handler.on_execution_error(
-            exception, result_set, ui_config, element_name, on_retry, trials)
+        return self.__event_handler.handle_event(
+            event_name, exception, result_set, elem_parent_cfg,
+            element_name, retry_action, run_stages_action, trials)
 
     def execute_all_actions(self,
                             element: Union[WebElement, None],

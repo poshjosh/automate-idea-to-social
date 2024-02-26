@@ -1,14 +1,14 @@
-net:
-  user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36
 browser:
   chrome:
     #executable-path: /Users/chinomso/dev_chinomso/automate-idea-to-social/src/python/main/resources/chrome/version-121/chromedriver-mac-x64/chromedriver
     wait-timeout-seconds: 30
     prefs:
       #download.default_directory: /Users/chinomso/Downloads
+      profile.managed_default_content_settings.popups : 2
+      profile.default_content_setting_values.notifications: 2
       download.prompt_for_download: false
       directory_upgrade: true
-      safebrowsing.enabled: true
+      safebrowsing.enabled: false
     options:
       args:
         - no-sandbox
@@ -19,13 +19,15 @@ browser:
         #- user-data-dir=/Users/chinomso/Library/Application Support/Google/Chrome
         # Location relative to user-data-dir where chrome profile to be used is stored
         #- profile-directory=Default
+        - disable-popup-blocking
+        - disable-notifications
         - enable-javascript
         - user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36
         - start-maximized
-        #- disable-infobars
+        - disable-infobars
         - disable-extensions
-        #- disable-web-security
-        #- allow-running-insecure-content
+        - disable-web-security
+        - allow-running-insecure-content
         - remote-allow-origins=*
 
 agents:

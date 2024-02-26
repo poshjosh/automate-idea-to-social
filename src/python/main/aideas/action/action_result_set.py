@@ -37,9 +37,10 @@ class ActionResultSet:
             raise ValueError('Result is closed')
         target_id: str = result.get_action().get_target_id()
         result_list: list[ActionResult] = self.__get(target_id)
-        for res in result_list:
-            if res.get_action() == result.get_action():
-                raise ValueError(f"Already added: {result}")
+        # We allow duplicate actions, because some stages and their actions may be repeated
+        # for res in result_list:
+        #     if res.get_action() == result.get_action():
+        #         raise ValueError(f"Already added: {result}")
         result_list.append(result)
         self.__set(target_id, result_list)
         self.__total += 1

@@ -26,7 +26,7 @@ from .test_functions import create_webdriver
 timeout: float = 20
 
 
-class MyTestCase(unittest.TestCase):
+class XPathTest(unittest.TestCase):
     # def test_pictory_login_xpath(self):
     #     webdriver = create_webdriver()
     #     webdriver.get('https://app.pictory.ai/login')

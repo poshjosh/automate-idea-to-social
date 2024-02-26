@@ -3,7 +3,7 @@ import os
 import unittest
 
 from ...agent.test_agent_inputs import TestAgentInputs
-from ...test_functions import get_logging_config, load_app_config
+from ...test_functions import get_logging_config, load_agent_config
 from .....main.aideas.action.action_result_set import ActionResultSet
 from .....main.aideas.agent.agent_names import AgentNames
 from .....main.aideas.agent.translation.translation_agent import TranslationAgent
@@ -11,7 +11,7 @@ from .....main.aideas.agent.translation.translation_agent import TranslationAgen
 logging.config.dictConfig(get_logging_config())
 
 
-class TranslationAgentTest(unittest.TestCase):
+class TranslationAgentIT(unittest.TestCase):
     # def test_translate_all(self):
     #     filename_in = "resources/subtitles.vtt"
     #     target_langs = ["ar", "de", "zh", "zh-TW"]
@@ -19,7 +19,7 @@ class TranslationAgentTest(unittest.TestCase):
 
     def test_run(self):
         agent_name: str = AgentNames.TRANSLATION
-        config = load_app_config()
+        config = load_agent_config(agent_name)
         print(f'Loaded app config: {config}')
         agent = TranslationAgent.of_config(config)
         inputs = TestAgentInputs().get(agent_name)

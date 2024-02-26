@@ -38,11 +38,14 @@ class ElementActionHandler(BrowserActionHandler):
                 ActionChains(driver).click_and_hold(None).perform()
 
             result = self.__execute_for_result(click_and_hold_current_position, element, action)
-        elif name == 'get_text':
-            result = ActionResult(action, True, element.text)
         elif name == 'enter_text':
             text: str = ' '.join(action.get_args())
             result = self.__execute_for_result(lambda arg: arg.send_keys(text), element, action)
+        elif name == 'get_text':
+            result = ActionResult(action, True, element.text)
+        elif name == 'is_displayed':
+            success = element.is_displayed()
+            result = ActionResult(action, success, success)
         elif name == 'move_to_center_offset':
             offset: Tuple[int, int] = self.__get_offset(action.get_args())
 
