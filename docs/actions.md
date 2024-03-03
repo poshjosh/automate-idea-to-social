@@ -4,9 +4,10 @@ Actions may be global, browser or element specific.
 
 ### Global actions
 
-| Action | Argument type(s) | Remarks |
-|--------|------------------|---------|
-| wait   | None             |         |
+| Action                 | Argument type(s)              | Remarks                                           |
+|------------------------|-------------------------------|---------------------------------------------------|
+| wait                   | None                          |                                                   |
+| get_newest_file_in_dir | str, int (directory, timeout) | Example: `get_newest_file_in_dir /path/to/dir 30` |
 
 ### Browser actions
 

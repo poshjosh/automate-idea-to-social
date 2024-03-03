@@ -1,32 +1,32 @@
 import unittest
 
 from ....main.aideas.action.action import Action
-from ....main.aideas.action.element_action_config import ElementActionConfig
+from ....main.aideas.action.action_signatures import DEFAULT_ACTIONS_KEY, element_action_signatures
 from ....main.aideas.action.element_action_handler import ElementActionHandler
 
-from ..test_functions import create_webdriver, get_agent_resource, load_app_config, load_agent_config
+from ..test_functions import create_webdriver, get_agent_resource, get_config_loader
 
 
 class ElementActionHandlerTest(unittest.TestCase):
-    # def test_get_should_return_non_empty_list(self):
-    #     stage_actions: dict[str, list[str]] = _collect_agent_actions('pictory')
-    #     for actions in stage_actions.values():
-    #         self.assertEqual(list, type(actions))
-    #         self.assertNotEqual(0, len(actions))
+    def test_get_should_return_non_empty_list(self):
+        stage_actions: dict[str, list[str]] = _collect_agent_actions('pictory')
+        for actions in stage_actions.values():
+            self.assertEqual(list, type(actions))
+            self.assertNotEqual(0, len(actions))
 
     def test_pictory_branding_actions(self):
         agent_name = 'pictory'
         stage_name = 'branding'
-        webdriver = create_webdriver(load_app_config())
+        webdriver = create_webdriver()
         webdriver.get(get_agent_resource(agent_name, 'storyboard_page.html'))
-        config = load_agent_config(agent_name)
+        config = get_config_loader().load_agent_config(agent_name)
         stage_config = config['stages'][stage_name]
         targets = stage_config['ui'].keys()
         for target in targets:
-            _execute_actions(webdriver, stage_name, stage_config, target, None)
+            _execute_actions(webdriver, agent_name, stage_name, stage_config, target, None)
 
 
-def _execute_actions(webdriver, stage_name: str, stage_config: dict, target: str, action_prefix: str):
+def _execute_actions(webdriver, agent_name: str, stage_name: str, stage_config: dict, target: str, action_prefix: str):
     stage_actions: dict[str, list[str]] = _collect_stage_actions(stage_name, stage_config)
     for key, action_list in stage_actions.items():
         if key != f'{stage_name}.{target}':
@@ -37,7 +37,7 @@ def _execute_actions(webdriver, stage_name: str, stage_config: dict, target: str
                 continue
             print(f'executing action: {stage_name}.{action} for: {target}')
             try:
-                action = Action.of(target, action, None)
+                action = Action.of(agent_name, stage_name, target, action)
                 ElementActionHandler(webdriver, 10).execute(action)
             except Exception as ex:
                 print('Failed')
@@ -46,7 +46,7 @@ def _execute_actions(webdriver, stage_name: str, stage_config: dict, target: str
 
 
 def _collect_agent_actions(agent: str) -> dict[str, list[str]]:
-    stages_config = load_agent_config(agent)['stages']
+    stages_config = get_config_loader().load_agent_config(agent)['stages']
     stage_actions: dict[str, list[str]] = {}
     for stage_name in stages_config.keys():
         stage_config: dict[str, any] = stages_config[stage_name]
@@ -60,9 +60,9 @@ def _collect_stage_actions(
     collect_into: dict[str, list[str]] = {}
     ui_config: dict[str, any] = stage_config['ui']
     for key in ui_config.keys():
-        if key == ElementActionConfig.DEFAULT_ACTIONS_KEY:
+        if key == DEFAULT_ACTIONS_KEY:
             continue
-        actions = ElementActionConfig.get(ui_config, key)
+        actions = element_action_signatures(ui_config, key)
         print(f'element: {key}, actions: {actions}')
         collect_into[f'{stage_name}.{key}'] = actions
     return collect_into

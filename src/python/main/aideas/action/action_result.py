@@ -28,4 +28,4 @@ class ActionResult:
         return f'ActionResult(success={self.__success}, {self.__action}, result={self.__result})'
 
 
-NONE = ActionResult(Action.none(), False)
+NONE = ActionResult(Action.none(), True)

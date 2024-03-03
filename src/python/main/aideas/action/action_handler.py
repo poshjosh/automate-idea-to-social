@@ -1,28 +1,155 @@
 import logging
+import os
+import shutil
 import time
+from typing import Callable, Union
 
 from .action import Action
 from .action_result import ActionResult
+from ..env import Env
 
 logger = logging.getLogger(__name__)
 
 
-class ActionHandler:
-    def execute(self, action: Action) -> ActionResult:
-        if action.get_name() == 'wait':
-            result: ActionResult = self.wait(action)
-            logger.debug(f"{result}")
-            return result
-        else:
-            return ActionResult(action, False, f"Unsupported: {action}")
+def execute_for_result(func: Callable[[any], any],
+                       arg: any,
+                       action: Action) -> ActionResult:
+    try:
+        result = func(arg)
+    except Exception as ex:
+        logger.warning(f'{ex}')
+        return ActionResult(action, False, type(ex))
+    else:
+        return ActionResult(action, True, result)
 
-    def wait(self, action: Action) -> ActionResult:
+
+class ActionHandler:
+    __ALL_FILE_TYPES = '*'
+    ACTION_GET_FILES = 'get_files'
+    ACTION_GET_FIRST_FILE = 'get_first_file'
+    ACTION_GET_NEWEST_FILE = 'get_newest_file_in_dir'
+    ACTION_LOG = 'log'
+    ACTION_SAVE_FILE = 'save_file'
+    ACTION_WAIT = 'wait'
+
+    @staticmethod
+    def noop() -> 'ActionHandler':
+        return NOOP
+
+    def execute(self, action: Action) -> ActionResult:
+        if action == Action.none():
+            result = ActionResult.none()
+        elif action.get_name() == ActionHandler.ACTION_GET_FILES:
+            result: ActionResult = self.get_files(action)
+        elif action.get_name() == ActionHandler.ACTION_GET_FIRST_FILE:
+            result: ActionResult = self.get_files(action)
+        elif action.get_name() == ActionHandler.ACTION_GET_NEWEST_FILE:
+            result: ActionResult = self.get_newest_file_in_dir(action)
+        elif action.get_name() == ActionHandler.ACTION_LOG:
+            result: ActionResult = self.log(action)
+        elif action.get_name() == ActionHandler.ACTION_SAVE_FILE:
+            result: ActionResult = self.save_file(action)
+        elif action.get_name() == ActionHandler.ACTION_WAIT:
+            result: ActionResult = self.wait(action)
+        else:
+            raise ValueError(f'Unsupported: {action}')
+        logger.debug(f'{result}')
+        return result
+
+    @staticmethod
+    def wait(action: Action) -> ActionResult:
         arg: str = action.get_first_arg()
         if arg is None or arg == '':
-            return ActionResult(action, False, f"No value provided for: {action}")
+            return ActionResult(action, False, f'No value provided for: {action}')
         timeout: int = int(arg)
         if timeout < 1:
             return ActionResult(action, True)
-        logger.debug(f"Waiting for {timeout} seconds")
+        logger.debug(f'Waiting for {timeout} seconds')
         time.sleep(timeout)
         return ActionResult(action, True)
+
+    @staticmethod
+    def get_newest_file_in_dir(action: Action) -> ActionResult:
+        args: [str] = action.get_args()
+        dir_path: str = args[0]
+        file_type: str = args[1]
+        if dir_path is None or dir_path == '':
+            return ActionResult(action, False, f'No value provided for: {action}')
+        timeout: int = 30 if len(args) < 3 else int(args[2])
+        start_time = time.time()
+        while (time.time() - start_time) < timeout:
+            most_recent_file = ActionHandler.__get_newest_file_in_dir(dir_path, file_type, None)
+            if most_recent_file is not None:
+                return ActionResult(action, True, most_recent_file)
+            time.sleep(1)
+        return ActionResult(action, False)
+
+    @staticmethod
+    def log(action: Action) -> ActionResult:
+        arg_list: [] = action.get_args()
+        logger.log(logging.getLevelName(arg_list[0]), arg_list[1])
+        return ActionResult(action, True)
+
+    @staticmethod
+    def save_file(action: Action) -> ActionResult:
+        src = action.get_first_arg()
+        tgt_dir = os.path.join(os.environ[Env.AGENT_DIR.value],
+                               action.get_agent_name(), action.get_stage_id(),
+                               action.get_target_id())
+        if not os.path.exists(tgt_dir):
+            os.makedirs(tgt_dir)
+        tgt = os.path.join(tgt_dir, os.path.basename(src))
+        logger.debug(f'Copying {src} to {tgt}')
+        return execute_for_result(lambda arg: shutil.copy2(src, tgt), src, action)
+
+    @staticmethod
+    def get_first_file(action: Action) -> ActionResult:
+        files: list[str] = ActionHandler.get_files(action).get_result()
+        result = None if len(files) == 0 else files[0]
+        return ActionResult(action, result is not None, result)
+
+    @staticmethod
+    def get_files(action: Action) -> ActionResult:
+        return execute_for_result(
+            lambda args: ActionHandler.__get_files(action), action.get_args(), action)
+
+    @staticmethod
+    def __get_files(action: Action) -> list[str]:
+        args: [] = action.get_args()
+        dir_path: str = args[0]
+        file_type: str = args[1]
+        files: [] = []
+        for entry in os.scandir(dir_path):
+            if ActionHandler.accept_dir_entry(entry, file_type):
+                files.append(entry.path)
+        return files
+
+    @staticmethod
+    def __get_newest_file_in_dir(dir_path: str,
+                                 file_type: str,
+                                 result_if_none: Union[str, None]) -> str:
+        # iterate over the files in the directory using os.scandir
+        most_recent_file = None
+        most_recent_time = 0
+        for entry in os.scandir(dir_path):
+            if ActionHandler.accept_dir_entry(entry, file_type):
+                # get the modification time of the file using entry.stat().st_mtime_ns
+                mod_time = entry.stat().st_mtime_ns
+                if mod_time > most_recent_time:
+                    # update the most recent file and its modification time
+                    most_recent_file = entry.path
+                    most_recent_time = mod_time
+        return result_if_none if most_recent_file is None else most_recent_file
+
+    @staticmethod
+    def accept_dir_entry(entry: os.DirEntry, file_type: str) -> bool:
+        return entry.is_file() and (file_type == ActionHandler.__ALL_FILE_TYPES or
+                                    entry.name.endswith(file_type))
+
+
+class NoopActionHandler(ActionHandler):
+    def execute(self, action: Action) -> ActionResult:
+        return ActionResult.none()
+
+
+NOOP: ActionHandler = NoopActionHandler()

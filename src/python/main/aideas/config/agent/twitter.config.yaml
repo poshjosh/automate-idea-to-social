@@ -1,0 +1,67 @@
+stages:
+  email:
+    #url: https://twitter.com/i/flow/login
+    url: https://twitter.com/i/flow/login?redirect_after_login=%2Fhome
+    ui:
+      enter-email:
+        search-x-paths:
+          - //*[@id="layers"]/div/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div/div/div/div[5]/label/div/div[2]/div/input
+          - //*[@id="layers"]/div[2]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div/div/div/div[5]/label/div/div[2]/div/input
+        actions: enter_text $twitter.user.email
+      submit-email:
+        search-x-paths:
+          - //*[@id="layers"]/div/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div/div/div/div[6]
+          - //*[@id="layers"]/div[2]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div/div/div/div[6]
+  # This stage is only shown when twitter wants to confirm your identity
+  # So we have onerror: continue
+  username:
+    events:
+      onerror: continue
+    ui:
+      enter-username:
+        wait-timeout-seconds: 3
+        search-x-paths: //*[@id="layers"]/div[2]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[1]/div/div[2]/label/div/div[2]/div/input
+        actions: enter_text $twitter.user.name
+      submit-username:
+        wait-timeout-seconds: 3
+        search-x-paths: //*[@id="layers"]/div[2]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[2]/div/div/div/div
+  password:
+    ui:
+      enter-password:
+        search-x-paths:
+          - //*[@id="layers"]/div/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[1]/div/div/div[3]/div/label/div/div[2]/div[1]/input
+          - //*[@id="layers"]/div[2]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[1]/div/div/div[3]/div/label/div/div[2]/div[1]/input
+        actions: enter_text $twitter.user.pass
+      submit-password:
+        search-x-paths:
+          - //*[@id="layers"]/div/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[2]/div/div/div/div
+          - //*[@id="layers"]/div[2]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[2]/div/div/div/div
+          - //*[@id="layers"]/div[2]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[2]/div/div[1]/div/div/div
+        actions:
+          - click
+          - wait 5
+  tweet:
+    url: https://twitter.com/home
+    ui:
+      dismiss-initial-alert:
+        actions: dismiss_alert 3
+      enter-tweet:
+        search-x-paths: //*[@id="react-root"]/div/div/div[2]/main/div/div/div/div[1]/div/div[3]/div/div[2]/div[1]/div/div/div/div[2]/div[1]/div/div/div/div/div/div/div/div/div/div/label/div[1]/div/div/div/div/div/div[2]/div
+        actions:
+          - enter_text $video.title $video.link
+          # When we enter a link, twitter retrieves some metadata from the link
+          - wait 5
+      post-tweet-0:
+        search-x-paths:
+          - //*[@id="react-root"]/div/div/div[2]/main/div/div/div/div[1]/div/div[3]/div/div[2]/div[1]/div/div/div/div[2]/div[2]/div[2]/div/div/div/div
+          - //*[@id="react-root"]/div/div/div[2]/main/div/div/div/div[1]/div/div[3]/div/div[2]/div[1]/div/div/div/div[2]/div[2]/div[2]/div/div/div/div/div/span
+        actions:
+          - click
+          - wait 5
+#  ensure-posted:
+#    ui:
+#      wait-for-post-to-appear:
+#        search-x-paths: //*[@id="react-root"]/div/div/div[2]/main/div/div/div/div[1]/div/div[5]/div/section/div/div/div[2]/div/div/article/div/div/div[2]/div[2]/div[1]/div/div[1]/div/div/div[2]/div/div[3]/a/time
+#        actions:
+#          - wait 5
+

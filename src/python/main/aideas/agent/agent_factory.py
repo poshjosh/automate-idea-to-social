@@ -1,18 +1,24 @@
 from .agent import Agent
-from .agent_names import AgentNames
+from .agent_name import AgentName
 from .browser_agent import BrowserAgent
-from ..config_loader import ConfigLoader
 from .translation.translation_agent import TranslationAgent
 
 
 class AgentFactory:
-    def __init__(self, config: dict[str, any]):
-        self.__config = config
+    def __init__(self, app_config: dict[str, any] = None):
+        self.__app_config = app_config
 
-    def get_agent(self, agent_name) -> Agent:
-        agent_config = ConfigLoader.load_from_id(f'agent/{agent_name}')
-        if agent_name == AgentNames.PICTORY:
-            return BrowserAgent.of_config(self.__config, agent_config)
-        elif agent_name == AgentNames.TRANSLATION:
-            return TranslationAgent.of_config(agent_config)
-        raise ValueError(f'Agent named `{agent_name}` is not supported')
+    def get_agent(self, agent_name: str, agent_config: dict[str, any]) -> Agent:
+        if agent_name == AgentName.TRANSLATION:
+            return self.create_translation_agent(agent_config)
+        else:
+            return self.create_browser_agent(agent_name, agent_config)
+
+    def create_browser_agent(self, agent_name: str, agent_config) -> BrowserAgent:
+        return BrowserAgent.of_config(agent_name, self.__app_config, agent_config)
+
+    def create_translation_agent(self, agent_config) -> TranslationAgent:
+        return TranslationAgent.of_config(agent_config)
+
+    def get_app_config(self) -> dict[str, any]:
+        return self.__app_config

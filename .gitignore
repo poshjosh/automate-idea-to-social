@@ -1,3 +1,7 @@
+# Downloaded video/subtitle files
+.mp4
+.vtt
+
 .DS_Store
 
 # Byte-compiled / optimized / DLL files

@@ -1,0 +1,65 @@
+interval-seconds: 1
+stages:
+  # TODO - Requires user input, implement notifying the user
+  login:
+    url: https://www.tiktok.com/login/phone-or-email/email
+    ui:
+      enter-username:
+        search-x-paths: //*[@id="loginContainer"]/div[1]/form/div[1]/input
+        actions:
+          - enter_text $tiktok.user.name
+      enter-password:
+        search-x-paths: //*[@id="loginContainer"]/div[1]/form/div[2]/div/input
+        actions:
+          - enter_text $tiktok.user.pass
+      submit-login:
+#        search-x-paths: //*[@id="loginContainer"]/div[1]/form/button[contains(text(), "Log")] # Log in|Login
+        actions:
+#          - click
+          - wait 30 # !!! USER ASSISTANCE IS REQUIRED TO SOLVE CHALLENGE !!!
+  enter-upload-video-details:
+    url: https://www.tiktok.com/creator-center/upload?from=upload&lang=en
+    ui:
+#      click-to-open-upload-dialog:
+#        wait-timeout-seconds: 15
+#        events:
+#          onerror: continue
+#        search-x-paths: //*[@id="root"]/div/div/div/div/div/div/div
+      add-upload-file:
+        search-x-paths: //*[@id="root"]/div/div/div/div/div/div/div/input[@type="file"]
+        actions:
+          # Use the first result from the specified pictory download stage
+          #- enter_text $results.pictory.download-video-layout-2.get-file[0]
+          - get_first_file ${agent.dir}/pictory/download-video-layout-2/save-file $video.output.type
+          - enter_text $results.me[0]
+      click-upload-button:
+        wait-timeout-seconds: 5
+        search-x-paths: //*[@id="root"]/div/div/div/div/div/div/div/div[1]/div/div/div[3]/div/button[2]
+      enter-video-caption:
+        when:
+          search-x-paths: //*[@id="root"]/div/div/div/div[1]/div[1]/div[2]/button[contains(text(), "Edit")]
+          actions: is_displayed
+        search-x-paths: //*[@id="root"]/div/div/div/div[2]/div[2]/div[2]/div[1]/div/div[1]/div[2]/div/div/div/div/div/div/div/div/div/span/span
+        actions:
+          - enter_text $video.description
+  enter-video-cover-image-details:
+    events:
+      onerror: continue
+    ui:
+      proceed-to-edit-video-cover:
+        search-x-paths: //*[@id="root"]/div/div/div/div[2]/div[2]/div[2]/div[2]/div/div/*[name()="svg"]
+      select-to-upload-video-cover:
+        search-x-paths: //*[@id="portal-container"]/div/div/div[1]/div/div[1]/div[contains(text(), "Upload")]
+      send-video-cover-image:
+        search-x-paths: //*[@id="uploadTrigger"]
+        actions:
+          - enter_text $video.cover.image.square
+      submit-video-cover-image:
+        search-x-paths: //*[@id="portal-container"]/div/div/div[1]/div/div[2]/div[4]/button[contains(text(), "Confirm")]
+        actions:
+          - click
+          - wait 5 # The time it takes for the cover image to be uploaded
+  submit-video:
+    ui:
+      click-submit-video:
+        search-x-paths: //*[@id="root"]/div/div/div/div[2]/div[2]/div[2]/div[6]/div[2]/button

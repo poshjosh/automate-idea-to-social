@@ -5,6 +5,17 @@ logger = logging.getLogger(__name__)
 
 
 class Translator:
+    @staticmethod
+    def of_config(agent_config: dict[str, any]) -> 'Translator':
+        return Translator.of_dynamic(agent_config, Translator)
+
+    @staticmethod
+    def of_dynamic(agent_config: dict[str, any], init) -> 'Translator':
+        net_config = agent_config['net']
+        return init(net_config['service-url'],
+                    net_config.get('chunk-size', 10000),
+                    net_config.get('user-agent'))
+
     __verbose = True
     __default_user_agent = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
                             "(KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36")
@@ -51,23 +62,23 @@ class Translator:
         headers = {
             "User-Agent": self.__user_agent
         }
-        return self.call_translation_service(params=params, headers=headers)
+        result = []
+        json_result = self.call_translation_service(params=params, headers=headers)
+        if json_result and json_result[0]:
+            return_string = " ".join(i[0].strip() for i in json_result[0])
+            split = return_string.split(self.__separator)
+            split = map(lambda x: x.strip(), split)
+            result.extend(split)
+            result = list(filter(lambda x: x, result))
+        return result
 
     def call_translation_service(self, params: dict, headers: dict) -> list[str]:
         r = requests.get(self.__service_url, params=params, headers=headers)
-        result = []
         try:
-            json_result = r.json()
+            return r.json()
         except Exception as ex:
-            logger.warning(f"{ex}")
-        else:
-            if json_result and json_result[0]:
-                return_string = " ".join(i[0].strip() for i in json_result[0])
-                split = return_string.split(self.__separator)
-                split = map(lambda x: x.strip(), split)
-                result.extend(split)
-                result = list(filter(lambda x: x, result))
-        return result
+            logger.warning(f'{ex}')
+            return []
 
     def get_separator(self) -> str:
         return self.__separator

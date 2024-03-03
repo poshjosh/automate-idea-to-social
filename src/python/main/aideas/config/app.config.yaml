@@ -1,9 +1,10 @@
+app:
+  name: aideas
 browser:
   chrome:
     #executable-path: /Users/chinomso/dev_chinomso/automate-idea-to-social/src/python/main/resources/chrome/version-121/chromedriver-mac-x64/chromedriver
     wait-timeout-seconds: 30
     prefs:
-      #download.default_directory: /Users/chinomso/Downloads
       profile.managed_default_content_settings.popups : 2
       profile.default_content_setting_values.notifications: 2
       download.prompt_for_download: false
@@ -33,5 +34,10 @@ browser:
 agents:
   - pictory
   - translation
+  - twitter
+  - tiktok
+  - reddit
+  - facebook
+  - instagram
 
 

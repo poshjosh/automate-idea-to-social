@@ -4,11 +4,12 @@ from typing import TypeVar, Union
 from selenium import webdriver
 from selenium.common import TimeoutException
 from selenium.webdriver.common.alert import Alert
+from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as WaitCondition
 from selenium.webdriver.support.wait import WebDriverWait
 
 from ..action.action import Action
-from ..action.action_handler import ActionHandler
+from ..action.action_handler import ActionHandler, execute_for_result
 from ..action.action_result import ActionResult
 
 logger = logging.getLogger(__name__)
@@ -33,9 +34,13 @@ class BrowserActionHandler(ActionHandler):
         name: str = action.get_name()
         if name.endswith("alert"):  # accept_alert|dismiss_alert
             result = self.__handle_alert(action)
+        elif name == "execute_script":
+            result = self.__execute_script(action)
+        elif name == "execute_script_on":
+            result = self.__execute_script_on(action)
         else:
             return super().execute(action)
-        logger.debug(f"{result}")
+        logger.debug(f'{result}')
         return result
 
     def get_web_driver(self) -> WEB_DRIVER:
@@ -62,3 +67,19 @@ class BrowserActionHandler(ActionHandler):
             logger.debug(f"Timed out waiting for alert. {action}")
 
         return ActionResult(action, True)
+
+    def __execute_script(self, action: Action) -> ActionResult:
+        def execute(script: str):
+            return self.__web_driver.execute_script(script)
+
+        return execute_for_result(execute, ' '.join(action.get_args()), action)
+
+    def __execute_script_on(self, action: Action) -> ActionResult:
+
+        args: list = action.get_args()
+
+        def execute_on(target: WebElement):
+            return self.__web_driver.execute_script(args[0], target)
+
+        return execute_for_result(execute_on, args[1], action)
+

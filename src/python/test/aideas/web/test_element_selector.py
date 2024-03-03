@@ -10,8 +10,9 @@ from ....main.aideas.web.element_selector import ElementSelector
 
 class TestElementSelector(ElementSelector):
     @staticmethod
-    def of(webdriver, wait_timeout_seconds: float = 20) -> 'ElementSelector':
-        return TestElementSelector(webdriver, wait_timeout_seconds, NoopCookieStore(webdriver))
+    def of(webdriver, domain, wait_timeout_seconds: float = 20) -> 'ElementSelector':
+        return TestElementSelector(
+            webdriver, wait_timeout_seconds, NoopCookieStore(webdriver, domain))
 
     def __init__(self,
                  webdriver,
@@ -27,7 +28,9 @@ class TestElementSelector(ElementSelector):
                        root_element: WebElement,
                        element_name: str,
                        search_config: ElementSearchConfig) -> WebElement:
+        self.validate_search_inputs(root_element, element_name, search_config)
         return WebElement({}, None)
 
     def load_page_bodies(self, link: str) -> List[WebElement]:
+        self.validate_link(link)
         return [WebElement({}, None)]

@@ -1,3 +1,17 @@
+Use a working.dir
+Make cookie location a variable
+Allow variables in yaml ${}
+  * Process all ${} variables at app load time
+  * Document variables in yaml
+    * There are 2 types ${} processed at app load time and @ processed at time of use
+
+Allow variables in .env file
+
+
+Handle pictory file-download:
+  - Auto it - https://www.quora.com/I-am-trying-to-automate-uploading-a-file-from-a-Finder-window-and-close-the-window-afterwards-in-Mac-OS-using-Selenium-WebDriver-How-do-I-do-that
+  - https://www.reddit.com/r/learnpython/comments/qw6aze/solved_how_to_close_a_windows_file_explorer/
+
 Don't log passwords
   - Implement app property which gives option to not log while in action handler.
 

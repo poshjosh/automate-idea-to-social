@@ -1,28 +1,33 @@
 import logging.config
+from typing import Union
+
 import yaml
 
 from .agent.agent_factory import AgentFactory
-from .agent.agent_inputs import AgentInputs
+from .result.agent_result_set import AgentResultSet
 from .config_loader import ConfigLoader
-from .action.action_result_set import ActionResultSet
+from .run_context import RunContext
 
 logger = logging.getLogger(__name__)
 
 
 class App:
     @staticmethod
-    def of_defaults(logging_config_yaml: str = None,
+    def of_defaults(config_path: str,
+                    logging_config_yaml: str = None,
                     app_config_yaml: str = None):
-        agent_inputs = AgentInputs()
+        config_loader = ConfigLoader(config_path)
         if logging_config_yaml is None:
-            logging_config_yaml = f'{ConfigLoader.get_config_path()}/logging.config.yaml'
+            logging_config_yaml = config_loader.get_path_from_id('logging')
+
         App.init_logging(logging.config, logging_config_yaml)
 
         if app_config_yaml is None:
-            app_config_yaml = f'{ConfigLoader.get_config_path()}/app.config.yaml'
-        config = ConfigLoader.load_from_path(app_config_yaml)
+            config = config_loader.load_app_config()
+        else:
+            config = ConfigLoader.load_from_path(app_config_yaml)
         agent_factory = AgentFactory(config)
-        return App(agent_factory, agent_inputs, config)
+        return App(config_loader, agent_factory, config)
 
     @staticmethod
     def init_logging(logging_config, yaml_file_path):
@@ -32,25 +37,30 @@ class App:
             logger.info(f'Done loading logging configuration from: {config_file}')
 
     def __init__(self,
+                 config_loader: ConfigLoader,
                  agent_factory: AgentFactory,
-                 agent_inputs: AgentInputs,
-                 config: dict[str, any]):
+                 config: dict[str, any] = None):
+        self.__config_loader = config_loader
         self.__agent_factory = agent_factory
-        self.__agent_inputs = agent_inputs
-        self.__config = config
+        self.__config = config_loader.load_app_config() if config is None else config
 
-    def run(self) -> ActionResultSet:
-        agent_names: list[str] = self.__config['agents']
-        execution_result: ActionResultSet = ActionResultSet()
+    def run(self, agent_names: Union[str, list[str], None] = None) -> AgentResultSet:
+
+        run_context: RunContext = RunContext.of_config(self.__config, agent_names)
+
         try:
-            for agent_name in agent_names:
-                agent = self.__agent_factory.get_agent(agent_name)
+            for agent_name in run_context.get_agent_names():
+
+                agent_config = self.__config_loader.load_agent_config(agent_name)
+                agent_config = run_context.replace_variables(agent_config)
+
+                agent = self.__agent_factory.get_agent(agent_name, agent_config)
                 logger.debug(f"Starting agent: {agent_name}")
 
-                curr_result: ActionResultSet = agent.run(self.__agent_inputs.get(agent_name))
+                agent.run(run_context)
 
-                logger.debug(f"Result: {curr_result}, agent: {agent_name}")
-                execution_result.add_all(curr_result)
+                logger.debug(f"Agent: {agent_name}, result:\n{run_context.get_stage_results(agent_name)}")
+
         except Exception as ex:
             logger.exception(ex)
-        return execution_result
+        return run_context.get_result_set().close()

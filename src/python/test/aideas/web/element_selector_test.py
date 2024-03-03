@@ -3,7 +3,7 @@ import unittest
 from ....main.aideas.web.element_selector import ElementSelector
 from ....main.aideas.web.element_search_config import ElementSearchConfig
 
-from ..test_functions import create_webdriver, get_agent_resource, load_app_config
+from ..test_functions import create_webdriver, get_agent_resource
 from .noop_cookie_store import NoopCookieStore
 
 
@@ -45,8 +45,9 @@ class ElementSelectorTest(unittest.TestCase):
 
 
 def get_element_selector() -> ElementSelector:
-    webdriver = create_webdriver(load_app_config())
-    return ElementSelector(webdriver, 10, NoopCookieStore(webdriver))
+    webdriver = create_webdriver()
+    return ElementSelector(webdriver, 10,
+                           NoopCookieStore(webdriver, "test-domain"))
 
 
 if __name__ == '__main__':

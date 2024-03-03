@@ -1,9 +1,10 @@
 import logging
-from typing import Callable, Tuple
+from typing import Tuple
 
-from selenium.webdriver import ActionChains
+from selenium.webdriver import ActionChains, Keys
 from selenium.webdriver.remote.webelement import WebElement
 
+from .action_handler import execute_for_result
 from .browser_action_handler import BrowserActionHandler, WEB_DRIVER
 from ..action.action import Action
 from ..action.action_result import ActionResult
@@ -27,20 +28,22 @@ class ElementActionHandler(BrowserActionHandler):
         name: str = action.get_name()
         driver = self.get_web_driver()
         if name == 'click':
-            result = self.__execute_for_result(lambda arg: arg.click(), element, action)
+            result = execute_for_result(lambda arg: arg.click(), element, action)
         elif name == 'click_and_hold':
             def click_and_hold(tgt: WebElement):
                 ActionChains(driver).click_and_hold(tgt).perform()
 
-            result = self.__execute_for_result(click_and_hold, element, action)
+            result = execute_for_result(click_and_hold, element, action)
         elif name == 'click_and_hold_current_position':
             def click_and_hold_current_position(tgt: WebElement):
                 ActionChains(driver).click_and_hold(None).perform()
 
-            result = self.__execute_for_result(click_and_hold_current_position, element, action)
+            result = execute_for_result(click_and_hold_current_position, element, action)
+        elif name == 'enter':
+            result = execute_for_result(lambda arg: arg.send_keys(Keys.ENTER), element, action)
         elif name == 'enter_text':
             text: str = ' '.join(action.get_args())
-            result = self.__execute_for_result(lambda arg: arg.send_keys(text), element, action)
+            result = execute_for_result(lambda arg: arg.send_keys(text), element, action)
         elif name == 'get_text':
             result = ActionResult(action, True, element.text)
         elif name == 'is_displayed':
@@ -53,34 +56,21 @@ class ElementActionHandler(BrowserActionHandler):
                 ActionChains(driver).move_to_element_with_offset(
                     tgt, offset[0], offset[1]).perform()
 
-            result = self.__execute_for_result(move_to_center_offset, element, action)
+            result = execute_for_result(move_to_center_offset, element, action)
         elif name == 'move_to_element':
             def move_to_element(tgt: WebElement):
                 ActionChains(driver).move_to_element(tgt).perform()
 
-            result = self.__execute_for_result(move_to_element, element, action)
+            result = execute_for_result(move_to_element, element, action)
         elif name == 'release':
             def release(tgt: WebElement):
                 ActionChains(driver).release(tgt).perform()
 
-            result = self.__execute_for_result(release, element, action)
+            result = execute_for_result(release, element, action)
         else:
             return super().execute(action)  # Success state has already been printed
-        logger.debug(f"{result}")
+        logger.debug(f'{result}')
         return result
-
-    def __execute_for_result(self,
-                             func: Callable[[any], any],
-                             arg: any,
-                             action: Action) -> ActionResult:
-        result = None
-        try:
-            result = func(arg)
-        except Exception as ex:
-            logger.warning(f'{str(ex)}')
-            return ActionResult(action, False, result)
-        else:
-            return ActionResult(action, True, result)
 
     def __get_offset(self, args: list[str]) -> Tuple[int, int]:
         return int(args[0]), int(args[1])

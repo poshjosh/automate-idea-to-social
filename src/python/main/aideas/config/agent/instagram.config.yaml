@@ -1,0 +1,113 @@
+stages:
+  # Direct login did not work for me, probably 'cos I signed up via facebook
+  # So, after this stage, we add a stage to login via facebook
+  login:
+    url: https://www.instagram.com/
+    events:
+      onerror: continue
+    ui:
+      decline-optional-cookies:
+        events:
+          onerror: continue
+        search-x-paths:
+          - /html/body/div[4]/div[1]/div/div[2]/div/div/div/div/div[2]/div/button[2]
+          - /html/body/div[4]/div[1]/div/div[2]/div/div/div/div/div[2]/div/button[contains(text(), 'cookies')]
+      username:
+        search-x-paths: //*[@id="loginForm"]/div/div[1]/div/label/input
+        actions: enter_text $instagram.user.name
+      password:
+        search-x-paths: //*[@id="loginForm"]/div/div[2]/div/label/input
+        actions: enter_text $instagram.user.pass
+      submit:
+        search-x-paths: //*[@id="loginForm"]/div/div[3]/button
+        actions:
+          - click
+          - wait 7
+  login-via-facebook:
+    # We need this url here because we are redirected to fb
+    # and if the first attempt fails we retry
+    url: https://www.instagram.com/
+    events:
+      onerror:
+        - wait 2
+        - retry 1
+    ui:
+      proceed-to-facebook-login:
+        search-x-paths:
+          - //*[@id="loginForm"]/div/div[contains(text(), "Facebook")]
+          - //*[@id="loginForm"]/div/div[5]/button[contains(text(), "Facebook")]
+          - //*[@id="loginForm"]/div/div[5]
+      facebook-reject-optional-cookies:
+        search-x-paths: //*[@id="u_0_g_ZK"]
+      facebook-username:
+        search-x-paths: //*[@id="email"]
+        actions: enter_text $facebook.user.name
+      facebook-password:
+        search-x-paths: //*[@id="pass"]
+        actions: enter_text $facebook.user.pass
+      facebook-login:
+        search-x-paths: //*[@id="loginbutton"]
+        actions:
+          - click
+          - wait 10 # Some time before we are redirected to instagram
+  dismiss-notifications-alert:
+    events:
+      onerror: continue
+    ui:
+      dismiss-notifications:
+        search-x-paths: /html/body/div[3]/div[1]/div/div[2]/div/div/div/div/div[2]/div/div/div[3]/button[2]
+  proceed-to-post:
+    ui:
+      click-create:
+        search-x-paths:
+          - //*[@id="mount_0_0_NL"]/div/div/div[2]/div/div/div[1]/div[1]/div[1]/div/div/div/div/div[2]/div[7]/div/span/div/a
+          - //*[@id="mount_0_0_NL"]/div/div/div[2]/div/div/div[1]/div[1]/div[1]/div/div/div/div/div[2]/div[7]/div/span/div/a/div
+      add-video:
+        search-x-paths:
+          - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[2]/div[1]/form/input
+          - //form[@enctype="multipart/form-data" and @role="presentation"]/input
+        actions:
+          # Use the first result from the specified agent.stage.stage-item
+          #- enter_text $results.pictory.download-video-layout-3.get-file[0]
+          - get_first_file ${agent.dir}/pictory/download-video-layout-3/save-file $video.output.type
+          - enter_text $results.me[0]
+          - wait 7
+      dismiss-alert:
+        events:
+          onerror: continue
+        search-x-paths: /html/body/div[6]/div[2]/div/div/div[1]/div/div[2]/div/div/div/div/div[2]/div/div/div[3]/div/div[4]/button
+      proceed-to-edit:
+        search-x-paths:
+          - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[1]/div/div/div/div[3]/div
+          - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[1]/div/div/div/div[3]/div/div
+      add-cover-photo:
+        events:
+          onerror: continue
+        search-x-paths: /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[2]/div[2]/div/div/div/div/div[1]/div[1]/div/div/form/input
+        actions:
+          - enter_text $video.cover.image.square
+          - wait 5
+      proceed-to-content:
+        search-x-paths:
+          - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[1]/div/div/div/div[3]
+          - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[1]/div/div/div/div[3]/div
+          - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[1]/div/div/div/div[3]/div/div
+      enter-content:
+        search-x-paths:
+          - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[2]/div[2]/div/div/div/div[1]/div[2]/div/div[1]/div[1]
+          - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[2]/div[2]/div/div/div/div[1]/div[2]/div/div[1]/div[1]/p
+        actions: enter_text $video.description
+      submit:
+        search-x-paths:
+          - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[1]/div/div/div/div[3]
+          - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[1]/div/div/div/div[3]/div
+          - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[1]/div/div/div/div[3]/div/div
+      wait-till-posted:
+        events:
+          onerror: continue
+        search-x-paths:
+          - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[2]/div[1]/div/div[2]/div[contains(text(), 'shared')]
+          - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[2]/div[1]/div/div[2]/div/span[contains(text(), 'shared')]
+          - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[1]/div/div/div/div[1]/h1[contains(text(), 'shared')]
+          - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[1]/div/div/div/div[1]/h1/div[contains(text(), 'shared')]
+        actions: none

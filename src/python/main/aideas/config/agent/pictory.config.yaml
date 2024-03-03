@@ -1,20 +1,18 @@
 define:
-  &default_wait 'wait 5'
-browser:
-  chrome:
-    prefs:
-      download.default_directory: /Users/chinomso/dev_chinomso/automate-idea-to-social/src/python/main/resources/pictory
+  &default_wait 'wait 3'
 interval-seconds: 1
 stages:
   login:
     url: https://app.pictory.ai/login
     ui:
-      default-actions: # Applicable to all elements for which none is specified
-        - enter_text
-      username: //*[@id="mui-1"]
-      password: //*[@id="outlined-adornment-password"]
-      submit:
-        xpath:
+      username:
+        search-x-paths: //*[@id="mui-1"]
+        actions: enter_text $pictory.user.name
+      password:
+        search-x-paths: //*[@id="outlined-adornment-password"]
+        actions: enter_text $pictory.user.pass
+      submit-login:
+        search-x-paths:
           search-from: //form
           search-for: //*[@type="submit"]
         actions:
@@ -28,46 +26,80 @@ stages:
         - retry 1
     ui:
       select-script-input:
-        xpath: //*[@id="root"]/div[1]/div[4]/div[1]/div[3]/div[1]/div[1]/div[3]/button
+        search-x-paths: //*[@id="root"]/div[1]/div[4]/div[1]/div[3]/div[1]/div[1]/div[3]/button
       title:
-        xpath: //*[@id="root"]/div[1]/div[4]/div/main/div/div/div[4]/input
-        actions: enter_text
+        search-x-paths: //*[@id="root"]/div[1]/div[4]/div/main/div/div/div[4]/input
+        actions: enter_text $video.title
       text:
-        xpath: //*[@id="root"]/div[1]/div[4]/div/main/div/div/div[5]
+        search-x-paths: //*[@id="root"]/div[1]/div[4]/div/main/div/div/div[5]
         actions:
-          - enter_text
-          # Without this we got redirected back
-          # Probably because submit button is only enabled a short while after entering text
+          - enter_text $video.description
+          # Without this we got redirected back probably because
+          # submit button is only enabled a short while after entering text
           - wait 5
       script-input-submit:
-        xpath: //*[@id="root"]/div[1]/div[4]/div/main/div/div/div[2]/span[2]/div/div[2]/button[contains(text(), "Proceed")]
+        search-x-paths: //*[@id="root"]/div[1]/div[4]/div/main/div/div/div[2]/span[2]/div/div[2]/button[contains(text(), "Proceed")]
         actions:
           - click
-          - wait 15 # TODO - Change to 30, also check if we event need this
-  branding:
+          - wait 15 # TODO - Change to 30, also check if we even need this
+  add-cover-image:
     url: https://app.pictory.ai/storyboard/scripttovideo
+    events:
+      onerror: continue
+    ui:
+      select-first-scene:
+        search-x-paths:
+          - //*[@id="AllSceneTitleText_1_1"]
+          - //*[@id="AllSceneTitleText_1_1"]/span[1]
+      select-visuals-tab:
+        search-x-paths:
+          - //*[@id="visuals"]
+          - //*[@id="side-navbar"]/ul/li[contains(text(), "Visuals")]
+      select-uploads-button:
+        search-x-paths: //*[@id="step-3-fixed-height"]/div[1]/div/div[2]/div[1]/div[1]/div/div/div/button[contains(text(), "uploads")]
+      enter-cover-image:
+        search-x-paths:
+          - //*[@id="file"]
+          - //*[@id="tbinner-3"]/div/div[2]/div/div[1]/div/div/div[1]/form/div/input[@type="file"]
+        actions:
+          - enter_text $video.cover.image
+          - wait 2
+      click-save:
+        search-x-paths:
+          - //*[@id="UploadImageModel"]/div/div/div/div[2]/div[2]/button
+          - //*[@id="UploadImageModel"]/div/div/*[contains(text(), "Save")]
+        actions:
+          - click
+          - wait 15 # Actual upload happens here
+      select-uploaded-cover:
+        search-x-paths:
+          - //*[@id="tbinner-3"]/div/div[2]/div/div[1]/div/div/div[2]/div/div[1]/a
+          - //*[@id="tbinner-3"]/div/div[2]/div/div[1]/div/div/div[2]/div/div[1]/a/div
+          - //*[@id="tbinner-3"]/div/div[2]/div/div[1]/div/div/div[2]/div/div[1]/a/div/img
+  branding:
     ui:
       branding-tab:
-        xpath: //*[@id="templates-tab"]
+        search-x-paths: //*[@id="templates-tab"]
         actions:
           - click
       expand-brand-options:
-        xpath: //*[@id="step-3-fixed-height"]/div[1]/div/div[6]/div/div[1]/div[1]/div/div/div
+        search-x-paths: //*[@id="step-3-fixed-height"]/div[1]/div/div[6]/div/div[1]/div[1]/div/div/div
       select-brand:
         # We first identify the brand by its name, then we work upwards to the selectable element
-        xpath: //*[@id="menu-"]/div[3]/ul/li[2]/div/div/div[2]/span[contains(text(), "LiveAbove3D")]//..//..//..//..
+        # TODO Variables in yaml. Then LiveAbove3D should be a variable
+        search-x-paths: //*[@id="menu-"]/div[3]/ul/li[2]/div/div/div[2]/span[contains(text(), "LiveAbove3D")]//..//..//..//..
       accept-brand-changes-prompt:
         events:
           onerror: continue
-        xpath: /html/body/div[11]/div[3]/div/div/p/div/div/div[2]/div/div[3]/div/div[2]/button[2]
+        search-x-paths: /html/body/div[11]/div[3]/div/div/p/div/div/div[2]/div/div[3]/div/div[2]/button[2]
       select-brand-background-music:
-        xpath: //*[@id="step-3-fixed-height"]/div[1]/div/div[6]/div/div[2]/div[3]/div/div/div/div/span[contains(text(), "Savage Grace")]//..
+        search-x-paths: //*[@id="step-3-fixed-height"]/div[1]/div/div[6]/div/div[2]/div[3]/div/div/div/div/span[contains(text(), "Savage Grace")]//..
         actions:
           - click
-          - wait 2
+          - wait 3
       select-brand-voice:
         #      //*[@id="step-3-fixed-height"]/div[1]/div/div[6]/div/div[2]/div[4]/div/div/div/div
-        xpath: //*[@id="step-3-fixed-height"]/div[1]/div/div[6]/div/div[2]/div[4]/div/div/div/div/span[contains(text(), "Daniel")]//..
+        search-x-paths: //*[@id="step-3-fixed-height"]/div[1]/div/div[6]/div/div[2]/div[4]/div/div/div/div/span[contains(text(), "Daniel")]//..
         actions:
           - move_to_center_offset 18 18
           - click_and_hold_current_position
@@ -81,23 +113,23 @@ stages:
           onerror: continue
         # There will be some default waiting for this element to appear
         wait-timeout-seconds: 45  # TODO - Change to 120
-        xpath: /div/div[contains(text(), "applied")]
+        search-x-paths: /div/div[contains(text(), "applied")]
   download-video:
     ui:
       expand-download-options:
-        xpath: //*[@id="generate-button-dropdown"]/a
+        search-x-paths: //*[@id="generate-button-dropdown"]/a
         actions:
           - move_to_element
       select-video-download:
-        xpath: //*[@id="btnGenerate"]
-      download-video:
+        search-x-paths: //*[@id="btnGenerate"]
+      begin-download:
         wait-timeout-seconds: 600
-        xpath: /html/body/div[10]/div[3]/div/div[3]/div[2]/button
+        search-x-paths: /html/body/div[10]/div[3]/div/div[3]/div[2]/button
         actions:
           - click
           - *default_wait
       close-download-notice:
-        xpath: /html/body/div[10]/div[3]/div/div[1]/*[name()="svg"]
+        search-x-paths: /html/body/div[10]/div[3]/div/div[1]/*[name()="svg"]
         actions:
           - click
           - wait 2
@@ -105,44 +137,54 @@ stages:
           - wait 2
       close-download-alert:
         when:
-          xpath: //*[@id="notification-bell-dropdown"]/ul/div/div[1]/span[contains(text(), "Notifications")]//..
+          search-x-paths: //*[@id="notification-bell-dropdown"]/ul/div/div[1]/span[contains(text(), "Notifications")]//..
           actions: is_displayed
           events:
             onerror: continue
-        xpath: //*[@id="notification-bell-dropdown"]
+        search-x-paths: //*[@id="notification-bell-dropdown"]
         actions:
           - click
           - wait 2
+  save-downloaded-video:
+    ui:
+      get-file:
+        actions: get_newest_file_in_dir $video.output.dir $video.output.type 120
+      save-file:
+        # By saving the file, other agents may access it from the local disc
+        # event when pictory run context is no longer available
+        # Will be saved to /pictory-dir/stage/stage-item/original-file-name.extension
+        # E.g. main/resources/agent/pictory/save-downloaded-video/save-file/original.mp4
+        actions: save_file $results.pictory.save-downloaded-video.get-file[0]
   download-video-layout-2:
     events:
-      onsuccess: run_stages download-video
+      onsuccess: run_stages download-video save-downloaded-video
     ui:
       expand-layout-2-options:
-        xpath: //*[@id="step-3-fixed-height"]/div[2]/div[1]/div/div[2]/div/div/div[2]/div/div/div
+        search-x-paths: //*[@id="step-3-fixed-height"]/div[2]/div[1]/div/div[2]/div/div/div[2]/div/div/div
       select-layout-2:
-        xpath: //*[@id="menu-"]/div[3]/ul/li[2]
+        search-x-paths: //*[@id="menu-"]/div[3]/ul/li[2]
         actions:
           - click
-          - wait 30
+          - wait 6  # An 8 mb video took 2 seconds
   download-video-layout-3:
     events:
-      onsuccess: run_stages download-video
+      onsuccess: run_stages download-video save-downloaded-video
     ui:
       expand-layout-3-options:
-        xpath: //*[@id="step-3-fixed-height"]/div[2]/div[1]/div/div[2]/div/div/div[2]/div/div/div
+        search-x-paths: //*[@id="step-3-fixed-height"]/div[2]/div[1]/div/div[2]/div/div/div[2]/div/div/div
       select-layout-3:
-        xpath: //*[@id="menu-"]/div[3]/ul/li[3]
+        search-x-paths: //*[@id="menu-"]/div[3]/ul/li[3]
         actions:
           - click
-          - wait 30
+          - wait 6  # An 8 mb video took 2 seconds
   download-subtitles:
     url: https://app.pictory.ai/myvideos
     ui:
       click-first-project:
-        xpath: //*[@id="h-tb1"]/div/div/div/div/div[1]/div[2]/div/div[1]/div[2]/div/div/div[1]
+        search-x-paths: //*[@id="h-tb1"]/div/div/div/div/div[1]/div[2]/div/div[1]/div[2]/div/div/div[1]
       download-subtitles-file:
         wait-timeout-seconds: 7
-        xpath: //*[@id="h-tb1"]/div/div/div/div/div[1]/div[4]/div/div/div/div/div/div[2]/div[2]/*[name()="svg"]
+        search-x-paths: //*[@id="h-tb1"]/div/div/div/div/div[1]/div[4]/div/div/div/div/div/div[2]/div[2]/*[name()="svg"]
         actions:
           - click
           - wait 5

@@ -1,8 +1,11 @@
 import logging
+import os
 from typing import TypeVar, Union
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+
+from ..env import Env
 
 logger = logging.getLogger(__name__)
 
@@ -17,8 +20,8 @@ class WebDriverCreator:
         option_args: list[str] = chrome_config['options']['args']
         preferences = {}
         preferences.update(chrome_config.get('prefs', {}))
-        if agent_config is not None:
-            preferences.update(agent_config.get('browser', {}).get('chrome', {}).get('prefs', {}))
+        output_dir = os.path.join(os.getcwd(), config[Env.VIDEO_OUTPUT_DIR.value])
+        preferences.update({'download.default_directory': output_dir})
         remote_dvr_location: str = config['selenium.webdriver.url'] \
             if 'selenium.webdriver.url' in config else None
         return WebDriverCreator.__create(
@@ -26,9 +29,9 @@ class WebDriverCreator:
 
     @staticmethod
     def __create(executable_path: str,
-           option_args: list[str],
-           prefs: dict[str, str],
-           remote_browser_location: str = '') -> WEB_DRIVER:
+                 option_args: list[str],
+                 prefs: dict[str, str],
+                 remote_browser_location: str = '') -> WEB_DRIVER:
         logger.debug(f'Will create browser with\nprefs: {prefs}\noptions: {option_args}')
         options = Options()
         if option_args is not None:

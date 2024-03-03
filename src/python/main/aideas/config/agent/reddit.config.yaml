@@ -1,0 +1,106 @@
+stages:
+  login:
+    url: https://www.reddit.com
+    ui:
+# TODO - Try and accept cookies
+#      accept-cookies:
+#        events:
+#          onerror: continue
+#        search-shadow-attr: id reject-nonessential-cookies-button
+#        search-x-paths:
+#          - //*[@id="reject-nonessential-cookies-button"]
+#          - //*[@id="reject-nonessential-cookies-button"]/button
+#          - //*[@id="reject-nonessential-cookies-button"]/button/span
+#          - //*[@id="reject-nonessential-cookies-button"]/button/span/span
+#        actions:
+#          - click
+#          - wait 2
+      proceed-to-login:
+        search-x-paths: //*[@id="login-button"]
+        actions:
+          - click
+          - wait 2
+      enter-user-name:
+        search-x-paths: //*[@id="login-username"]
+        actions:
+          - enter_text $reddit.user.name
+      enter-password:
+        search-x-paths: //*[@id="login-password"]
+        actions:
+          - enter_text $reddit.user.pass
+          - wait 2 # The button becomes clickable after both are entered
+      # The target element resides within a shadow DOM, XPath will not work.
+      # See: https://stackoverflow.com/questions/37384458/how-to-handle-elements-inside-shadow-dom-from-selenium
+      # See: https://stackoverflow.com/questions/77636171/i-cant-click-log-in-button-in-reddit-login-screen-with-selenium
+      submit-login:
+        search-shadow-attr: slot primaryButton
+        actions:
+          - click
+          - wait 8
+  dismiss-alerts:
+    # TODO Variables in yaml. Then r/live_above_3d should be a variable
+    url: https://www.reddit.com/r/live_above_3d/submit
+    ui:
+      dismiss-cookies-alert:
+        events:
+          onerror: continue
+        search-x-paths:
+          - //*[@id="SHORTCUT_FOCUSABLE_DIV"]/div[3]/div/section/div/section[2]/section[2]/form/button
+          - //button[contains(text(), "Reject non-essential")]
+      dismiss-collection-alert-by-clicking-x:
+        events:
+          onerror: continue
+        search-x-paths:
+          - //*[@id="SHORTCUT_FOCUSABLE_DIV"]/div[4]/div/div/div/div[1]/*[name()="svg"]
+          - //*[@id="SHORTCUT_FOCUSABLE_DIV"]/div[4]/div/div/div/div[1]
+      dismiss-collection-alert-by-clicking-cancel:
+        events:
+          onerror: continue
+        search-x-paths: //*[@id="SHORTCUT_FOCUSABLE_DIV"]/div[4]/div/div/div/footer/div/button[1]
+  title:
+    # TODO Variables in yaml. Then r/live_above_3d should be a variable
+    url: https://www.reddit.com/r/live_above_3d/submit
+    ui:
+      enter-title:
+        search-x-paths: //*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[2]/div[3]/div[2]/div[1]/div/textarea
+        actions:
+          - enter_text $video.title
+  cover-image:
+    events:
+      onerror: continue
+    ui:
+      add-cover-image:
+        search-x-paths: //*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[2]/div[3]/div[2]/div[2]/div/div/div[1]/div[1]/div/span[16]/button/input[@type="file"]
+        actions:
+          - enter_text $video.cover.image
+          - wait 5
+      enter-cover-image-caption:
+        search-x-paths:
+          # //*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[2]/div[3]/div[2]/div[2]/div/div/div[3]/div/div[1]/div/div/div/div/div[2]/div/div/span
+          - //*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[2]/div[3]/div[2]/div[2]/div/div/div[3]/div/div[1]/div/div/div/div/div[2]
+          - //*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[2]/div[3]/div[2]/div[2]/div/div/div[3]/div/div[1]/div/div/div/div/div[2]/div
+          - //*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[2]/div[3]/div[2]/div[2]/div/div/div[3]/div/div[1]/div/div/div/div/div[2]/div/div
+        actions:
+          - enter_text $video.title
+          - wait 2
+  content:
+    ui:
+      enter-content:
+        search-x-paths:
+          # //*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[2]/div[3]/div[2]/div[2]/div/div/div[3]/div/div[1]/div/div/div/div/div/div[1]/div
+          - //*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[2]/div[3]/div[2]/div[2]/div/div/div[3]/div/div[1]/div/div/div/div
+          - //*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[2]/div[3]/div[2]/div[2]/div/div/div[3]/div/div[1]/div/div/div/div/div
+          - //*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[2]/div[3]/div[2]/div[2]/div/div/div[3]/div/div[1]/div/div/div/div/div/div[1]
+        actions:
+          - move_to_element
+          - enter
+          - enter_text $video.description
+          - wait 2
+  post:
+    ui:
+      post-content:
+        search-x-paths: //*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[2]/div[3]/div[3]/div[2]/div/div/div[1]/button[1]
+        actions:
+          - click
+          - wait 5
+
