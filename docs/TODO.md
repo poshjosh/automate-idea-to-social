@@ -1,3 +1,5 @@
+When we successfully find an element. We should update the xpath
+through which the element was found.
 Use a working.dir
 Make cookie location a variable
 Allow variables in yaml ${}

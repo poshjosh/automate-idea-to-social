@@ -30,6 +30,7 @@ class ActionHandler:
     ACTION_GET_NEWEST_FILE = 'get_newest_file_in_dir'
     ACTION_LOG = 'log'
     ACTION_SAVE_FILE = 'save_file'
+    ACTION_STARTS_WITH = 'starts_with'
     ACTION_WAIT = 'wait'
 
     @staticmethod
@@ -42,13 +43,15 @@ class ActionHandler:
         elif action.get_name() == ActionHandler.ACTION_GET_FILES:
             result: ActionResult = self.get_files(action)
         elif action.get_name() == ActionHandler.ACTION_GET_FIRST_FILE:
-            result: ActionResult = self.get_files(action)
+            result: ActionResult = self.get_first_file(action)
         elif action.get_name() == ActionHandler.ACTION_GET_NEWEST_FILE:
             result: ActionResult = self.get_newest_file_in_dir(action)
         elif action.get_name() == ActionHandler.ACTION_LOG:
             result: ActionResult = self.log(action)
         elif action.get_name() == ActionHandler.ACTION_SAVE_FILE:
             result: ActionResult = self.save_file(action)
+        elif action.get_name() == ActionHandler.ACTION_STARTS_WITH:
+            result: ActionResult = self.starts_with(action)
         elif action.get_name() == ActionHandler.ACTION_WAIT:
             result: ActionResult = self.wait(action)
         else:
@@ -103,10 +106,23 @@ class ActionHandler:
         return execute_for_result(lambda arg: shutil.copy2(src, tgt), src, action)
 
     @staticmethod
+    def starts_with(action: Action) -> ActionResult:
+        args: [str] = action.get_args()
+        value: str = args[0]
+        prefixes: [str] = args[1:]
+        for prefix in prefixes:
+            if value.startswith(prefix):
+                return ActionResult(action, True, prefix)
+        return ActionResult(action, False)
+
+    @staticmethod
     def get_first_file(action: Action) -> ActionResult:
-        files: list[str] = ActionHandler.get_files(action).get_result()
-        result = None if len(files) == 0 else files[0]
-        return ActionResult(action, result is not None, result)
+        files_result: ActionResult = ActionHandler.get_files(action)
+        if not files_result.is_success():
+            return files_result
+        files: list[str] = files_result.get_result()
+        first_file = None if files is None or len(files) == 0 else files[0]
+        return ActionResult(action, first_file is not None, first_file)
 
     @staticmethod
     def get_files(action: Action) -> ActionResult:

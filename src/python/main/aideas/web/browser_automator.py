@@ -1,10 +1,11 @@
 import logging
+from collections import OrderedDict
 from typing import List, Union
 
 from selenium.webdriver.remote.webelement import WebElement
 
 from .element_search_config import ElementSearchConfig
-from .element_selector import ElementSelector
+from .element_selector import ElementNotFoundError, ElementSelector
 from .webdriver_creator import WEB_DRIVER, WebDriverCreator
 from ..action.action import Action
 from ..action.action_result import ActionResult
@@ -12,11 +13,13 @@ from ..action.action_signatures import DEFAULT_ACTIONS_KEY, element_action_signa
 from ..action.element_action_handler import ElementActionHandler
 from ..config.name import Name
 from ..result.element_result_set import ElementResultSet
-from ..result.stage_result_set import StageResultSet
-from ..event.event_handler import EventHandler
+from ..event.event_handler import EventHandler, ON_START
 from ..run_context import RunContext
 
 logger = logging.getLogger(__name__)
+
+
+WHEN_KEY = 'when'
 
 
 class BrowserAutomator:
@@ -57,18 +60,17 @@ class BrowserAutomator:
                         stage_name: Name,
                         run_context: RunContext) -> ElementResultSet:
         stage_config: dict[str, any] = stages_config[stage_name.value]
-        link: str = stage_config.get('url', self.__webdriver.current_url)
 
-        body_elements: List[WebElement] = self.__element_selector.load_page_bodies(link)
+        body_elements: List[WebElement] = self.__load_page_bodies(stage_config, run_context)
 
-        elem_parent_cfg: dict[str, any] = stage_config['ui']
+        elem_parent_cfg: dict[str, any] = self.__ui_config(stage_config)
 
         for key in elem_parent_cfg.keys():
             if key == DEFAULT_ACTIONS_KEY:
                 continue
 
             to_proceed = self.__may_proceed(
-                stage_name.alias, body_elements[0], elem_parent_cfg, key, run_context)
+                stage_config, stage_name.alias, key, body_elements[0], run_context)
 
             if not to_proceed:
                 logger.debug(f"Skipping actions for: "
@@ -80,18 +82,43 @@ class BrowserAutomator:
 
         return run_context.get_element_results(self.__agent_name, stage_name.alias)
 
+    def stage_may_proceed(self,
+                          stage_config: dict[str, any],
+                          stage_id: str,
+                          run_context: RunContext) -> bool:
+        page_bodies: List[WebElement] = self.__load_page_bodies(stage_config, run_context)
+        return self.__may_proceed(stage_config, stage_id, WHEN_KEY, page_bodies[0], run_context)
+
+    def __load_page_bodies(self,
+                           stage_config: dict[str, any],
+                           run_context: RunContext) -> List[WebElement]:
+        link: str = stage_config.get('url', self.__webdriver.current_url)
+        body_elements: List[WebElement] = self.__element_selector.load_page_bodies(link)
+        run_context.set_current_url(link)
+        return body_elements
+
     def __may_proceed(self,
+                      stage_config: dict[str, any],
                       stage_id: str,
+                      element_name: str,
                       body_element: WebElement,
-                      elem_parent_cfg: dict[str, any], element_name: str,
                       run_context: RunContext) -> bool:
-        # This key does not have to be unique, since it is not included in the result set
-        when_key = 'when'
-        when_config = None if type(elem_parent_cfg[element_name]) is str \
-            else elem_parent_cfg[element_name].get(when_key)
-        return True if when_config is None else self.__act_on_element(
-            stage_id, body_element, elem_parent_cfg[element_name],
-            when_key, run_context).is_successful()
+        # WHEN_KEY does not have to be unique, since it is not included in the result set        ui_config =
+        # when_config = None if type(ui_config[element_name]) is str \
+        #     else ui_config[element_name].get(WHEN_KEY)
+        when_elem_parent_cfg = stage_config if element_name == WHEN_KEY \
+            else self.__ui_config(stage_config).get(element_name)
+        if when_elem_parent_cfg is None or type(when_elem_parent_cfg) is not dict:
+            return True
+        if when_elem_parent_cfg.get(element_name) is None:
+            return True
+        return self.__act_on_element(
+            stage_id, body_element, when_elem_parent_cfg,
+            WHEN_KEY, run_context).is_successful()
+
+    @staticmethod
+    def __ui_config(config: dict[str, any]) -> dict[str, any]:
+        return config.get('ui', {})
 
     """
         ########################
@@ -103,6 +130,7 @@ class BrowserAutomator:
         # element-0: //*[@id="element-0"]
         # element-1: //*[@id="element-1"] 
     """
+
     def __act_on_element(self,
                          stage_id: str,
                          body_element: WebElement,
@@ -110,6 +138,16 @@ class BrowserAutomator:
                          element_name: str,
                          run_context: RunContext,
                          trials: int = 1) -> ElementResultSet:
+
+        def retry_event(_trials: int) -> ElementResultSet:
+            return self.__act_on_element(
+                stage_id, body_element, elem_parent_cfg, element_name, run_context, _trials)
+
+        def run_stages_event(context: RunContext,
+                             agent_to_stages: OrderedDict[str, [Name]]):
+            raise ValueError(f'Event: run_stages is not supported for: '
+                             f'{self.__path(stage_id, element_name)}')
+
         element_actions: list[str] = element_action_signatures(elem_parent_cfg, element_name)
         element_config: dict[str, any] = elem_parent_cfg[element_name]
         search_config = ElementSearchConfig.of(element_config)
@@ -117,6 +155,11 @@ class BrowserAutomator:
         exception = None
         result = ElementResultSet.none()
         try:
+
+            self.__event_handler.handle_event(
+                self.__agent_name, stage_id, ON_START, element_name,
+                element_config, run_stages_event, run_context)
+
             timeout = self.__wait_timeout_seconds if type(element_config) is not dict \
                 else element_config.get('wait-timeout-seconds', self.__wait_timeout_seconds)
 
@@ -126,20 +169,12 @@ class BrowserAutomator:
 
             result: ElementResultSet = self.__execute_all_actions(
                 stage_id, element, timeout, element_name, element_actions, run_context)
-        except Exception as ex:
+        except ElementNotFoundError as ex:
             exception = ex
 
-        def retry_action(_trials: int) -> ElementResultSet:
-            return self.__act_on_element(
-                stage_id, body_element, elem_parent_cfg, element_name, run_context, _trials)
-
-        def run_stages_action(context: RunContext, names: [str], aliases: [str]) -> StageResultSet:
-            raise ValueError(f'Event: run_stages is not supported for: '
-                             f'{self.__path(stage_id, element_name)}')
-
-        result = self.__event_handler.handle_terminal_event(
-            self.__agent_name, stage_id, exception, result, elem_parent_cfg,
-            element_name, retry_action, run_stages_action, run_context, trials)
+        result = self.__event_handler.handle_result_event(
+            self.__agent_name, stage_id, exception, result, element_name,
+            element_config, retry_event, run_stages_event, run_context, trials)
 
         return ElementResultSet.none() if result is None else result
 
@@ -157,8 +192,11 @@ class BrowserAutomator:
         for action_signature in action_signatures:
             action = Action.of(
                 self.__agent_name, stage_id, target_id, action_signature, run_context)
+
             result: ActionResult = action_handler.execute_on(action, element)
+
             run_context.add_action_result(self.__agent_name, stage_id, result)
+
         # Don't close yet
         return run_context.get_element_results(self.__agent_name, stage_id)
 

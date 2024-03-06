@@ -1,3 +1,5 @@
+# Facebook ids (starting with 'u_' or 'mount_') are dynamic,
+# so we use starts-with to match the first part of the id
 stages:
   login:
     url: https://www.facebook.com/
@@ -6,7 +8,7 @@ stages:
         events:
           onerror: continue
         search-x-paths:
-          - //*[@id="u_0_j_ew"]
+          - //*[starts-with(@id, "u_0_j_")]
           - //*[@id="facebook"]/body/div[3]/div[2]/div/div/div/div/div[4]/button[contains(text(), "cookies")]
       fill-username:
         search-x-paths: //*[@id="email"]
@@ -16,57 +18,54 @@ stages:
         actions: enter_text $facebook.user.pass
       click-login:
         search-x-paths:
-          - //*[@id="u_0_5_Wy"]
-          - //*[@id="u_0_2_ei"]/div[2]/button[contains(text(), "Log")]
+          - //*[starts-with(@id, "u_0_2_")]/div[2]/button[contains(text(), "Log")]
+          - //*[starts-with(@id, "u_0_2_")]//button[contains(text(), "Log")]
+          - //*[starts-with(@id, "u_0_5_")]
       wait-till-logged-in:
         events:
           onerror: continue
         search-x-paths:
-          - //*[@id="mount_0_0_yP"]/div/div[1]/div/div[2]/div[1]/a
-          - //*[@id="mount_0_0_yP"]/div/div[1]/div/div[2]/div[1]/a/*[name()="svg"]
+          - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[2]/div[1]/a
+          - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[2]/div[1]/a/*[name()="svg"]
         actions: none
   post-content:
     url: https://www.facebook.com/me/ # Takes us to the current logged-in user profile
     ui:
       click-post-textarea:
         search-x-paths:
-          - //*[@id="mount_0_0_yP"]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[4]/div[2]/div/div[2]/div[1]/div/div/div/div/div[1]/div
-          - //*[@id="mount_0_0_yP"]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[4]/div[2]/div/div[2]/div[1]/div/div/div/div/div[1]/div/div[1]
-          - //*[@id="mount_0_0_yP"]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[4]/div[2]/div/div[2]/div[1]/div/div/div/div/div[1]/div/div[1]/span
+          - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[4]/div[2]/div/div[2]/div[1]/div/div/div/div/div[1]/div
+          - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[4]/div[2]/div/div[2]/div[1]/div/div/div/div/div[1]/div/div[1]
+          - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[4]/div[2]/div/div[2]/div[1]/div/div/div/div/div[1]/div/div[1]/span
         actions:
           - move_to_element
           - enter
       display-add-photo-or-video-options: # same input accepts either photo or video
         search-x-paths:
-          - //*[@id="mount_0_0_yP"]/div/div[1]/div/div[4]/div/div/div[1]/div/div[2]/div/div/div/form/div/div[1]/div/div/div/div[3]/div[1]/div[2]/div/div[1]/div/span
-          - //*[@id="mount_0_0_yP"]/div/div[1]/div/div[4]/div/div/div[1]/div/div[2]/div/div/div/form/div/div[1]/div/div/div/div[3]/div[1]/div[2]/div/div[1]/div/span/div
-          - //*[@id="mount_0_0_yP"]/div/div[1]/div/div[4]/div/div/div[1]/div/div[2]/div/div/div/form/div/div[1]/div/div/div/div[3]/div[1]/div[2]/div/div[1]/div/span/div/div
+          - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[4]/div/div/div[1]/div/div[2]/div/div/div/form/div/div[1]/div/div/div/div[3]/div[1]/div[2]/div/div[1]/div/span
+          - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[4]/div/div/div[1]/div/div[2]/div/div/div/form/div/div[1]/div/div/div/div[3]/div[1]/div[2]/div/div[1]/div/span/div
+          - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[4]/div/div/div[1]/div/div[2]/div/div/div/form/div/div[1]/div/div/div/div[3]/div[1]/div[2]/div/div[1]/div/span/div/div
       add-video-or-cover-photo:
         search-x-paths:
-          # Full x-path. However, for robustness, we search from a parent dialog for the only file input
-          # //*[@id="mount_0_0_yP"]/div/div[1]/div/div[4]/div/div/div[1]/div/div[2]/div/div/div/form/div/div[1]/div/div/div/div[2]/div[1]/div[2]/div/div[1]/div/div/input[@type="file"]
-          search-from: //*[@id="mount_0_0_yP"]/div/div[1]/div/div[4]/div/div/div[1]/div/div[2]/div/div/div
-          search-for: //input[@type="file"]
-          # We add the video downloaded by the specified agent.stage.stage-item
+          - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[4]/div/div/div[1]/div/div[2]/div/div/div/form/div/div[1]/div/div/div/div[2]/div[1]/div[2]/div/div[1]/div/div/input[@type="file"]
+          - //*[starts-with(@id, "mount_0_0_")]//input[@type="file"]
         actions:
           # Use the first result from the specified pictory download stage
-          #- enter_text $results.pictory.download-video.get-file[0]
-          - get_first_file ${agent.dir}/pictory/download-video/save-file $video.output.type
+          #- enter_text $results.pictory.save-downloaded-video.get-file[0]
+          - get_first_file ${agent.dir}/pictory/save-downloaded-video/save-file $video.output.type
           - enter_text $results.me[0]
           - wait 5
       enter-post-text:
         search-x-paths:
-          - //*[@id="mount_0_0_yP"]/div/div[1]/div/div[4]/div/div/div[1]/div/div[2]/div/div/div/form/div/div[1]/div/div/div/div[2]/div[1]/div[1]/div[1]/div/div
-          - //*[@id="mount_0_0_yP"]/div/div[1]/div/div[4]/div/div/div[1]/div/div[2]/div/div/div/form/div/div[1]/div/div/div/div[2]/div[1]/div[1]/div[1]/div/div/div[1]
-          - //*[@id="mount_0_0_yP"]/div/div[1]/div/div[4]/div/div/div[1]/div/div[2]/div/div/div/form/div/div[1]/div/div/div/div[2]/div[1]/div[1]/div[1]/div/div/div[1]/p
+          - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[4]/div/div/div[1]/div/div[2]/div/div/div/form/div/div[1]/div/div/div/div[2]/div[1]/div[1]/div[1]/div/div/div[1]
+          - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[4]/div/div/div[1]/div/div[2]/div/div/div/form/div/div[1]/div/div/div/div[2]/div[1]/div[1]/div[1]/div/div/div[1]/p
         actions:
           - enter_text $video.description
           - wait 2
       submit-post:
         search-x-paths:
-          - //*[@id="mount_0_0_yP"]/div/div[1]/div/div[4]/div/div/div[1]/div/div[2]/div/div/div/form/div/div[1]/div/div/div/div[3]/div[2]
-          - //*[@id="mount_0_0_yP"]/div/div[1]/div/div[4]/div/div/div[1]/div/div[2]/div/div/div/form/div/div[1]/div/div/div/div[3]/div[2]/div
-          - //*[@id="mount_0_0_yP"]/div/div[1]/div/div[4]/div/div/div[1]/div/div[2]/div/div/div/form/div/div[1]/div/div/div/div[3]/div[2]/div/div
+          - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[4]/div/div/div[1]/div/div[2]/div/div/div/form/div/div[1]/div/div/div/div[3]/div[2]
+          - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[4]/div/div/div[1]/div/div[2]/div/div/div/form/div/div[1]/div/div/div/div[3]/div[2]/div
+          - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[4]/div/div/div[1]/div/div[2]/div/div/div/form/div/div[1]/div/div/div/div[3]/div[2]/div/div
         actions:
           - click
-          - wait 120 # TODO - Update after test
+          - wait 10

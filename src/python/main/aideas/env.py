@@ -23,6 +23,10 @@ class Env(Enum):
     __translation = 'translation'
     TRANSLATION_OUTPUT_LANGUAGES = f'{__translation}.output.languages'
 
+    __blog_updater = 'blog_updater'
+    BLOG_UPDATER_SRC_URL = f'{__blog_updater}.src.url'
+    BLOG_UPDATER_DIR = f'{__blog_updater}.dir'
+
     __tiktok = 'tiktok'
     TIKTOK_USER_NAME = f'{__tiktok}.user.name'
     TIKTOK_USER_PASS = f'{__tiktok}.user.pass'

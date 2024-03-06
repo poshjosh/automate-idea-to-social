@@ -42,23 +42,25 @@ stages:
         search-x-paths: //*[@id="root"]/div/div/div/div[2]/div[2]/div[2]/div[1]/div/div[1]/div[2]/div/div/div/div/div/div/div/div/div/span/span
         actions:
           - enter_text $video.description
-  enter-video-cover-image-details:
-    events:
-      onerror: continue
-    ui:
-      proceed-to-edit-video-cover:
-        search-x-paths: //*[@id="root"]/div/div/div/div[2]/div[2]/div[2]/div[2]/div/div/*[name()="svg"]
-      select-to-upload-video-cover:
-        search-x-paths: //*[@id="portal-container"]/div/div/div[1]/div/div[1]/div[contains(text(), "Upload")]
-      send-video-cover-image:
-        search-x-paths: //*[@id="uploadTrigger"]
-        actions:
-          - enter_text $video.cover.image.square
-      submit-video-cover-image:
-        search-x-paths: //*[@id="portal-container"]/div/div/div[1]/div/div[2]/div[4]/button[contains(text(), "Confirm")]
-        actions:
-          - click
-          - wait 5 # The time it takes for the cover image to be uploaded
+# For tiktok, it is better to use the default cover (i.e. first scene), than to upload one
+# Our videos are generated with the first scene having the cover image.
+#  enter-video-cover-image-details:
+#    events:
+#      onerror: continue
+#    ui:
+#      proceed-to-edit-video-cover:
+#        search-x-paths: //*[@id="root"]/div/div/div/div[2]/div[2]/div[2]/div[2]/div/div/*[name()="svg"]
+#      select-to-upload-video-cover:
+#        search-x-paths: //*[@id="portal-container"]/div/div/div[1]/div/div[1]/div[contains(text(), "Upload")]
+#      send-video-cover-image:
+#        search-x-paths: //*[@id="uploadTrigger"]
+#        actions:
+#          - enter_text $video.cover.image.square
+#      submit-video-cover-image:
+#        search-x-paths: //*[@id="portal-container"]/div/div/div[1]/div/div[2]/div[4]/button[contains(text(), "Confirm")]
+#        actions:
+#          - click
+#          - wait 5 # The time it takes for the cover image to be uploaded
   submit-video:
     ui:
       click-submit-video:

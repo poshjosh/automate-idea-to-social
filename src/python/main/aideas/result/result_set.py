@@ -61,6 +61,9 @@ class ResultSet:
 
     def close(self) -> 'ResultSet':
         self.__closed = True
+        for result in self.__results.values():
+            if isinstance(result, ResultSet):
+                result.close()
         return self
 
     def is_empty(self) -> bool:

@@ -1,3 +1,7 @@
+# Instagram ids (starting with 'u_' or 'mount_') are dynamic,
+# so we use starts-with to match the first part of the id
+depends-on:
+  - facebook
 stages:
   # Direct login did not work for me, probably 'cos I signed up via facebook
   # So, after this stage, we add a stage to login via facebook
@@ -10,8 +14,10 @@ stages:
         events:
           onerror: continue
         search-x-paths:
-          - /html/body/div[4]/div[1]/div/div[2]/div/div/div/div/div[2]/div/button[2]
+          - /html/body//button[contains(text(), 'optional cookies')]
+          - /html/body//button[contains(text(), 'cookies')]
           - /html/body/div[4]/div[1]/div/div[2]/div/div/div/div/div[2]/div/button[contains(text(), 'cookies')]
+          - /html/body/div[4]/div[1]/div/div[2]/div/div/div/div/div[2]/div/button[2]
       username:
         search-x-paths: //*[@id="loginForm"]/div/div[1]/div/label/input
         actions: enter_text $instagram.user.name
@@ -23,10 +29,24 @@ stages:
         actions:
           - click
           - wait 7
+  # Facebook login page, after redirect from instagram login, displays url:        -
+  # https://www.facebook.com/login.php?skip_api_login=1&api_key=124024574287414&kid_directed_site=0&app_id=124024574287414&signed_next=1&next=https%3A%2F%2Fwww.facebook.com%2Fdialog%2Foauth%3Fclient_id%3D124024574287414%26locale%3Den_GB%26redirect_uri%3Dhttps%253A%252F%252Fwww.instagram.com%252Faccounts%252Fsignup%252F%26response_type%3Dcode%252Cgranted_scopes%26scope%3Demail%26state%3D%257B%2522fbLoginKey%2522%253A%2522rc8dad1d9l7sa11p3w3fwp8s881dljjum1g8ajym19uq20v1vjmuj%2522%252C%2522fbLoginReturnURL%2522%253A%2522%252Ffxcal%252Fdisclosure%252F%253Fnext%253D%25252F%2522%257D%26ret%3Dlogin%26fbapp_pres%3D0%26logger_id%3D70f94558-f628-4b9f-88d7-6ab20047953b%26tp%3Dunspecified&cancel_url=https%3A%2F%2Fwww.instagram.com%2Faccounts%2Fsignup%2F%3Ferror%3Daccess_denied%26error_code%3D200%26error_description%3DPermissions%2Berror%26error_reason%3Duser_denied%26state%3D%257B%2522fbLoginKey%2522%253A%2522rc8dad1d9l7sa11p3w3fwp8s881dljjum1g8ajym19uq20v1vjmuj%2522%252C%2522fbLoginReturnURL%2522%253A%2522%252Ffxcal%252Fdisclosure%252F%253Fnext%253D%25252F%2522%257D%23_%3D_&display=page&locale=en_GB&pl_dbl=0
   login-via-facebook:
-    # We need this url here because we are redirected to fb
-    # and if the first attempt fails we retry
+    when:
+      # When the submit button from above is displayed
+      search-x-paths: $config.stages.login.ui.submit.search-x-paths[0]
+      actions: is_displayed
+    events:
+      onstart: run_stages facebook.login
+      onsuccess: wait 7
+      onerror:
+        - wait 2
+        - retry 1
+  if-still-not-logged-in:
     url: https://www.instagram.com/
+    when:
+      search-x-paths: $config.stages.login.ui.submit.search-x-paths[0]
+      actions: is_displayed
     events:
       onerror:
         - wait 2
@@ -34,23 +54,30 @@ stages:
     ui:
       proceed-to-facebook-login:
         search-x-paths:
-          - //*[@id="loginForm"]/div/div[contains(text(), "Facebook")]
           - //*[@id="loginForm"]/div/div[5]/button[contains(text(), "Facebook")]
           - //*[@id="loginForm"]/div/div[5]
-      facebook-reject-optional-cookies:
-        search-x-paths: //*[@id="u_0_g_ZK"]
-      facebook-username:
-        search-x-paths: //*[@id="email"]
-        actions: enter_text $facebook.user.name
-      facebook-password:
-        search-x-paths: //*[@id="pass"]
-        actions: enter_text $facebook.user.pass
-      facebook-login:
-        search-x-paths: //*[@id="loginbutton"]
+          - //*[@id="loginForm"]//button[contains(text(), "Facebook")]
         actions:
           - click
-          - wait 10 # Some time before we are redirected to instagram
+          - wait 7
+#      facebook-reject-optional-cookies:
+#        search-x-paths:
+#          - //*[starts-with(@id, "u_0_g_")]
+#      facebook-username:
+#        search-x-paths: //*[@id="email"]
+#        actions: enter_text $facebook.user.name
+#      facebook-password:
+#        search-x-paths: //*[@id="pass"]
+#        actions: enter_text $facebook.user.pass
+#      facebook-login:
+#        search-x-paths: //*[@id="loginbutton"]
+#        actions:
+#          - click
+#          - wait 10 # Some time before we are redirected to instagram
   dismiss-notifications-alert:
+    # We need this url here because we are redirected to fb
+    # and if the first attempt fails we retry
+    url: https://www.instagram.com/
     events:
       onerror: continue
     ui:
@@ -60,8 +87,8 @@ stages:
     ui:
       click-create:
         search-x-paths:
-          - //*[@id="mount_0_0_NL"]/div/div/div[2]/div/div/div[1]/div[1]/div[1]/div/div/div/div/div[2]/div[7]/div/span/div/a
-          - //*[@id="mount_0_0_NL"]/div/div/div[2]/div/div/div[1]/div[1]/div[1]/div/div/div/div/div[2]/div[7]/div/span/div/a/div
+          - //*[starts-with(@id,"mount_0_0_")]/div/div/div[2]/div/div/div[1]/div[1]/div[1]/div/div/div/div/div[2]/div[7]/div/span/div/a
+          - //*[starts-with(@id,"mount_0_0_")]/div/div/div[2]/div/div/div[1]/div[1]/div[1]/div/div/div/div/div[2]/div[7]/div/span/div/a/div
       add-video:
         search-x-paths:
           - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[2]/div[1]/form/input
@@ -103,11 +130,13 @@ stages:
           - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[1]/div/div/div/div[3]/div
           - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[1]/div/div/div/div[3]/div/div
       wait-till-posted:
+        wait-timeout-seconds: 120 # Upload of a 34mb 50 seconds video took about 60 seconds
         events:
           onerror: continue
         search-x-paths:
-          - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[2]/div[1]/div/div[2]/div[contains(text(), 'shared')]
-          - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[2]/div[1]/div/div[2]/div/span[contains(text(), 'shared')]
-          - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[1]/div/div/div/div[1]/h1[contains(text(), 'shared')]
-          - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[1]/div/div/div/div[1]/h1/div[contains(text(), 'shared')]
+          # /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[1]/div/div/div/div[1]/h1/div
+          - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[2]/div[1]/div/div[2]/div//span[contains(text(), 'shared')]
+          - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[2]/div[1]/div/div[2]//span[contains(text(), 'shared')]
+          - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[1]/div/div/div/div[1]/h1//div[contains(text(), 'shared')]
+          - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[1]/div/div/div/div[1]/h1//span[contains(text(), 'shared')]
         actions: none

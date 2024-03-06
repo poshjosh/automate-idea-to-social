@@ -1,7 +1,10 @@
+import copy
 import logging
 from typing import Union, Tuple, Callable
 
 RESULTS_KEY = 'results'
+CONTEXT_KEY = 'context'
+CONFIG_KEY = 'config'
 VARIABLE_ANCHOR = '$'
 
 logger = logging.getLogger(__name__)
@@ -16,53 +19,97 @@ def is_variable(value: str) -> bool:
     return False
 
 
-def is_results_variable(value: str) -> bool:
-    if f'{VARIABLE_ANCHOR}{RESULTS_KEY}' in value:
+"""Action variables are only available while the actions are being run"""
+
+
+def is_action_variable(value: str) -> bool:
+    return (__is_variable_with_prefix(value, RESULTS_KEY)
+            or __is_variable_with_prefix(value, CONTEXT_KEY))
+
+
+def __is_variable_with_prefix(value: str, prefix: str) -> bool:
+    if f'{VARIABLE_ANCHOR}{prefix}' in value:
         return True
-    s = VARIABLE_ANCHOR + '{' + RESULTS_KEY
+    s = VARIABLE_ANCHOR + '{' + prefix
     if s in value:
         return True if '}' in value[value.index(s) + len(s):] else False
     return False
 
 
-def visit_all_variables(context: dict[str, any], visit: Callable[[str], str]):
+def replace_all_variables(target: dict[str, any], replace_from: dict[str, any]) -> dict[str, any]:
 
-    def iter_dict(d: dict[str, any]):
+    target = copy.deepcopy(target)
+
+    # We first replace all variables in the target, using values from the source
+    __visit_all_variables(
+        target, lambda variable, curr_path: __parse_variables_unscoped(variable, replace_from))
+
+    # We then replace all variables in the target, using values from the target
+    __visit_all_variables(
+        target, lambda variable, curr_path: parse_variables(variable, target, curr_path))
+
+    def check_no_variable_left(text: str, _) -> str:
+        if is_variable(text) and not is_action_variable(text):
+            raise ValueError(f'Failed to replace variables in: {text}')
+        return text
+
+    __visit_all_variables(target, check_no_variable_left)
+
+    return target
+
+
+def __visit_all_variables(target: dict[str, any],
+                          visit: Callable[[str, [str]], str],
+                          path: [str] = None):
+    # TODO - Implement 'me' expansion for $config related variables, test it too
+    #  To achieve the above you need to implement the correct curr_path argument
+    def iter_dict(d: dict[str, any], parent: any, curr_path: [str]):
         for k, v in d.items():
-            d[k] = iter_value(v)
+            d[k] = iter_value(v, d, curr_path)
         return d
 
-    def iter_list(e_list: list[any]):
+    def iter_list(e_list: list[any], parent: any, curr_path: [str]):
         for i, e in enumerate(e_list):
-            e_list[i] = iter_value(e)
+            e_list[i] = iter_value(e, e_list, curr_path)
         return e_list
 
-    def iter_value(e: any):
+    def iter_value(e: any, parent: any, curr_path: [str]):
         if isinstance(e, dict):
-            return iter_dict(e)
+            return iter_dict(e, parent, curr_path)
         elif isinstance(e, list):
-            return iter_list(e)
+            return iter_list(e, parent, curr_path)
         elif isinstance(e, str):
-            return visit(e)
+            return visit(e, curr_path)
         else:
             return e
 
-    iter_dict(context)
+    iter_dict(target, None, [] if path is None else path)
 
 
-def parse_variables(text: str, context: dict[str, any]) -> str:
-    return __parse_variables(text, lambda key: context.get(key))
+def parse_variables(text: str, context: dict[str, any], curr_path: [str] = None) -> str:
+    def replace(name: str) -> Union[str, None]:
+        replacement = context.get(name)
+        if replacement is None:
+            replacement = __get_scoped_value_for_name_having_prefix(
+                curr_path, name, CONFIG_KEY, context)
+        return replacement
+
+    return __parse_variables(text, replace)
+
+
+def __parse_variables_unscoped(text: str, context: dict[str, any]) -> str:
+    def replace(name: str) -> Union[str, None]:
+        return context.get(name, None)
+
+    return __parse_variables(text, replace)
 
 
 def parse_run_arg(curr_path: [str], arg: str, run_context: 'RunContext' = None) -> any:
-    if not is_variable(arg):
-        return arg
-
     if len(curr_path) != 3:
         raise ValueError(f'Expected 3 elements, found: {curr_path}')
 
     def replace(name: str) -> any:
-        return __get_run_arg_replacement(curr_path, name, run_context, None)
+        return __get_run_arg_value(curr_path, name, run_context, None)
 
     replacement = __parse_variables(arg, replace)
 
@@ -72,66 +119,103 @@ def parse_run_arg(curr_path: [str], arg: str, run_context: 'RunContext' = None) 
     return replacement
 
 
-def __parse_variables(text: str, replace: Callable[[str], any]) -> str:
+def __parse_variables(target: str, replace: Callable[[str], any]) -> str:
+    if not is_variable(target):
+        return target
+    result = target
     pos = 0
-    while pos < len(text):
-        t: [str, int, int] = __extract_first_variable(text, pos, None)
+    while pos < len(result):
+        t: [str, int, int] = __extract_first_variable(result, pos, None)
         if t is None:
             break
         name = t[0]
         start = t[1]
         end = t[2]
         replacement = replace(name)
-        #logger.debug(f'{name}, replacement: {replacement}')
+        # logger.debug(f'{name}, replacement: {replacement}')
         if replacement is None:
             pos = end
             continue
-        text = text[0:start] + replacement + text[end:]
+        result = result[0:start] + replacement + result[end:]
         pos = start + len(replacement)
-    return text
+    return result
 
 
-def __get_run_arg_replacement(curr_path: [str],
-                              name: str,
-                              run_context: 'RunContext' = None,
-                              result_if_none: Union[str, None] = None) -> Union[str, None]:
+def __get_run_arg_value(curr_path: [str],
+                        name: str,
+                        run_context: 'RunContext' = None,
+                        result_if_none: Union[str, None] = None) -> Union[str, None]:
     replacement = None if run_context is None else run_context.get_arg(name)
     if replacement is None:
-        replacement = __parse_result(curr_path, name, run_context)
+        replacement = __get_scoped_value_for_name_having_prefix(curr_path, name, CONTEXT_KEY, run_context)
+        if replacement is None:
+            replacement = __get_results_value(curr_path, name, run_context)
     return result_if_none if replacement is None else str(replacement)
 
 
-def __parse_result(curr_path: [str], value: str, run_context: 'RunContext' = None) -> Union[str, None]:
-    if not value.startswith(RESULTS_KEY):
-        return None
-    parts_including_results_key, index = __parse_index_part(value)
-    parts = parts_including_results_key[1:]
-
+def __get_scoped_value_for_name_having_prefix(
+        curr_path: [str],
+        name: str,
+        prefix: str,
+        context: Union['RunContext', dict] = None) -> Union[str, None]:
     def get_value(values_scope: any, key: str) -> any:
         if values_scope is None:
-            return None if run_context is None else run_context.get_stage_results(key, None)
+            return None if context is None else context.get(key, None)
         else:
             return values_scope.get(key, None)
+
+    return __get_scoped_value(curr_path, name, prefix, get_value)
+
+
+def __get_results_value(curr_path: [str],
+                        name: str,
+                        run_context: 'RunContext' = None) -> Union[str, None]:
+    def get_value(scope: any, key: str) -> any:
+        if scope is None:
+            return None if run_context is None else run_context.get_stage_results(key, None)
+        else:
+            return scope.get(key, None)
+
+    value = __get_scoped_value(curr_path, name, RESULTS_KEY, get_value)
+    try:
+        return None if value is None else value.get_result()
+    except Exception:
+        return value
+
+
+def __get_scoped_value(curr_path: [str],
+                       name: str,
+                       prefix: str,
+                       get_value: Callable[[any, str], any]) -> Union[str, None]:
+    if not name.startswith(prefix):
+        return None
+    parts_including_prefix, index = __parse_index_part(name)
+    parts = parts_including_prefix[1:]
 
     parts = __expand_me(curr_path, parts)
 
     scope = None
     for k in parts:
         try:
+            # if k == 'ui' or k == 'submit' or k == 'search-x-paths':
+            #     print(f'Will search for {k} of {name} in:\n{scope}')
             scope = get_value(scope, k)
         except Exception as ex:
-            raise ValueError(f'Value not found for: {k} of {value}') from ex
+            raise ValueError(f'Value not found for: {k} of {name} in {scope}') from ex
         if scope is None:
-            raise ValueError(f'Value not found for: {k} of {value}')
+            raise ValueError(f'Value not found for: {k} of {name} in {scope}')
 
     try:
-        return scope[index].get_result()
+        return scope[index] if isinstance(scope, list) else scope
     except IndexError as ex:
-        raise IndexError(f'Invalid variable: {value} for scope: {scope}') from ex
+        raise IndexError(
+            f'Invalid index: {index}, for variable: {name}, in scope: {scope}') from ex
 
 
 def __expand_me(curr_path: [str], parts: [str]) -> [str]:
-    updated_parts:[str] = []
+    if curr_path is None:
+        return parts
+    updated_parts: [str] = []
     for part in parts:
         if part == 'me':
             updated_parts.extend(curr_path)

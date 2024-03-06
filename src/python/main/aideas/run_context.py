@@ -1,7 +1,7 @@
 from typing import Union
 
 from .action.action_result import ActionResult
-from .action.variable_parser import is_variable, is_results_variable, parse_variables, visit_all_variables
+from .action.variable_parser import replace_all_variables
 from .agent.agent_args import AgentArgs
 from .result.agent_result_set import AgentResultSet
 from .result.element_result_set import ElementResultSet
@@ -26,18 +26,11 @@ class RunContext:
         self.__agent_names: list[str] = self.__to_list(app_config, agent_names)
         self.__args: dict[str, any] = args
         self.__result_set: AgentResultSet = AgentResultSet()
+        self.__values = {}
 
-    def replace_variables(self, config: dict[str, any]) -> dict[str, any]:
-        visit_all_variables(config, lambda text: parse_variables(text, self.__args))
-
-        def check_no_variable_left(s: str) -> str:
-            result = parse_variables(s, self.__args)
-            if is_variable(result) and not is_results_variable(result):
-                raise ValueError(f'Failed to replace: {result}')
-            return s
-
-        visit_all_variables(config, check_no_variable_left)
-
+    def replace_variables(self, agent_name: str, config: dict[str, any]) -> dict[str, any]:
+        config = replace_all_variables(config, self.__args)
+        self.__values[agent_name] = config
         return config
 
     def add_action_result(self,
@@ -89,11 +82,21 @@ class RunContext:
     def get_arg(self, key: str, result_if_none: Union[any, None] = None) -> any:
         return self.__args.get(key, result_if_none)
 
+    def get(self, key: str, result_if_none: Union[any, None] = None) -> any:
+        return self.__values.get(key, result_if_none)
+
+    def get_current_url(self, result_if_none: str = None) -> str:
+        return self.get('current_url', result_if_none)
+
+    def set_current_url(self, value: str) -> 'RunContext':
+        self.__values['current_url'] = value
+        return self
+
     def get_result_set(self) -> AgentResultSet:
         return self.__result_set
 
-    def __to_list(self,
-                  config: dict[str, any],
+    @staticmethod
+    def __to_list(config: dict[str, any],
                   agent_names: Union[str, list[str], None] = None) -> list[str]:
         if agent_names is None:
             return config.get('agents', [])

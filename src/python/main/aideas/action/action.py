@@ -1,4 +1,5 @@
 import logging
+import uuid
 from typing import Union
 
 from .variable_parser import parse_run_arg
@@ -10,6 +11,15 @@ class Action:
     @staticmethod
     def none() -> 'Action':
         return NONE
+
+    @staticmethod
+    def of_generic(agent_name: str, stage_id: str, args: [str] = None) -> 'Action':
+        return Action(
+            agent_name,
+            stage_id,
+            f'{stage_id}-{uuid.uuid4().hex}',
+            stage_id.replace('-', '_'),
+            [] if args is None else args)
 
     @staticmethod
     def of(agent_name: str,

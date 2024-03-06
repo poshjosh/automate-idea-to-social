@@ -1,0 +1,10 @@
+stages:
+  download-src:
+  convert-to-markdown:
+  insert-cover-image:
+    # [head|tail|0...n]
+    actions: add_markdown_image $video.cover.image head
+  push-to-github:
+    actions: push_to_github $blog.dir
+  upload-to-website:
+    actions: upload_to_website $blog.url

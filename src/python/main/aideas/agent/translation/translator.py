@@ -74,11 +74,7 @@ class Translator:
 
     def call_translation_service(self, params: dict, headers: dict) -> list[str]:
         r = requests.get(self.__service_url, params=params, headers=headers)
-        try:
-            return r.json()
-        except Exception as ex:
-            logger.warning(f'{ex}')
-            return []
+        return r.json()
 
     def get_separator(self) -> str:
         return self.__separator

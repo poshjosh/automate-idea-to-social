@@ -1,3 +1,4 @@
+import copy
 import logging.config
 import os
 import unittest
@@ -27,6 +28,7 @@ class AgentIT(unittest.TestCase):
 
     @staticmethod
     def format_tiktok_config(config: dict) -> dict:
+        config = copy.deepcopy(config)
         action_signature = ('get_first_file ${agent.dir}/' + pictory_agent + '/' +
                             pictory_stage + '/save-file $video.output.type')
         actions: [str] = [action_signature, 'log DEBUG $results.me[0]']
@@ -73,9 +75,10 @@ class AgentIT(unittest.TestCase):
         if format_config is not None:
             agent_config = format_config(agent_config)
 
-        agent = BrowserAgent.of_config(agent_name, self.app_config, agent_config)
+        # Not TestBrowserAgent
+        agent = BrowserAgent.of_config(agent_name, self.app_config, agent_config, {})
 
-        result = agent.run_stage(agent_config['stages'], Name.of(stage_name), run_context)
+        result = agent.run_stage(run_context, Name.of(stage_name))
         print(f'Completed. Result:\n{result.pretty_str()}')
 
         self.assertTrue(result.is_successful())

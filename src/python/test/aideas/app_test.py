@@ -18,9 +18,8 @@ class AppTest(unittest.TestCase):
 def given_app() -> App:
     # This will result to the live app, which we don't want
     #return App.of_defaults(get_main_path('config'))
-    config = get_config_loader().load_app_config()
-    agent_factory = TestAgentFactory(config)
-    return App(get_config_loader(), agent_factory)
+    agent_factory = TestAgentFactory(get_config_loader())
+    return App(agent_factory, get_config_loader().load_app_config())
 
 
 if __name__ == '__main__':

@@ -4,8 +4,7 @@ import unittest
 from ....main.aideas.action.action import Action
 from ....main.aideas.action.action_result import ActionResult
 from ....main.aideas.action.variable_parser import (
-    is_results_variable, is_variable, parse_variables,
-    parse_run_arg, to_results_variable, visit_all_variables)
+    parse_run_arg, parse_variables, replace_all_variables, to_results_variable)
 from ....main.aideas.agent.agent_name import AgentName
 from ....main.aideas.run_context import RunContext
 from ..test_functions import get_config_loader
@@ -66,11 +65,6 @@ class VariableParserTest(unittest.TestCase):
             output.append(action_result)
         return output
 
-    def test_replace_all_variables(self):
-        agents: [str] = get_config_loader().load_app_config().get("agents")
-        for agent in agents:
-            self.replace_all_variables(get_config_loader().load_agent_config(agent))
-
     def test_parse_all_variables_given_single_variable(self):
         text = '$k'
         result = parse_variables(text, {'k': 'v'})
@@ -111,25 +105,14 @@ class VariableParserTest(unittest.TestCase):
         result = parse_variables(text, {'k_0': 'v_0', 'k_1': 'v_1'})
         self.assertEqual('before v_0 v_1', result)
 
-    def replace_all_variables(self, agent_config: dict[str, any]):
+    def test_replace_all_variables(self):
+        agents: [str] = get_config_loader().load_app_config().get("agents")
+        for agent in agents:
+            self.replace_all_variables(get_config_loader().load_agent_config(agent))
 
-        env = dict(os.environ)
-
-        def visit(s: str) -> str:
-            result = parse_variables(s, env)
-            # if result != s:
-            #     print(f'Parsed: {s} to: {result}')
-            return result
-
-        visit_all_variables(agent_config, visit)
-
-        def check_no_variable_left(s: str) -> str:
-            result = parse_variables(s, env)
-            if is_variable(result) and not is_results_variable(result):
-                self.fail(f'Failed to replace: {result}')
-            return s
-
-        visit_all_variables(agent_config, check_no_variable_left)
+    @staticmethod
+    def replace_all_variables(agent_config: dict[str, any]):
+        replace_all_variables(agent_config, dict(os.environ))
 
 
 if __name__ == '__main__':

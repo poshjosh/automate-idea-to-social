@@ -13,6 +13,10 @@ from .element_search_config import ElementSearchConfig, SearchBy
 logger = logging.getLogger(__name__)
 
 
+class ElementNotFoundError(Exception):
+    pass
+
+
 class ElementSelector:
     @staticmethod
     def of(webdriver, domain: str, wait_timeout_seconds: float = 20) -> 'ElementSelector':
@@ -97,17 +101,18 @@ class ElementSelector:
                 selected = self.__select_element(
                     search_from_element, element_name, search_for, timeout, search_by)
                 if selected is not None:
+                    logger.debug(f'Found {element_name} using: {search_by} = {search_for}')
                     return selected
             except Exception as ex:
-                logger.debug(f'Failed to select {element_name} using: {search_by} = {search_for}')
                 exception = ex
                 continue
 
+        error_msg: str = (f"Failed to select {element_name} element, "
+                          f"current url: {self.__webdriver.current_url}.")
         if exception is not None:
-            raise exception
+            raise ElementNotFoundError(error_msg) from exception
         else:
-            raise ValueError(f"Failed to select {element_name} element, "
-                             f"current url: {self.__webdriver.current_url}.")
+            raise ElementNotFoundError(error_msg)
 
     def __load_page(self, link: str) -> bool:
         if link == self.__webdriver.current_url:
@@ -121,7 +126,7 @@ class ElementSelector:
     def __select_page_bodies(self) -> List[WebElement]:
         body_elements: List[WebElement] = self.__webdriver.find_elements(By.TAG_NAME, 'body')
         if len(body_elements) == 0:
-            raise ValueError(f'No body elements found for {self.__webdriver.current_url}')
+            raise ElementNotFoundError(f'No body elements found for {self.__webdriver.current_url}')
 
         return body_elements
 
@@ -164,7 +169,8 @@ class ElementSelector:
         self.__collect_shadows(root_element, timeout_seconds, collector)
 
         if len(collection) == 0:
-            raise ValueError(f"No shadow element found by attribute: {attr_name}={attr_value}")
+            raise ElementNotFoundError(
+                f"No shadow element found by attribute: {attr_name}={attr_value}")
 
         return collection[0]
 
@@ -200,8 +206,8 @@ class ElementSelector:
             return WebDriverWait(root_element, timeout_seconds).until(
                 WaitCondition.element_to_be_clickable((self.__select_by, xpath)))
         except TimeoutException:
-            logger.debug(
-                f'Timed out selecting {element_name}, '
+            logger.warning(
+                f'Timed out wait for {element_name} by {xpath}, '
                 f'current url: {self.__webdriver.current_url}.')
             return root_element.find_element(self.__select_by, xpath)
 

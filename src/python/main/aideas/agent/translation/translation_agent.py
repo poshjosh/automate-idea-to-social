@@ -1,6 +1,5 @@
 import glob
 import logging
-import os
 
 import webvtt
 
@@ -32,10 +31,9 @@ class TranslationAgent(Agent):
         self.__translator = translator
 
     def run_stage(self,
-                  stages_config: dict[str, any],
-                  stage_name: Name,
-                  run_context: RunContext) -> ElementResultSet:
-        file_type = stages_config[stage_name.value]['file-type']
+                  run_context: RunContext,
+                  stage_name: Name) -> ElementResultSet:
+        file_type = self.get_stage_config(stage_name.value)['file-type']
         dir_path: str = run_context.get_arg(Env.VIDEO_OUTPUT_DIR.value)
         target_languages_str: str = run_context.get_arg(Env.TRANSLATION_OUTPUT_LANGUAGES.value)
         target_language_codes: [str] = target_languages_str.split(',')
@@ -64,11 +62,9 @@ class TranslationAgent(Agent):
                     filename_in: str,
                     filename_out: str,
                     output_language_code: str) -> ActionResult:
-        action = Action(
+        action = Action.of_generic(
             AgentName.TRANSLATION,
             stage_id,
-            f'translate-subtitles-{os.path.basename(filename_out)}',
-            'translate_subtitles',
             [filename_in, filename_out, output_language_code])
         try:
             self.__do_translate(filename_in, filename_out, output_language_code)

@@ -72,5 +72,6 @@ class ElementActionHandler(BrowserActionHandler):
         logger.debug(f'{result}')
         return result
 
-    def __get_offset(self, args: list[str]) -> Tuple[int, int]:
+    @staticmethod
+    def __get_offset(args: list[str]) -> Tuple[int, int]:
         return int(args[0]), int(args[1])

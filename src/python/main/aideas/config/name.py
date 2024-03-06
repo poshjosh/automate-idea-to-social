@@ -3,15 +3,17 @@ from typing import Union
 
 class Name:
     @staticmethod
-    def of_lists(names: list[str], aliases: Union[list[str], None] = None) -> list['Name']:
+    def of_list(names: list[str], alias: Union[str, None] = None) -> ['Name']:
+        aliases = [names] if alias is None else [alias for _ in names]
+        return Name.of_lists(names, aliases)
+
+    @staticmethod
+    def of_lists(names: list[str], aliases: Union[list[str], None] = None) -> ['Name']:
         if aliases is not None and len(names) != len(aliases):
             raise ValueError("The number of names and aliases must be the same")
         if aliases is None:
             aliases: [str] = [name for name in names]
-        result: [Name] = []
-        for i in range(len(names)):
-            result[i] = Name(names[i], aliases[i])
-        return result
+        return [Name(names[i], aliases[i]) for i in range(len(names))]
 
     @staticmethod
     def of(name: str, alias: Union[str, None] = None) -> 'Name':
