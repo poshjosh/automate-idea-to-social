@@ -1,6 +1,7 @@
 import logging
 import os.path
 import subprocess
+import sys
 from typing import Union
 
 logger = logging.getLogger(__name__)
@@ -25,7 +26,7 @@ def run_commands_from_dir(working_dir: str,
         __cd(cwd)
 
 
-def run_script(script_location: str, args: [str], timeout=30, stdout=subprocess.PIPE) \
+def run_script(script_location: str, args: [str], timeout=30, stdout=sys.stdout) \
         -> Union[subprocess.CompletedProcess[bytes], subprocess.CompletedProcess]:
     if not os.path.exists(script_location):
         raise ValueError(f"Script location does not exist: {script_location}")
@@ -47,12 +48,12 @@ def run_script(script_location: str, args: [str], timeout=30, stdout=subprocess.
 
         commands.extend(args)
 
-        return run_command(commands, timeout, stdout=stdout)
+        return run_command(commands, timeout, stdout)
     finally:
         __cd(cwd)
 
 
-def run_command(command: [str], timeout=30, stdout=subprocess.PIPE) \
+def run_command(command: [str], timeout=30, stdout=sys.stdout) \
         -> Union[subprocess.CompletedProcess[bytes], subprocess.CompletedProcess]:
     command = ' '.join(command)
 

@@ -3,7 +3,6 @@ import os
 import re
 import shutil
 import subprocess
-import sys
 import tempfile
 import uuid
 from typing import Union
@@ -139,10 +138,9 @@ class BlogUpdaterAgent(Agent):
         grant_execute_permission_if_need(script_config['docker-entrypoint'])
 
         args: [str] = self._get_update_blog_command_args(run_context)
-        timeout = self.get_stage_config("update-blog").get("script-timeout-seconds", 1800)
+        timeout = self.get_stage_config("update-blog").get("wait-timeout-seconds", 1200)
 
-        return_code = run_script(
-            script_config['update-blog'], args, timeout=timeout, stdout=sys.stdout)
+        return_code = run_script(script_config['update-blog'], args, timeout)
         return ActionResult(action, return_code == 0)
 
     def __download_and_extract_zip_to_dir(self,
