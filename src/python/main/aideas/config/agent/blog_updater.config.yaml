@@ -1,4 +1,4 @@
-dir: /Users/chinomso/dev_chinomso/automate-idea-to-social/src/blog_updater
+dir: /Users/chinomso/dev_chinomso/automate-idea-to-social/src/downloads
 app:
   name: automate-jamstack
   version: 0.0.7
