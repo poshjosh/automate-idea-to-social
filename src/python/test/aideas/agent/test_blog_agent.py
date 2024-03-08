@@ -3,15 +3,15 @@ import shutil
 
 from ....main.aideas.action.action import Action
 from ....main.aideas.action.action_result import ActionResult
-from ....main.aideas.agent.blog_updater_agent import BlogUpdaterAgent
+from ....main.aideas.agent.blog_agent import BlogAgent
 from ....main.aideas.result.stage_result_set import StageResultSet
 from ....main.aideas.run_context import RunContext
 
 
-class TestBlogUpdaterAgent(BlogUpdaterAgent):
+class TestBlogAgent(BlogAgent):
     @staticmethod
-    def of_config(agent_config: dict[str, any]) -> BlogUpdaterAgent:
-        return TestBlogUpdaterAgent(agent_config)
+    def of_config(agent_config: dict[str, any]) -> BlogAgent:
+        return TestBlogAgent(agent_config)
 
     def run(self, run_context: RunContext) -> StageResultSet:
         try:

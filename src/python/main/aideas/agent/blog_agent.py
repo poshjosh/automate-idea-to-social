@@ -23,13 +23,13 @@ from ..run_context import RunContext
 logger = logging.getLogger(__name__)
 
 
-class BlogUpdaterAgent(Agent):
+class BlogAgent(Agent):
     @staticmethod
-    def of_config(agent_config: dict[str, any]) -> 'BlogUpdaterAgent':
-        return BlogUpdaterAgent(agent_config)
+    def of_config(agent_config: dict[str, any]) -> 'BlogAgent':
+        return BlogAgent(agent_config)
 
     def __init__(self, agent_config: dict[str, any]):
-        super().__init__(AgentName.BLOG_UPDATER, agent_config)
+        super().__init__(AgentName.BLOG, agent_config)
 
     def close(self):
         # Rather than git pull, we are using git clone for each run.
@@ -41,7 +41,7 @@ class BlogUpdaterAgent(Agent):
                   run_context: RunContext,
                   stage_name: Name) -> ElementResultSet:
         stage_id: str = stage_name.id
-        action = Action.of_generic(AgentName.BLOG_UPDATER, stage_id)
+        action = Action.of_generic(AgentName.BLOG, stage_id)
         return self.__run_stage(action, run_context, stage_name)
 
     def __run_stage(self,
@@ -232,7 +232,7 @@ class BlogUpdaterAgent(Agent):
 
     def _get_update_blog_command_args(self, run_context: RunContext) -> [str]:
         app_location = self.get_app_base_dir()
-        app_env_file = run_context.get_env(Env.BLOG_UPDATER_ENV_FILE)
+        app_env_file = run_context.get_env(Env.BLOG_ENV_FILE)
         app_image_name = self.get_app_docker_image_name()
         return ['-d', app_location, '-e', app_env_file, '-i', app_image_name]
 

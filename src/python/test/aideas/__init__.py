@@ -1,7 +1,6 @@
 import os
 from ...main.aideas.env import Env
 
-print(f"{__name__}     - - - INITIALIZING TEST ENVIRONMENT - - -")
 __env_names: [str] = [e.value for e in Env]
 for env_name in __env_names:
     os.environ[env_name] = f'test-{env_name}'
@@ -16,5 +15,4 @@ os.environ[Env.VIDEO_COVER_IMAGE_SQUARE.value] = f'{__test_content_dir}/cover-sq
 os.environ[Env.VIDEO_OUTPUT_DIR.value] = __test_downloads_dir
 os.environ[Env.VIDEO_OUTPUT_TYPE.value] = 'mp4'
 os.environ[Env.TRANSLATION_OUTPUT_LANGUAGES.value] = "ar,de,zh"
-os.environ[Env.BLOG_UPDATER_ENV_FILE.value] = f'{__app_home}/blog_updater.env'
-print(f"{__name__} - - - DONE INITIALIZING TEST ENVIRONMENT - - -")
+os.environ[Env.BLOG_ENV_FILE.value] = f'{__app_home}/blog.env'

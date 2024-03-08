@@ -1,55 +1,56 @@
 import os
 from enum import Enum
 
+_agent = 'agent'
+_video = 'video'
+_pictory = 'pictory'
+_translation = 'translation'
+_tiktok = 'tiktok'
+_twitter = 'twitter'
+_reddit = 'reddit'
+_facebook = 'facebook'
+_instagram = 'instagram'
+_github = 'github'
+_blog = 'blog'
+
 
 class Env(Enum):
-    __agent = 'agent'
-    AGENT_DIR = f'{__agent}.dir'
+    AGENT_DIR = f'{_agent}.dir'
 
-    __video = 'video'
-    VIDEO_INPUT_FILE = f'{__video}.input.file'
-    VIDEO_TILE = f'{__video}.title'
-    VIDEO_DESCRIPTION = f'{__video}.description'
-    VIDEO_OUTPUT_DIR = f'{__video}.output.dir'
-    VIDEO_OUTPUT_TYPE = f'{__video}.output.type'
-    VIDEO_COVER_IMAGE = f'{__video}.cover.image'
-    VIDEO_COVER_IMAGE_SQUARE = f'{__video}.cover.image.square'
-    VIDEO_LINK = f'{__video}.link'
+    VIDEO_INPUT_FILE = f'{_video}.input.file'
+    VIDEO_TILE = f'{_video}.title'
+    VIDEO_DESCRIPTION = f'{_video}.description'
+    VIDEO_OUTPUT_DIR = f'{_video}.output.dir'
+    VIDEO_OUTPUT_TYPE = f'{_video}.output.type'
+    VIDEO_COVER_IMAGE = f'{_video}.cover.image'
+    VIDEO_COVER_IMAGE_SQUARE = f'{_video}.cover.image.square'
+    VIDEO_LINK = f'{_video}.link'
 
-    __pictory = 'pictory'
-    PICTORY_USER_NAME = f'{__pictory}.user.name'
-    PICTORY_USER_PASS = f'{__pictory}.user.pass'
+    PICTORY_USER_NAME = f'{_pictory}.user.name'
+    PICTORY_USER_PASS = f'{_pictory}.user.pass'
 
-    __translation = 'translation'
-    TRANSLATION_OUTPUT_LANGUAGES = f'{__translation}.output.languages'
+    TRANSLATION_OUTPUT_LANGUAGES = f'{_translation}.output.languages'
 
-    __tiktok = 'tiktok'
-    TIKTOK_USER_NAME = f'{__tiktok}.user.name'
-    TIKTOK_USER_PASS = f'{__tiktok}.user.pass'
+    TIKTOK_USER_NAME = f'{_tiktok}.user.name'
+    TIKTOK_USER_PASS = f'{_tiktok}.user.pass'
 
-    __twitter = 'twitter'
-    TWITTER_USER_EMAIL = f'{__twitter}.user.email'
-    TWITTER_USER_NAME = f'{__twitter}.user.name'
-    TWITTER_USER_PASS = f'{__twitter}.user.pass'
+    TWITTER_USER_EMAIL = f'{_twitter}.user.email'
+    TWITTER_USER_NAME = f'{_twitter}.user.name'
+    TWITTER_USER_PASS = f'{_twitter}.user.pass'
 
-    __reddit = 'reddit'
-    REDDIT_USER_NAME = f'{__reddit}.user.name'
-    REDDIT_USER_PASS = f'{__reddit}.user.pass'
+    REDDIT_USER_NAME = f'{_reddit}.user.name'
+    REDDIT_USER_PASS = f'{_reddit}.user.pass'
 
-    __facebook = 'facebook'
-    FACEBOOK_USER_NAME = f'{__facebook}.user.name'
-    FACEBOOK_USER_PASS = f'{__facebook}.user.pass'
+    FACEBOOK_USER_NAME = f'{_facebook}.user.name'
+    FACEBOOK_USER_PASS = f'{_facebook}.user.pass'
 
-    __instagram = 'instagram'
-    INSTAGRAM_USER_NAME = f'{__instagram}.user.name'
-    INSTAGRAM_USER_PASS = f'{__instagram}.user.pass'
+    INSTAGRAM_USER_NAME = f'{_instagram}.user.name'
+    INSTAGRAM_USER_PASS = f'{_instagram}.user.pass'
 
-    __github = 'github'
-    GITHUB_USER_NAME = f'{__github}.user.name'
-    GITHUB_TOKEN = f'{__github}.token'
+    GITHUB_USER_NAME = f'{_github}.user.name'
+    GITHUB_TOKEN = f'{_github}.token'
 
-    __blog_updater = 'blog_updater'
-    BLOG_UPDATER_ENV_FILE = f'{__blog_updater}.env.file'
+    BLOG_ENV_FILE = f'{_blog}.env.file'
 
     @staticmethod
     def collect(add_to: dict[str, any] = None) -> dict[str, any]:

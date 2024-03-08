@@ -2,7 +2,7 @@ class AgentName:
     PICTORY: str = "pictory"
     TRANSLATION: str = "translation"
     TIKTOK: str = "tiktok"
-    BLOG_UPDATER: str = "blog_updater"
+    BLOG: str = "blog"
 
     class PictoryStage:
         SAVE_DOWNLOADED_VIDEO: str = "save-downloaded-video"
