@@ -3,27 +3,27 @@ app:
   name: automate-jamstack
   version: 0.0.7
   docker:
-    image: poshjosh/${config.app.name}
+    image: poshjosh/${self.app.name}
   source:
-    url: https://github.com/poshjosh/${config.app.name}/archive/refs/tags/v${config.app.version}.zip
+    url: https://github.com/poshjosh/${self.app.name}/archive/refs/tags/v${self.app.version}.zip
   target:
-    dir: ${config.dir}/app
+    dir: ${self.dir}/app
   base:
     # Downloading and extracting app.source.url will create this directory
-    dir: ${config.dir}/app/${config.app.name}-${config.app.version}
+    dir: ${self.dir}/app/${self.app.name}-${self.app.version}
   script:
-    convert-to-markdown: ${config.dir}/app/${config.app.name}-${config.app.version}/scripts/convert-to-markdown.sh
-    update-blog: ${config.dir}/app/${config.app.name}-${config.app.version}/scripts/docker-run-app.sh
-    docker-entrypoint: ${config.dir}/app/${config.app.name}-${config.app.version}/app/config/setup-scripts/docker-entrypoint.sh
+    convert-to-markdown: ${self.dir}/app/${self.app.name}-${self.app.version}/scripts/convert-to-markdown.sh
+    update-blog: ${self.dir}/app/${self.app.name}-${self.app.version}/scripts/docker-run-app.sh
+    docker-entrypoint: ${self.dir}/app/${self.app.name}-${self.app.version}/app/config/setup-scripts/docker-entrypoint.sh
 blog:
   name: liveabove3d.com
   source:
-    url: https://github.com/poshjosh/${config.blog.name}.git
+    url: https://github.com/poshjosh/${self.blog.name}.git
   target:
-    dir: ${config.dir}/blog
+    dir: ${self.dir}/blog
   base:
     # git clone blog.src.url will create this directory
-    dir: ${config.dir}/blog/${config.blog.name}
+    dir: ${self.dir}/blog/${self.blog.name}
 stages:
   download-app:
   clone-blog:

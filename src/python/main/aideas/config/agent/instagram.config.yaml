@@ -34,7 +34,7 @@ stages:
   login-via-facebook:
     when:
       # When the submit button from above is displayed
-      search-x-paths: $config.stages.login.ui.submit.search-x-paths[0]
+      search-x-paths: $self.stages.login.ui.submit.search-x-paths[0]
       actions: is_displayed
     events:
       onstart: run_stages facebook.login
@@ -45,7 +45,7 @@ stages:
   if-still-not-logged-in:
     url: https://www.instagram.com/
     when:
-      search-x-paths: $config.stages.login.ui.submit.search-x-paths[0]
+      search-x-paths: $self.stages.login.ui.submit.search-x-paths[0]
       actions: is_displayed
     events:
       onerror:

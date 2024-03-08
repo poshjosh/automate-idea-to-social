@@ -4,7 +4,7 @@ from typing import Union, Tuple, Callable
 
 RESULTS_KEY = 'results'
 CONTEXT_KEY = 'context'
-CONFIG_KEY = 'config'
+SELF_KEY = 'self'
 VARIABLE_ANCHOR = '$'
 
 logger = logging.getLogger(__name__)
@@ -91,7 +91,7 @@ def parse_variables(text: str, context: dict[str, any], curr_path: [str] = None)
         replacement = context.get(name)
         if replacement is None:
             replacement = __get_scoped_value_for_name_having_prefix(
-                curr_path, name, CONFIG_KEY, context)
+                curr_path, name, SELF_KEY, context)
         return replacement
 
     return __parse_variables(text, replace)
