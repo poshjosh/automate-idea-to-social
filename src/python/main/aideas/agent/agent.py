@@ -30,16 +30,24 @@ class Agent:
         self.__dependencies[agent_name] = agent
         return self
 
-    """Run all the stages of the agent and return True if successful, False otherwise."""
-
     def run(self, run_context: RunContext) -> StageResultSet:
+        """Run all the stages of the agent and return True if successful, False otherwise."""
+        try:
+            self.__config = run_context.replace_variables(self.__name, self.__config)
 
-        self.__config = run_context.replace_variables(self.__name, self.__config)
+            stages: [Name] = Name.of_lists(list(self.get_stages_config().keys()))
 
-        stages: [Name] = Name.of_lists(list(self.get_stages_config().keys()))
+            # We only close the result for the agent after all stages have been run.
+            return self._run_stages(run_context, stages).close()
+        finally:
+            try:
+                self.close()
+            except Exception as ex:
+                logger.warning(f"Error closing agent: {self.__name}. {ex}")
 
-        # We only close the result for the agent after all stages have been run.
-        return self._run_stages(run_context, stages).close()
+    def close(self):
+        """Subclasses should implement this method as needed"""
+        pass
 
     def _run_agent_stages(self,
                           run_context: RunContext,
@@ -51,10 +59,8 @@ class Agent:
 
             agent._run_stages(run_context, stage_names)
 
-    """Run specified stages of the agent and return True if successful, False otherwise."""
-
     def _run_stages(self, run_context: RunContext, stages: [Name]) -> StageResultSet:
-
+        """Run specified stages of the agent and return True if successful, False otherwise."""
         for stage in stages:
 
             result = self.run_stage(run_context, stage)
@@ -70,11 +76,10 @@ class Agent:
         # The closing is done at the run() method level
         return run_context.get_stage_results(self.__name)
 
-    """Run named stage of the agent and return True if successful, False otherwise."""
-
     def run_stage(self,
                   run_context: RunContext,
                   stage_name: Name) -> ElementResultSet:
+        """Run named stage of the agent and return True if successful, False otherwise."""
         raise NotImplementedError("Subclasses must implement this method")
 
     def get_name(self) -> str:

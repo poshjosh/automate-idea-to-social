@@ -8,7 +8,7 @@ from ...main.aideas.app import App
 init_logging(logging.config)
 
 
-class AppTest(unittest.TestCase):
+class AppIT(unittest.TestCase):
     def test_run(self):
         result = given_app().run()
         print(f'{result.pretty_str()}')

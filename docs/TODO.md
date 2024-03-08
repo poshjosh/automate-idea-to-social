@@ -1,3 +1,9 @@
+Add a kind of temp directory which should be git ignored
+Save video link to a file for each agent, as necessary, then use it rather than the current environment variable `video.link`
+Consider changing blog_updater to blog
+  * Think of how to resolve `blog_updater/blog` which now becomes `blog/blog`
+All nested variables in env and configs
+Change config.app.name to self.app.name in agent yaml files
 When we successfully find an element. We should update the xpath
 through which the element was found.
 Use a working.dir

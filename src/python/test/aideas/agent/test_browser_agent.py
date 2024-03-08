@@ -1,9 +1,13 @@
 from typing import Union
 
+from ..test_functions import delete_saved_files
 from ..web.test_browser_automator import TestBrowserAutomator
 from ....main.aideas.agent.agent import Agent
 from ....main.aideas.agent.browser_agent import BrowserAgent
 from ....main.aideas.event.event_handler import EventHandler
+from ....main.aideas.config.name import Name
+from ....main.aideas.result.element_result_set import ElementResultSet
+from ....main.aideas.run_context import RunContext
 
 
 class TestBrowserAgent(BrowserAgent):
@@ -16,6 +20,16 @@ class TestBrowserAgent(BrowserAgent):
         interval_seconds: int = agent_config.get('interval-seconds', 0)
         return TestBrowserAgent(
             agent_name, agent_config, dependencies, browser_automator, interval_seconds)
+
+    def run_stage(self,
+                  run_context: RunContext,
+                  stage_name: Name) -> ElementResultSet:
+        result_set: ElementResultSet = ElementResultSet.none()
+        try:
+            result_set = super().run_stage(run_context, stage_name)
+        finally:
+            delete_saved_files(result_set)
+        return result_set
 
     def without_events(self) -> 'BrowserAgent':
         browser_automator = self.get_browser_automator().with_event_handler(EventHandler.noop())

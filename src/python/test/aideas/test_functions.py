@@ -61,13 +61,14 @@ def delete_saved_files(result_set: ElementResultSet, test: Callable[[str], bool]
 def __delete_file_results(result_list: list[ActionResult], test: Callable[[str], bool] = None):
     for r in result_list:
         file = r.get_result()
-        if file is None:
+        if file is None or os.path.sep not in file or '/' not in file:
             continue
         may_proceed = True if test is None else test(file)
         if not may_proceed:
             continue
         try:
-            os.remove(file)
-            print(f'Successfully removed file: {file}')
+            if os.path.exists(file):
+                os.remove(file)
+                print(f'{__name__} Successfully removed file: {file}')
         except Exception as ex:
-            print(f'Failed to remove file: {file}. {str(ex)}')
+            print(f'{__name__} Failed to remove file: {file}. {str(ex)}')

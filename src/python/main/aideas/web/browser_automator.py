@@ -70,17 +70,17 @@ class BrowserAutomator:
                 continue
 
             to_proceed = self.__may_proceed(
-                stage_config, stage_name.alias, key, body_elements[0], run_context)
+                stage_config, stage_name.id, key, body_elements[0], run_context)
 
             if not to_proceed:
                 logger.debug(f"Skipping actions for: "
-                             f"{self.__path(stage_name.alias, key)} due to specified condition")
+                             f"{self.__path(stage_name.id, key)} due to specified condition")
                 continue
 
             self.__act_on_element(
-                stage_name.alias, body_elements[0], elem_parent_cfg, key, run_context)
+                stage_name.id, body_elements[0], elem_parent_cfg, key, run_context)
 
-        return run_context.get_element_results(self.__agent_name, stage_name.alias)
+        return run_context.get_element_results(self.__agent_name, stage_name.id)
 
     def stage_may_proceed(self,
                           stage_config: dict[str, any],

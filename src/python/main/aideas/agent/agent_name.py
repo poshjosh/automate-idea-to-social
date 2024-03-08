@@ -13,4 +13,8 @@ class AgentName:
             SAVE_FILE: str = "save-file"
 
     class BlogUpdaterStage:
-        DOWNLOAD_SOURCE: str = "download-source"
+        DOWNLOAD_APP: str = "download-app"
+        CLONE_BLOG: str = "clone-blog"
+        CONVERT_TO_MARKDOWN: str = "convert-to-markdown"
+        UPDATE_BLOG_CONTENT: str = "update-blog-content"
+        UPDATE_BLOG: str = "update-blog"

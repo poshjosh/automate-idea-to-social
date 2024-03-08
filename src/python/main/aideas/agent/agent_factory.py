@@ -3,6 +3,7 @@ from typing import Union
 
 from .agent import Agent
 from .agent_name import AgentName
+from .blog_updater_agent import BlogUpdaterAgent
 from .browser_agent import BrowserAgent
 from .translation.translation_agent import TranslationAgent
 from ..config_loader import ConfigLoader
@@ -24,6 +25,8 @@ class AgentFactory:
                        agent_config: dict[str, any]) -> Agent:
         if agent_name == AgentName.TRANSLATION:
             agent = self.create_translation_agent(agent_config)
+        elif agent_name == AgentName.BLOG_UPDATER:
+            agent = self.create_blog_updater_agent(agent_config)
         else:
             agent = self.create_browser_agent(agent_name, agent_config)
 
@@ -38,6 +41,9 @@ class AgentFactory:
 
     def create_translation_agent(self, agent_config) -> TranslationAgent:
         return TranslationAgent.of_config(agent_config)
+
+    def create_blog_updater_agent(self, agent_config) -> BlogUpdaterAgent:
+        return BlogUpdaterAgent.of_config(agent_config)
 
     def __add_dependencies(self, author: Union[Agent, None]):
         author_name = author.get_name()

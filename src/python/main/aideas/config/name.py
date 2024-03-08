@@ -23,13 +23,13 @@ class Name:
         if name is None:
             raise ValueError('name cannot be None')
         self.value = name
-        self.alias = name if alias is None else alias
+        self.id = name if alias is None else alias
 
     def __eq__(self, other) -> bool:
-        return self.value == other.value and self.alias == other.alias
+        return self.value == other.value and self.id == other.id
 
     def __hash__(self) -> int:
-        return hash(self.value) + hash(self.alias)
+        return hash(self.value) + hash(self.id)
 
     def __str__(self) -> str:
-        return self.value if self.value == self.alias else f'({self.value}|{self.alias})'
+        return self.value if self.value == self.id else f'({self.value}|{self.id})'

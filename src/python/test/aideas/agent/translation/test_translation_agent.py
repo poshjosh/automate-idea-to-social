@@ -14,6 +14,9 @@ class TestTranslationAgent(TranslationAgent):
     def run_stage(self,
                   run_context: RunContext,
                   stage_name: Name) -> ElementResultSet:
-        result_set = super().run_stage(run_context, stage_name)
-        delete_saved_files(result_set)
+        result_set: ElementResultSet = ElementResultSet.none()
+        try:
+            result_set = super().run_stage(run_context, stage_name)
+        finally:
+            delete_saved_files(result_set)
         return result_set

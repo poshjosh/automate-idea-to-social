@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Union
 
 from .action.action_result import ActionResult
@@ -61,6 +62,19 @@ class RunContext:
         element_result_set: ElementResultSet = self.get_element_results(agent_name, stage_id)
         return [] if element_result_set is None else element_result_set.get(element_name, [])
 
+    def get_action_result(self,
+                          agent_name: str,
+                          stage_id: str,
+                          result_if_none: Union[ActionResult, None] = ActionResult.none()) \
+            -> ActionResult:
+        result_set: ElementResultSet = self.get_element_results(agent_name, stage_id)
+        if result_set.is_empty():
+            return result_if_none
+        key: str = next(iter(result_set.keys()))
+        action_result_list: list[ActionResult] = result_set.get(key, [])
+        action_result = None if len(action_result_list) == 0 else action_result_list[0]
+        return action_result if action_result is not None else result_if_none
+
     def get_element_results(self,
                             agent_name: str,
                             stage_id: str,
@@ -78,6 +92,9 @@ class RunContext:
 
     def get_agent_names(self) -> list[str]:
         return [e for e in self.__agent_names]
+
+    def get_env(self, key: Enum, result_if_none: Union[any, None] = None) -> any:
+        return self.get_arg(key.value, result_if_none)
 
     def get_arg(self, key: str, result_if_none: Union[any, None] = None) -> any:
         return self.__args.get(key, result_if_none)
@@ -98,7 +115,7 @@ class RunContext:
     @staticmethod
     def __to_list(config: dict[str, any],
                   agent_names: Union[str, list[str], None] = None) -> list[str]:
-        if agent_names is None:
+        if agent_names is None or agent_names == '':
             return config.get('agents', [])
         elif type(agent_names) is list:
             return config.get('agents', []) if len(agent_names) == 0 else agent_names

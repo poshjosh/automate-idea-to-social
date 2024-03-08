@@ -7,7 +7,6 @@ from .agent import Agent, AgentError
 from ..config.name import Name
 from ..event.event_handler import EventHandler, ON_START
 from ..result.element_result_set import ElementResultSet
-from ..result.stage_result_set import StageResultSet
 from ..run_context import RunContext
 from ..web.browser_automator import BrowserAutomator
 from ..web.element_selector import ElementNotFoundError
@@ -24,22 +23,21 @@ class BrowserAgent(Agent):
         return BrowserAgent.of_dynamic(
             agent_name, app_config, agent_config, dependencies, BrowserAgent)
 
-    """
-    See example usage below:
-    ..highlight:: python
-    .. code-block:: python
-        class BrowserAgentSubclass(BrowserAgent):
-            pass
-            
-        BrowserAgent.of_dynamic(config, agent_config, BrowserAgentSubclass)
-    """
-
     @staticmethod
     def of_dynamic(agent_name: str,
                    app_config: dict[str, any],
                    agent_config: dict[str, any],
                    dependencies: Union[dict[str, Agent], None],
                    init) -> 'BrowserAgent':
+        """
+        See example usage below:
+        highlight:: python
+        code-block:: python
+            class BrowserAgentSubclass(BrowserAgent):
+                pass
+
+            BrowserAgent.of_dynamic(config, agent_config, BrowserAgentSubclass)
+        """
         browser_automator = BrowserAutomator.of(app_config, agent_name, agent_config)
         interval_seconds: int = agent_config.get('interval-seconds', 0)
         return init(agent_name, agent_config, dependencies, browser_automator, interval_seconds)
@@ -55,6 +53,9 @@ class BrowserAgent(Agent):
         self.__event_handler = browser_automator.get_event_handler()
         self.__interval_seconds = interval_seconds
 
+    def close(self):
+        self.__browser_automator.quit()
+
     def create_dependency(self, name: str, config: dict[str, any]) -> 'BrowserAgent':
         return BrowserAgent(
             name, config, None,
@@ -64,12 +65,6 @@ class BrowserAgent(Agent):
         browser_automator = self.__browser_automator.with_event_handler(EventHandler.noop())
         return BrowserAgent(self.get_name(), self.get_config(), self._get_dependencies(),
                             browser_automator, self.get_interval_seconds())
-
-    def run(self, run_context: RunContext) -> StageResultSet:
-        try:
-            return super().run(run_context)
-        finally:
-            self.__browser_automator.quit()
 
     def run_stage(self,
                   run_context: RunContext,
@@ -92,7 +87,7 @@ class BrowserAgent(Agent):
             # We don't want an infinite loop, so we run this event without events.
             self.without_events()._run_agent_stages(context, agent_to_stages)
 
-        stage_id: str = stage_name.alias
+        stage_id: str = stage_name.id
         stage_config = self.get_stage_config(stage_name.value)
 
         exception = None
@@ -119,7 +114,7 @@ class BrowserAgent(Agent):
             exception = ex
 
         result = self.__event_handler.handle_result_event(
-            self.get_name(), stage_name.alias, exception, result, stage_id,
+            self.get_name(), stage_name.id, exception, result, stage_id,
             stage_config, retry_event, run_stages_event, run_context, trials)
 
         return ElementResultSet.none() if result is None else result

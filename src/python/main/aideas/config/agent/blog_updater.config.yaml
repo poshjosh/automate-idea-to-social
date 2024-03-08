@@ -1,10 +1,33 @@
+dir: /Users/chinomso/dev_chinomso/automate-idea-to-social/src/blog_updater
+app:
+  name: automate-jamstack
+  version: 0.0.7
+  docker:
+    image: poshjosh/${config.app.name}
+  source:
+    url: https://github.com/poshjosh/${config.app.name}/archive/refs/tags/v${config.app.version}.zip
+  target:
+    dir: ${config.dir}/app
+  base:
+    # Downloading and extracting app.source.url will create this directory
+    dir: ${config.dir}/app/${config.app.name}-${config.app.version}
+  script:
+    convert-to-markdown: ${config.dir}/app/${config.app.name}-${config.app.version}/scripts/convert-to-markdown.sh
+    update-blog: ${config.dir}/app/${config.app.name}-${config.app.version}/scripts/docker-run-app.sh
+    docker-entrypoint: ${config.dir}/app/${config.app.name}-${config.app.version}/app/config/setup-scripts/docker-entrypoint.sh
+blog:
+  name: liveabove3d.com
+  source:
+    url: https://github.com/poshjosh/${config.blog.name}.git
+  target:
+    dir: ${config.dir}/blog
+  base:
+    # git clone blog.src.url will create this directory
+    dir: ${config.dir}/blog/${config.blog.name}
 stages:
-  download-src:
+  download-app:
+  clone-blog:
   convert-to-markdown:
-  insert-cover-image:
-    # [head|tail|0...n]
-    actions: add_markdown_image $video.cover.image head
-  push-to-github:
-    actions: push_to_github $blog.dir
-  upload-to-website:
-    actions: upload_to_website $blog.url
+  update-blog-content:
+  update-blog:
+    script-timeout-seconds: 1800

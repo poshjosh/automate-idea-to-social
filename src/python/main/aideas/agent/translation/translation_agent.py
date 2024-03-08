@@ -34,16 +34,16 @@ class TranslationAgent(Agent):
                   run_context: RunContext,
                   stage_name: Name) -> ElementResultSet:
         file_type = self.get_stage_config(stage_name.value)['file-type']
-        dir_path: str = run_context.get_arg(Env.VIDEO_OUTPUT_DIR.value)
-        target_languages_str: str = run_context.get_arg(Env.TRANSLATION_OUTPUT_LANGUAGES.value)
+        dir_path: str = run_context.get_env(Env.VIDEO_OUTPUT_DIR)
+        target_languages_str: str = run_context.get_env(Env.TRANSLATION_OUTPUT_LANGUAGES)
         target_language_codes: [str] = target_languages_str.split(',')
         filepaths = [f for f in glob.glob(f'{dir_path}/*.{file_type}')]
         logger.debug(f'Output languages: {target_language_codes}, '
                      f'dir: {dir_path}, files: {filepaths}')
         for filepath in filepaths:
             self.__translate_all(
-                stage_name.alias, filepath, target_language_codes, run_context)
-        return run_context.get_element_results(self.get_name(), stage_name.alias)
+                stage_name.id, filepath, target_language_codes, run_context)
+        return run_context.get_element_results(self.get_name(), stage_name.id)
 
     def __translate_all(self,
                         stage_id: str,

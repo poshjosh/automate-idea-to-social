@@ -34,6 +34,7 @@ browser:
 agents:
   - pictory
   - translation
+  - blog_updater
   - twitter
   - tiktok
   - reddit

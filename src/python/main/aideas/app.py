@@ -1,5 +1,7 @@
 import logging.config
-from typing import Union
+import os
+import sys
+from typing import Union, Callable, TypeVar
 
 import yaml
 
@@ -47,7 +49,6 @@ class App:
         run_context: RunContext = RunContext.of_config(self.__config, agent_names)
 
         for agent_name in run_context.get_agent_names():
-
             agent = self.__agent_factory.get_agent(agent_name)
             logger.debug(f"Starting agent: {agent_name}")
 
@@ -57,3 +58,45 @@ class App:
                          f"result:\n{run_context.get_stage_results(agent_name)}")
 
         return run_context.get_result_set().close()
+
+
+"""
+The following code is used to parse command line arguments.
+"""
+ARG_AGENTS = "agents"
+
+T = TypeVar("T", bound=any)
+
+__arg_to_alias: dict[str, str] = {
+    ARG_AGENTS: "a"
+}
+
+
+def get_list_arg(name: str) -> [str]:
+    return __get_formatted_arg(name, lambda arg: arg.split(','), [])
+
+
+def __get_formatted_arg(name: str,
+                        convert: Callable[[str], T],
+                        result_if_none: Union[T, None] = None) -> T:
+    arg = get_arg(name, None)
+    return result_if_none if arg is None else convert(arg)
+
+
+def get_arg(name: str, result_if_none: Union[str, None] = None) -> any:
+    """
+    Get the value of the argument with the given name.
+    Arguments have aliases that can be used to refer to them.
+    --agents twitter could be written as -a twitter
+    :param name: The name of the argument.
+    :param result_if_none: The result to return if none
+    :return: The value of the argument with the given name.
+    """
+    args: [str] = sys.argv
+    if f'--{name}' in args:
+        return args[args.index(f'--{name}') + 1]
+    alias = __arg_to_alias.get(name)
+    if alias is not None and f'-{alias}' in args:
+        return args[args.index(f'-{alias}') + 1]
+    env_value = os.environ.get(name)
+    return env_value if env_value is not None else result_if_none
