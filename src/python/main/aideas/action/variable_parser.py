@@ -36,13 +36,13 @@ def __is_variable_with_prefix(value: str, prefix: str) -> bool:
     return False
 
 
-def replace_all_variables(target: dict[str, any], replace_from: dict[str, any]) -> dict[str, any]:
+def replace_all_variables(target: dict[str, any], source: dict[str, any]) -> dict[str, any]:
 
     target = copy.deepcopy(target)
 
     # We first replace all variables in the target, using values from the source
     __visit_all_variables(
-        target, lambda variable, curr_path: __parse_variables_unscoped(variable, replace_from))
+        target, lambda variable, curr_path: __parse_variables_unscoped(variable, source))
 
     # We then replace all variables in the target, using values from the target
     __visit_all_variables(
