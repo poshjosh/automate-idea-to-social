@@ -1,0 +1,201 @@
+stages:
+  pre-login:
+    url: https://www.youtube.com/
+    events:
+      onerror: continue
+    ui:
+      accept-cookies:
+        when:
+          search-x-paths: $self.stages.pre-login.ui.accept-cookies.search-x-paths
+          actions: is_displayed
+        search-x-paths:
+          - //*[@id="content"]/div[2]/div[6]/div[1]/ytd-button-renderer[2]/yt-button-shape/button
+          - //*[@id="content"]//yt-button-shape/button[contains(text(), "Accept all")]
+# This failed severally, however the url in the next stage achieved the same effect
+#      proceed-to-login:
+#        search-x-paths:
+#          - //*[@id="sign-in-button"]/yt-button-shape/a
+#          - //*[@id="sign-in-button"]/yt-button-shape
+#          - //*[@id="sign-in-button"]
+#        search-shadow-attributes: aria-label="Sign in"
+#        search-x-paths:
+#          - //*[@id="masthead"]//*[@id="buttons"]//*[@aria-label="Sign in"]
+#          - //*[@id="masthead"]//*[@id="buttons"]/ytd-button-renderer/yt-button-shape/a
+#          - //*[@id="masthead"]//*[@id="buttons"]/ytd-button-renderer/yt-button-shape/a
+#          - //*[@id="masthead"]//*[@id="buttons"]//a[contains(text(), "Sign in")]
+#          - //*[@id="masthead"]//*[@id="buttons"]/ytd-button-renderer/yt-button-shape/a/yt-touch-feedback-shape/div/div[2]
+  login:
+    #url: https://accounts.google.com/ServiceLogin?service=youtube&uilel=3&passive=true&continue=https%3A%2F%2Fwww.youtube.com%2Fsignin%3Faction_handle_signin%3Dtrue%26app%3Ddesktop%26hl%3Den-GB%26next%3Dhttps%253A%252F%252Fwww.youtube.com%252F&hl=en-GB&ec=65620
+    #url: https://accounts.google.com/v3/signin/identifier?continue=https%3A%2F%2Fwww.youtube.com%2Fsignin%3Faction_handle_signin%3Dtrue%26app%3Ddesktop%26hl%3Den-GB%26next%3Dhttps%253A%252F%252Fwww.youtube.com%252F&ec=65620&hl=en-GB&ifkv=ATuJsjwUx3ACMl1_9VaWspgFMcreZUMSVAsQRPD58rd2F-etbIvhM7xcUx2PwHFJ8g_F8nUcTljGWg&passive=true&service=youtube&uilel=3&flowName=GlifWebSignIn&flowEntry=ServiceLogin&dsh=S1073791863%3A1709994962980094&theme=mn
+    url: https://accounts.google.com/ServiceLogin?service=youtube&passive=true&continue=https%3A%2F%2Fwww.youtube.com%2Fsignin%3Faction_handle_signin%3Dtrue%26app%3Ddesktop%26hl%3Den-GB%26next%3Dhttps%253A%252F%252Fwww.youtube.com%252F&hl=en-GB
+    ui:
+      fill-email:
+        when:
+          search-x-paths: $self.stages.login.ui.fill-email.search-x-paths
+          actions: is_displayed
+        search-x-paths: //*[@id="identifierId"]
+        actions: enter_text $youtube.user.email
+      select-account:
+        when:
+          search-x-paths: $self.stages.login.ui.select-account.search-x-paths
+          actions: is_displayed
+        search-x-paths:
+          - //*[@id="view_container"]//ul/li[contains(text(), "${youtube.user.email}")]
+          - //*[@id="view_container"]//ul/li//div[contains(text(), "${youtube.user.email}")]
+          - //*[@id="view_container"]/div/div/div[2]/div/div[1]/div/form/span/section/div/div/div/div/ul/li[contains(text(), "${youtube.user.email}")]
+          - //*[@id="view_container"]/div/div/div[2]/div/div[1]/div/form/span/section/div/div/div/div/ul/li//div[contains(text(), "${youtube.user.email}")]
+          - //*[@id="view_container"]/div/div/div[2]/div/div[1]/div/form/span/section/div/div/div/div/ul/li[1]/div/div[1]/div/div[2]/div[2]
+      submit-email:
+        search-x-paths:
+          - //*[@id="identifierNext"]/div/button
+          - //*[@id="identifierNext"]//button[contains(text(), "Next")]
+        actions:
+          - click
+          - wait 2
+      fill-password:
+        search-x-paths:
+          - //*[@id="password"]/div[1]/div/div[1]/input
+          - //*[@id="password"]//input[@type="password"]
+        actions: enter_text $youtube.user.pass
+      submit-password:
+        search-x-paths:
+          - //*[@id="passwordNext"]/div/button
+          - //*[@id="passwordNext"]//button[contains(text(), "Next")]
+        actions:
+          - click
+          - wait 30 # Often we face 2-step verification TODO - Change to 60
+  dismiss-alerts:
+    events:
+      onstart: dismiss_alert 7 # Wait at most 7 seconds for the alert to appear
+      onerror: continue
+    ui:
+      dismiss-account-update-option:
+        search-x-paths:
+          - //*[@id="yDmH0d"]/c-wiz[2]/div/div/div/div[2]/div[4]/div[1]/button
+          - //*[@id="yDmH0d"]//button[contains(text(), "Not now")]
+  add-video-details:
+#    url: https://www.youtube.com/
+    url: https://www.youtube.com/upload
+    ui:
+#      display-post-options:
+#        search-x-paths:
+#          - //*[@id="masthead"]//*[@id="buttons"]//*[@id="button"]
+#          - //*[@id="masthead"]//*[@id="buttons"]//*[@id="button"]/a
+#      proceed-to-post:
+#        search-x-paths:
+#          - //*[@id="items"]/ytd-compact-link-renderer[1]/*[@id="endpoint"]
+#          - //*[@id="items"]/ytd-compact-link-renderer[1]/a[@href="/upload"]
+#          - //*[@id="primary-text-container"]/yt-formatted-string[contains(text(), "Upload video")]
+#        actions:
+#          - move_to_element
+#          - click_and_hold_current_position
+#          - wait 1
+#          - release
+#          - wait 5
+      add-video:
+#        search-shadow-attributes: type=file name=Filedata
+        wait-timeout-seconds: 0  # Signal not to use webdriverwait
+        search-x-paths:
+          - //input[@type='file']
+#          #<input type="file" name="Filedata" multiple="" aria-hidden="true" tabindex="-1" style="position: absolute; overflow: hidden; height: 0px; width: 0px; opacity: 0; left: 0px; top: 0px; display: none;">
+#          - //*[@id="dialog"]//input[@type="file"]
+#          - //*[@id="ytcp-uploads-dialog-file-picker"]//*[@id="content"]/input[@type="file"]
+#          - //*[@id="ytcp-uploads-dialog-file-picker"]//*[@id="select-files-button"]/following-sibling::input[@type="file"]
+        actions:
+          # Use the first result from the specified pictory download stage
+          #- enter_text $results.pictory.save-downloaded-video.get-file[0]
+          - get_first_file ${agents.dir}/pictory/save-downloaded-video/save-file $video.output.type
+          - enter_text $results.me[0]
+          - wait 5
+      enter-video-title:
+        search-x-paths:
+          - //*[@id="title-wrapper"]//*[@id="textbox"]
+        #          - //*[@id="title-wrapper"]//*[@id="input"]
+        actions: enter_text $video.title '#shorts'
+      enter-video-description:
+        search-x-paths:
+          - //*[@id="description-wrapper"]//*[@id="textbox"]
+          - //*[@id="description-wrapper"]//*[@id="description-textarea"]
+#          - //*[@id="description-wrapper"]//*[@id="input"]
+        actions: enter_text $video.description
+  add-video-playlist:
+    events:
+      onerror: continue
+    ui:
+      expand-play-list-options:
+        search-x-paths:
+          - //*[@id="basics"]/div[4]/div[3]/div[1]
+          - //*[@id="basics"]/div[4]/div[3]/div[1]/ytcp-video-metadata-playlists
+          - //*[@id="basics"]/div[4]/div[3]/div[1]/ytcp-video-metadata-playlists/ytcp-text-dropdown-trigger
+          - //*[@id="basics"]/div[4]/div[3]/div[1]/ytcp-video-metadata-playlists/ytcp-text-dropdown-trigger/ytcp-dropdown-trigger
+          - //*[@id="basics"]/div[4]/div[3]/div[1]/ytcp-video-metadata-playlists/ytcp-text-dropdown-trigger/ytcp-dropdown-trigger/div
+          - //*[@id="basics"]/div[4]/div[3]/div[1]/ytcp-video-metadata-playlists/ytcp-text-dropdown-trigger/ytcp-dropdown-trigger/div/div[2]/span
+          - //*[@id="basics"]/div[4]/div[3]/div[1]/ytcp-video-metadata-playlists/ytcp-text-dropdown-trigger/ytcp-dropdown-trigger//span[contains(text(), "Select")]
+      select-play-list:
+        search-x-paths:
+          # TODO - REPLACE WITH VARIABLE youtube.playlist.name
+          - //*[@id="items"]//span[contains(text(), "${youtube.playlist.name}")]
+#          - //*[@id="items"]/ytcp-ve[1]/li//span[contains(text(), "Discovery")]
+        actions: click
+      confirm-playlist:
+        search-x-paths:
+          - //*[@id="dialog"]/div[2]/ytcp-button[2]/div
+          - //*[@id="dialog"]//div[contains(text(), "Done")]
+  audience:
+    ui:
+      # Without this an error will be displayed when we try to move to the next stage
+      specify-age-restrictions:
+        search-x-paths:
+          - //*[@id="audience"]/ytkc-made-for-kids-select/div[4]/tp-yt-paper-radio-group/tp-yt-paper-radio-button//*[contains(text(), "not made for kids")]
+          - //*[@id="audience"]/ytkc-made-for-kids-select/div[4]/tp-yt-paper-radio-group//*[@id="radioLabel"]
+          - //*[@id="audience"]/ytkc-made-for-kids-select/div[4]/tp-yt-paper-radio-group//*[@id="radioLabel"]/*[contains(text(), "not made for kids")]
+          - //*[@id="audience"]/ytkc-made-for-kids-select/div[4]/tp-yt-paper-radio-group/tp-yt-paper-radio-button[2]
+  proceed:
+    ui:
+      click-next-button:
+        search-x-paths:
+          - //*[@id="next-button"]/div
+          - //*[@id="next-button"]//*[contains(text(), "Next")]
+  related-video:
+    events:
+      onerror: run_stages proceed
+      onsuccess: run_stages proceed
+    ui:
+      expand-options:
+        search-x-paths: //*[@id="shorts-content-links-add-button"]
+      select-related-video:
+        search-x-paths:
+          # We select the first video in the list. If we want to select a specific video:
+          # //*[@id="dialog"]/div[2]/div/ytcp-video-pick-dialog-contents/div/div/div/ytcp-entity-card//span[starts-with(text(), "${youtube.video.related.title}")]
+          - //*[@id="dialog"]/div[2]/div/ytcp-video-pick-dialog-contents/div/div/div/ytcp-entity-card[1]
+          - //*[@id="dialog"]/div[2]/div/ytcp-video-pick-dialog-contents/div/div/div/ytcp-entity-card[1]/*[@id="content"]
+  # Only one subtitle can be added
+  # We don't implement for now because we need to confirm if the added subtitles work as expected
+  #subtitles:
+  checks:
+    ui:
+      events:
+        onstart: run_stages proceed
+  visibility:
+    ui:
+      select-visibility:
+        search-x-paths:
+          - //*[@id="radioLabel"]/*[contains(text(), "Public")]
+          - //*[@id="privacy-radios"]/tp-yt-paper-radio-button/*[contains(text(), "Public")]
+        actions:
+          - click
+          - wait 2 # The button text changes based on the selected visibility
+  publish-video:
+    ui:
+      click-publish-button:
+        search-x-paths:
+          - //*[@id="done-button"]
+          - //*[@id="done-button"]/div
+  wait-for-video-link:
+    ui:
+      get-video-link:
+        wait-timeout-seconds: 60
+        search-x-paths: //*[@id="share-url"]
+        actions:
+          - get_text
+          - save_to_file $results.me[0]

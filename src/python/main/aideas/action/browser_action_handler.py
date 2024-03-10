@@ -38,6 +38,8 @@ class BrowserActionHandler(ActionHandler):
             result = self.__execute_script(action)
         elif name == "execute_script_on":
             result = self.__execute_script_on(action)
+        elif name == "refresh":
+            result = self.__refresh(action)
         else:
             return super().execute(action)
         logger.debug(f'{result}')
@@ -83,3 +85,6 @@ class BrowserActionHandler(ActionHandler):
 
         return execute_for_result(execute_on, args[1], action)
 
+    def __refresh(self, action: Action) -> ActionResult:
+        self.__web_driver.refresh()
+        return ActionResult(action, True)

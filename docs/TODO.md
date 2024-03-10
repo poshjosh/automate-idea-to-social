@@ -1,5 +1,7 @@
 ## TODO
 
+page body vs webdriver for finding elements
+
 Allow variables in .env file
 
 Use a working.dir

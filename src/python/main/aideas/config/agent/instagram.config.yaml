@@ -96,7 +96,7 @@ stages:
         actions:
           # Use the first result from the specified agent.stage.stage-item
           #- enter_text $results.pictory.download-video-layout-3.get-file[0]
-          - get_first_file ${agent.dir}/pictory/download-video-layout-3/save-file $video.output.type
+          - get_first_file ${agents.dir}/pictory/download-video-layout-3/save-file $video.output.type
           - enter_text $results.me[0]
           - wait 7
       dismiss-alert:

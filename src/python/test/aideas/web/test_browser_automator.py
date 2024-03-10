@@ -10,7 +10,7 @@ class TestBrowserAutomator(BrowserAutomator):
     def of(config: dict[str, any],
            agent_name: str,
            agent_config: dict[str, any] = None) -> 'BrowserAutomator':
-        web_driver = WebDriverCreator.create(config, agent_config)
+        web_driver = WebDriverCreator.create(config)
         wait_timeout_seconds = config['browser']['chrome']["wait-timeout-seconds"]
         action_handler = TestElementActionHandler(web_driver, wait_timeout_seconds)
         event_handler = EventHandler(action_handler)

@@ -1,8 +1,10 @@
 import logging
+import os
 import uuid
 from typing import Union
 
 from .variable_parser import parse_run_arg
+from ..env import Env
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +44,9 @@ class Action:
                 args[i] = parse_run_arg(
                     [agent_name, stage_id, target_id], args[i], run_context)
 
-        return Action(agent_name, stage_id, target_id, name, args)
+        action = Action(agent_name, stage_id, target_id, name, args)
+        action.__agents_dir = run_context.get_env(Env.AGENTS_DIR)
+        return action
 
     def __init__(self,
                  agent_name: str,
@@ -50,11 +54,19 @@ class Action:
                  target_id: str,
                  name: str,
                  args: Union[list, None] = None):
+        self.__agents_dir = None
         self.__agent_name = agent_name
         self.__stage_id = stage_id
         self.__target_id = target_id
         self.__name = name
         self.__args = [] if args is None else list(args)
+
+    def get_target_dir(self, agents_dir: Union[str, None] = None) -> str:
+        agents_dir = self.__agents_dir if not agents_dir else agents_dir
+        if not agents_dir:
+            raise ValueError('agents dir required')
+        return os.path.join(agents_dir, self.get_agent_name(),
+                            self.get_stage_id(), self.get_target_id())
 
     def get_agent_name(self) -> str:
         return self.__agent_name

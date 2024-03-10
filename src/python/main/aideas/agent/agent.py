@@ -2,8 +2,7 @@ import logging
 from collections import OrderedDict
 
 from ..config.name import Name
-from ..result.element_result_set import ElementResultSet
-from ..result.stage_result_set import StageResultSet
+from ..result.result_set import ElementResultSet, StageResultSet
 from ..run_context import RunContext
 
 logger = logging.getLogger(__name__)

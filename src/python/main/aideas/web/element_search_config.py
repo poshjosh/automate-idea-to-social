@@ -6,22 +6,64 @@ T = TypeVar("T", bound=Union[str, dict])
 
 class SearchBy(Enum):
     XPATH = 'search-x-paths'
-    SHADOW_ATTRIBUTE = 'search-shadow-attr'
+    SHADOW_ATTRIBUTE = 'search-shadow-attributes'
 
 
 class ElementSearchConfig:
     @staticmethod
-    def to_attr(value: str) -> (str, str):
-        parts = value.split(' ')
-        return parts[0], ' '.join(parts[1:])
+    def to_attr_dict(value: str) -> dict[str, str]:
+        """
+        Converts a string to a dictionary of attributes.
+        Input: key_0=value_0 key_1="value with spaces"
+        Output: {key_0: value_0, key_1: value with spaces}
+        :param value: The value to parse into a dictionary.
+        :return: The dictionary of attributes.
+        """
+        separator = ' '
+        value = value.replace('=', separator)
+        quote = '"'
+        parts = value.split(separator)
+        result = []
+        sub = []
+        for i in range(len(parts)):
+            part = parts[i]
+            if part.startswith(quote):
+                if i == 0:
+                    raise ValueError(f'Attribute name cannot have quotes: {part}')
+                sub.append(part[1:])
+                continue
+            if part.endswith(quote):
+                if len(sub) == 0:
+                    raise ValueError(f'Wrongly placed quote in: {part}')
+                sub.append(part[:-1])
+                result.append(separator.join(sub))
+                sub = []
+                continue
+            if len(sub) > 0:
+                sub.append(part)
+                continue
+            result.append(part)
+
+        if len(sub) > 0:
+            raise ValueError(f'Unmatched quote: {quote}{sub[0]}')
+
+        k = None
+        pairs = {}
+        for i in range(len(result)):
+            if not k:
+                k = result[i]
+            else:
+                pairs[k] = result[i]
+                k = None
+        return pairs
 
     @staticmethod
     def of(config: T) -> 'ElementSearchConfig':
-        if type(config) is str:
+        if isinstance(config, str):
             search_from = None
             search_for = [str(config)]
             search_by = SearchBy.XPATH
-        elif type(config) is dict:
+        elif isinstance(config, dict):
             # Below is a valid stage item (notice it has no xpath).
             #
             # stage-0:
@@ -36,13 +78,13 @@ class ElementSearchConfig:
 
             if search_config is None:
                 return None
-            elif type(search_config) is str:
+            elif isinstance(search_config, str):
                 search_from = None
                 search_for = [search_config]
-            elif type(search_config) is list:
+            elif isinstance(search_config, list):
                 search_from = None
                 search_for = search_config
-            elif type(search_config) is dict:
+            elif isinstance(search_config, dict):
                 search_from = dict(search_config)['search-from']
                 search_for = dict(search_config)['search-for']  # str | list
             else:

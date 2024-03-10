@@ -9,7 +9,7 @@ from ....main.aideas.agent.agent_name import AgentName
 from ....main.aideas.agent.browser_agent import BrowserAgent
 from ....main.aideas.config.name import Name
 from ....main.aideas.env import Env
-from ....main.aideas.result.element_result_set import ElementResultSet
+from ....main.aideas.result.result_set import ElementResultSet
 from ....main.aideas.run_context import RunContext
 
 init_logging(logging.config)
@@ -29,7 +29,7 @@ class AgentIT(unittest.TestCase):
     @staticmethod
     def format_tiktok_config(config: dict) -> dict:
         config = copy.deepcopy(config)
-        action_signature = ('get_first_file ${agent.dir}/' + pictory_agent + '/' +
+        action_signature = ('get_first_file ${agents.dir}/' + pictory_agent + '/' +
                             pictory_stage + '/save-file $video.output.type')
         actions: [str] = [action_signature, 'log DEBUG $results.me[0]']
         config['stages'][tiktok_stage] = {'ui': {tiktok_target: {'actions': actions}}}
@@ -38,7 +38,7 @@ class AgentIT(unittest.TestCase):
     def test_pictory_saved_video_is_available_for_other_agents(self):
         os.environ[Env.VIDEO_OUTPUT_DIR.value] = (
             get_test_path(os.environ[Env.VIDEO_OUTPUT_DIR.value]))
-        os.environ[Env.AGENT_DIR.value] = get_test_path(os.environ[Env.AGENT_DIR.value])
+        os.environ[Env.AGENTS_DIR.value] = get_test_path(os.environ[Env.AGENTS_DIR.value])
         run_context: RunContext = RunContext.of_config(self.app_config, pictory_agent)
         result: ElementResultSet = self.__run_agent(pictory_agent, pictory_stage, run_context)
 

@@ -2,9 +2,23 @@ import logging
 import os
 import shutil
 import zipfile
-from typing import Callable, Union
+from typing import Any, Callable, Union
+
+from ruamel.yaml import YAML
 
 logger = logging.getLogger(__name__)
+
+
+def make_dirs(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+
+def create_file(path):
+    make_dirs(os.path.dirname(path))
+    if not os.path.exists(path):
+        with open(path, 'a'):
+            os.utime(path, None)
 
 
 def copy_and_change_ext(file_path: str, new_extension: str) -> str:
@@ -84,8 +98,32 @@ def visit_dir(root_src_dir: str,
                 action(src_file, dst_dir)
 
 
+def write_content(content: str, file_path: str):
+    with open(file_path, 'w+') as text_file:
+        text_file.write(content)
+
+
 def prepend_line(filename, line, separator: str = '\n'):
     with open(filename, 'r+') as f:
         content = f.read()
         f.seek(0, 0)
         f.write(line.rstrip('\r\n') + separator + content)
+
+
+def load_yaml(yaml_file_path: str, file_open_mode='r') -> Any:
+    logger.debug(f'Will load yaml from: {yaml_file_path}')
+    yaml = YAML(typ='rt')
+    with open(yaml_file_path, file_open_mode) as yaml_file:
+        config = yaml.load(yaml_file)
+        logger.debug(f'Loaded yaml: {config}')
+        return config
+
+
+def save_yaml(obj: Any, yaml_file_path: str, file_open_mode='w') -> Any:
+    logger.debug(f'Will save yaml to: {yaml_file_path}')
+    yaml = YAML()
+    yaml.default_flow_style = False
+    with open(yaml_file_path, file_open_mode) as yaml_file:
+        config = yaml.dump(obj, yaml_file)
+        logger.debug(f'Saved yaml: {config}')
+        return config

@@ -6,7 +6,7 @@ from ....main.aideas.agent.agent import Agent
 from ....main.aideas.agent.browser_agent import BrowserAgent
 from ....main.aideas.event.event_handler import EventHandler
 from ....main.aideas.config.name import Name
-from ....main.aideas.result.element_result_set import ElementResultSet
+from ....main.aideas.result.result_set import ElementResultSet
 from ....main.aideas.run_context import RunContext
 
 

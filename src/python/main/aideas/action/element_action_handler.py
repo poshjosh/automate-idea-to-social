@@ -8,6 +8,7 @@ from .action_handler import execute_for_result
 from .browser_action_handler import BrowserActionHandler, WEB_DRIVER
 from ..action.action import Action
 from ..action.action_result import ActionResult
+from ..web.stale_web_element import StaleWebElement
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +26,10 @@ class ElementActionHandler(BrowserActionHandler):
         return ElementActionHandler(self.get_web_driver(), timeout)
 
     def execute_on(self, action: Action, element: WebElement) -> ActionResult:
+
+        if isinstance(element, StaleWebElement):
+            element = element.reload()
+
         name: str = action.get_name()
         driver = self.get_web_driver()
         if name == 'click':
@@ -44,8 +49,12 @@ class ElementActionHandler(BrowserActionHandler):
         elif name == 'enter_text':
             text: str = ' '.join(action.get_args())
             result = execute_for_result(lambda arg: arg.send_keys(text), element, action)
+        elif name == 'get_attribute':
+            attr_name = action.get_first_arg()
+            result = execute_for_result(lambda arg: element.get_attribute(arg), attr_name, action)
         elif name == 'get_text':
-            result = ActionResult(action, True, element.text)
+            text = element.text
+            result = ActionResult(action, True, text if not text else text.strip())
         elif name == 'is_displayed':
             success = element.is_displayed()
             result = ActionResult(action, success, success)

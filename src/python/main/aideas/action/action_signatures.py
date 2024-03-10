@@ -14,9 +14,9 @@ def element_action_signatures(config: dict[str, any], element_name: str) -> list
     default_actions: list[str] = __element_action_signatures(
         config, DEFAULT_ACTIONS_KEY, DEFAULT_ACTIONS)
     element_config: STR_OR_DICT = config[element_name]
-    if type(element_config) is str:
+    if isinstance(element_config, str):
         return default_actions if len(default_actions) > 0 else DEFAULT_ACTIONS
-    elif type(element_config) is dict:
+    elif isinstance(element_config, dict):
         return __element_action_signatures(element_config, 'actions', default_actions)
     else:
         raise ValueError(f'Unexpected element config type: {type(element_config)}')
@@ -26,9 +26,9 @@ def __element_action_signatures(config: dict[str, any],
                                 name: str,
                                 result_if_none: list[str]) -> list[str]:
     default_actions: STR_OR_LIST = config.get(name, result_if_none)
-    if type(default_actions) is str:
+    if isinstance(default_actions, str):
         return [default_actions]
-    elif type(default_actions) is list:
+    elif isinstance(default_actions, list):
         return default_actions
     else:
         raise ValueError(f'Unexpected default actions type: {type(default_actions)}')
@@ -47,9 +47,9 @@ def __get_event_config(config: dict[str, any], event_name: str) -> Union[str, li
 
 
 def __make_list(event_config) -> list[str]:
-    if type(event_config) is str:
+    if isinstance(event_config, str):
         return [event_config]
-    elif type(event_config) is list:
+    elif isinstance(event_config, list):
         return event_config
     else:
         raise ValueError(f'Invalid type for events: {event_config}, expected list | str')

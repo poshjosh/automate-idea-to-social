@@ -6,7 +6,7 @@ stages:
 #      accept-cookies:
 #        events:
 #          onerror: continue
-#        search-shadow-attr: id reject-nonessential-cookies-button
+#        search-shadow-attributes: id=reject-nonessential-cookies-button
 #        search-x-paths:
 #          - //*[@id="reject-nonessential-cookies-button"]
 #          - //*[@id="reject-nonessential-cookies-button"]/button
@@ -33,7 +33,7 @@ stages:
       # See: https://stackoverflow.com/questions/37384458/how-to-handle-elements-inside-shadow-dom-from-selenium
       # See: https://stackoverflow.com/questions/77636171/i-cant-click-log-in-button-in-reddit-login-screen-with-selenium
       submit-login:
-        search-shadow-attr: slot primaryButton
+        search-shadow-attributes: slot=primaryButton
         actions:
           - click
           - wait 8

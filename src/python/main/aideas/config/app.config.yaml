@@ -3,7 +3,7 @@ app:
 browser:
   chrome:
     #executable-path: /Users/chinomso/dev_chinomso/automate-idea-to-social/src/python/main/resources/chrome/version-121/chromedriver-mac-x64/chromedriver
-    wait-timeout-seconds: 30
+    wait-timeout-seconds: 15
     prefs:
       profile.managed_default_content_settings.popups : 2
       profile.default_content_setting_values.notifications: 2
@@ -34,6 +34,7 @@ browser:
 agents:
   - pictory
   - translation
+  - youtube
   - blog
   - twitter
   - tiktok

@@ -4,7 +4,7 @@ import shutil
 from ....main.aideas.action.action import Action
 from ....main.aideas.action.action_result import ActionResult
 from ....main.aideas.agent.blog_agent import BlogAgent
-from ....main.aideas.result.stage_result_set import StageResultSet
+from ....main.aideas.result.result_set import StageResultSet
 from ....main.aideas.run_context import RunContext
 
 

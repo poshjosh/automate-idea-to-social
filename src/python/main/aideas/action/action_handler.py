@@ -6,9 +6,11 @@ from typing import Callable, Union
 
 from .action import Action
 from .action_result import ActionResult
-from ..env import Env
+from ..io.file import write_content
 
 logger = logging.getLogger(__name__)
+
+DEFAULT_FILE_NAME = "result.txt"
 
 
 def execute_for_result(func: Callable[[any], any],
@@ -30,6 +32,7 @@ class ActionHandler:
     ACTION_GET_NEWEST_FILE = 'get_newest_file_in_dir'
     ACTION_LOG = 'log'
     ACTION_SAVE_FILE = 'save_file'
+    ACTION_SAVE_TO_FILE = 'save_to_file'
     ACTION_STARTS_WITH = 'starts_with'
     ACTION_WAIT = 'wait'
 
@@ -50,6 +53,8 @@ class ActionHandler:
             result: ActionResult = self.log(action)
         elif action.get_name() == ActionHandler.ACTION_SAVE_FILE:
             result: ActionResult = self.save_file(action)
+        elif action.get_name() == ActionHandler.ACTION_SAVE_TO_FILE:
+            result: ActionResult = self.save_to_file(action)
         elif action.get_name() == ActionHandler.ACTION_STARTS_WITH:
             result: ActionResult = self.starts_with(action)
         elif action.get_name() == ActionHandler.ACTION_WAIT:
@@ -62,8 +67,8 @@ class ActionHandler:
     @staticmethod
     def wait(action: Action) -> ActionResult:
         arg: str = action.get_first_arg()
-        if arg is None or arg == '':
-            return ActionResult(action, False, f'No value provided for: {action}')
+        if not arg:
+            return ActionResult(action, False, f'No argument provided for: {action}')
         timeout: int = int(arg)
         if timeout < 1:
             return ActionResult(action, True)
@@ -76,8 +81,8 @@ class ActionHandler:
         args: [str] = action.get_args()
         dir_path: str = args[0]
         file_type: str = args[1]
-        if dir_path is None or dir_path == '':
-            return ActionResult(action, False, f'No value provided for: {action}')
+        if not dir_path:
+            return ActionResult(action, False, f'No argument[0] provided for: {action}')
         timeout: int = 30 if len(args) < 3 else int(args[2])
         start_time = time.time()
         while (time.time() - start_time) < timeout:
@@ -96,14 +101,23 @@ class ActionHandler:
     @staticmethod
     def save_file(action: Action) -> ActionResult:
         src = action.get_first_arg()
-        tgt_dir = os.path.join(os.environ[Env.AGENT_DIR.value],
-                               action.get_agent_name(), action.get_stage_id(),
-                               action.get_target_id())
-        if not os.path.exists(tgt_dir):
-            os.makedirs(tgt_dir)
+        if not src:
+            return ActionResult(action, False, f'No argument provided for: {action}')
+        tgt_dir = ActionHandler.__make_target_dirs_if_need(action)
         tgt = os.path.join(tgt_dir, os.path.basename(src))
         logger.debug(f'Copying {src} to {tgt}')
         return execute_for_result(lambda arg: shutil.copy2(src, tgt), src, action)
+
+    @staticmethod
+    def save_to_file(action: Action) -> ActionResult:
+        args: [str] = action.get_args()
+        content = args[0]
+        if not content:
+            return ActionResult(action, False, f'No argument[0] provided for: {action}')
+        tgt_dir = ActionHandler.__make_target_dirs_if_need(action)
+        tgt = os.path.join(tgt_dir, DEFAULT_FILE_NAME if not args[1] else args[1])
+        logger.debug(f'Writing to {tgt}')
+        return execute_for_result(lambda arg: write_content(content, tgt), content, action)
 
     @staticmethod
     def starts_with(action: Action) -> ActionResult:
@@ -161,6 +175,13 @@ class ActionHandler:
     def accept_dir_entry(entry: os.DirEntry, file_type: str) -> bool:
         return entry.is_file() and (file_type == ActionHandler.__ALL_FILE_TYPES or
                                     entry.name.endswith(file_type))
+
+    @staticmethod
+    def __make_target_dirs_if_need(action: Action) -> str:
+        tgt_dir = action.get_target_dir()
+        if not os.path.exists(tgt_dir):
+            os.makedirs(tgt_dir)
+        return tgt_dir
 
 
 class NoopActionHandler(ActionHandler):

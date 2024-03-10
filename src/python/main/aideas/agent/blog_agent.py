@@ -17,7 +17,7 @@ from ..io.shell import (grant_execute_permission_if_need, run_command,
                         run_commands_from_dir, run_script)
 from ..io.net import download_file
 from ..io.file import extract_zip_file, visit_dir, prepend_line
-from ..result.element_result_set import ElementResultSet
+from ..result.result_set import ElementResultSet
 from ..run_context import RunContext
 
 logger = logging.getLogger(__name__)

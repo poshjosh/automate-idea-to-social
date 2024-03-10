@@ -2,6 +2,9 @@
 .mp4
 .vtt
 
+# Saved results from running a program
+app-results/
+
 .DS_Store
 
 # Byte-compiled / optimized / DLL files

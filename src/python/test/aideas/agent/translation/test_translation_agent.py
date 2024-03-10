@@ -2,7 +2,7 @@ from ...test_functions import delete_saved_files
 from .test_translator import TestTranslator
 from .....main.aideas.agent.translation.translation_agent import TranslationAgent
 from .....main.aideas.config.name import Name
-from .....main.aideas.result.element_result_set import ElementResultSet
+from .....main.aideas.result.result_set import ElementResultSet
 from .....main.aideas.run_context import RunContext
 
 

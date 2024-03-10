@@ -1,10 +1,10 @@
 import os
 from enum import Enum
 
-_agent = 'agent'
 _video = 'video'
 _pictory = 'pictory'
 _translation = 'translation'
+_youtube = 'youtube'
 _tiktok = 'tiktok'
 _twitter = 'twitter'
 _reddit = 'reddit'
@@ -15,7 +15,7 @@ _blog = 'blog'
 
 
 class Env(Enum):
-    AGENT_DIR = f'{_agent}.dir'
+    AGENTS_DIR = 'agents.dir'
 
     VIDEO_INPUT_FILE = f'{_video}.input.file'
     VIDEO_TILE = f'{_video}.title'
@@ -30,6 +30,10 @@ class Env(Enum):
     PICTORY_USER_PASS = f'{_pictory}.user.pass'
 
     TRANSLATION_OUTPUT_LANGUAGES = f'{_translation}.output.languages'
+
+    YOUTUBE_USER_EMAIL = f'{_youtube}.user.email'
+    YOUTUBE_USER_PASS = f'{_youtube}.user.pass'
+    YOUTUBE_PLAYLIST_NAME = f'{_youtube}.playlist.name'
 
     TIKTOK_USER_NAME = f'{_tiktok}.user.name'
     TIKTOK_USER_PASS = f'{_tiktok}.user.pass'

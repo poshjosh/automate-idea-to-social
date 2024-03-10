@@ -6,7 +6,7 @@ from typing import Union
 from .agent import Agent, AgentError
 from ..config.name import Name
 from ..event.event_handler import EventHandler, ON_START
-from ..result.element_result_set import ElementResultSet
+from ..result.result_set import ElementResultSet
 from ..run_context import RunContext
 from ..web.browser_automator import BrowserAutomator
 from ..web.element_selector import ElementNotFoundError
@@ -98,7 +98,6 @@ class BrowserAgent(Agent):
                 stage_config, stage_id, run_context)
 
             if not to_proceed:
-                logger.debug(f"Skipping actions for: {stage_name} due to specified condition")
                 return result
 
             self.__event_handler.handle_event(

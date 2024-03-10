@@ -1,12 +1,15 @@
+import pickle
+import shutil
+import uuid
+from datetime import datetime
 import logging.config
 import os
 import sys
 from typing import Union, Callable, TypeVar
 
-import yaml
-
 from .agent.agent_factory import AgentFactory
-from .result.agent_result_set import AgentResultSet
+from .io.file import create_file, load_yaml
+from .result.result_set import AgentResultSet, StageResultSet
 from .config_loader import ConfigLoader
 from .run_context import RunContext
 
@@ -20,7 +23,7 @@ class App:
                     app_config_yaml: str = None):
         config_loader = ConfigLoader(config_path)
         if logging_config_yaml is None:
-            logging_config_yaml = config_loader.get_path_from_id('logging')
+            logging_config_yaml = config_loader.get_logging_config_path()
 
         App.init_logging(logging.config, logging_config_yaml)
 
@@ -33,10 +36,8 @@ class App:
 
     @staticmethod
     def init_logging(logging_config, yaml_file_path):
-        with open(yaml_file_path, 'r') as config_file:
-            config = yaml.safe_load(config_file.read())
-            logging_config.dictConfig(config)
-            logger.info(f'Done loading logging configuration from: {config_file}')
+        config = load_yaml(yaml_file_path)
+        logging_config.dictConfig(config)
 
     def __init__(self,
                  agent_factory: AgentFactory,
@@ -52,12 +53,38 @@ class App:
             agent = self.__agent_factory.get_agent(agent_name)
             logger.debug(f"Starting agent: {agent_name}")
 
-            agent.run(run_context)
+            stage_result_set = agent.run(run_context)
+            self.__save_agent_results(agent_name, stage_result_set)
 
             logger.debug(f"Agent: {agent_name}, "
                          f"result:\n{run_context.get_stage_results(agent_name)}")
 
         return run_context.get_result_set().close()
+
+    def __save_agent_results(self, agent_name, result_set: StageResultSet):
+        """
+        Save the result to a file. (e.g. twitter/2021/01/01_12-34-56-uuid.pkl)
+        Save a success file if the result is successful. (e.g. 01_12-34-56-uuid.pkl.success)
+        :param agent_name: The name of the agent whose result is to be saved.
+        :param result_set: The result to be saved.
+        :return: None
+        """
+        now = datetime.now()
+        object_path: str = os.path.join("resources", "app-results", agent_name,
+                                        now.strftime("%Y"), now.strftime("%m"),
+                                        f"{now.strftime('%d_%H-%M-%S')}-{uuid.uuid4().hex}.pkl")
+        create_file(object_path)
+        with open(object_path, 'wb') as file:
+            pickle.dump(result_set, file)
+
+        if result_set.is_successful():
+            success_path = f'{object_path}.success'
+            create_file(success_path)
+        logger.debug(f"Agent: {agent_name}, result saved to: {object_path}")
+
+        config_loader: ConfigLoader = self.__agent_factory.get_config_loader()
+        config_path = config_loader.get_agent_config_path(agent_name)
+        shutil.copy2(config_path, object_path.replace('.pkl', '.config.yaml'))
 
 
 """

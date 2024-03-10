@@ -2,7 +2,7 @@ import unittest
 
 from ....main.aideas.action.action import Action
 from ....main.aideas.action.action_result import ActionResult
-from ....main.aideas.result.element_result_set import ElementResultSet
+from ....main.aideas.result.result_set import ElementResultSet
 
 
 class ElementResultSetTest(unittest.TestCase):

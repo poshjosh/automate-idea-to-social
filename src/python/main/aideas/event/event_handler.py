@@ -7,7 +7,7 @@ from ..action.action_handler import ActionHandler
 from ..action.action_signatures import event_action_signatures
 from ..agent.agent import AgentError
 from ..config.name import Name
-from ..result.element_result_set import ElementResultSet
+from ..result.result_set import ElementResultSet
 from ..run_context import RunContext
 
 logger = logging.getLogger(__name__)

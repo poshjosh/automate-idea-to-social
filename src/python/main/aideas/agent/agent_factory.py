@@ -85,5 +85,8 @@ class AgentFactory:
     def get_app_config(self) -> dict[str, any]:
         return self.__app_config
 
+    def get_config_loader(self) -> ConfigLoader:
+        return self.__config_loader
+
     def __load_agent_config(self, agent_name: str) -> dict[str, any]:
         return self.__config_loader.load_agent_config(agent_name)

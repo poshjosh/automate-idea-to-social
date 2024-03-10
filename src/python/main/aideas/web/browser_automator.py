@@ -11,8 +11,9 @@ from ..action.action import Action
 from ..action.action_result import ActionResult
 from ..action.action_signatures import DEFAULT_ACTIONS_KEY, element_action_signatures
 from ..action.element_action_handler import ElementActionHandler
+from ..agent.agent_name import AgentName
 from ..config.name import Name
-from ..result.element_result_set import ElementResultSet
+from ..result.result_set import ElementResultSet
 from ..event.event_handler import EventHandler, ON_START
 from ..run_context import RunContext
 
@@ -27,7 +28,7 @@ class BrowserAutomator:
     def of(app_config: dict[str, any],
            agent_name: str,
            agent_config: dict[str, any] = None) -> 'BrowserAutomator':
-        web_driver = WebDriverCreator.create(app_config, agent_config)
+        web_driver = WebDriverCreator.create(app_config, AgentName.YOUTUBE == agent_name)
         wait_timeout_seconds = app_config['browser']['chrome']["wait-timeout-seconds"]
         action_handler = ElementActionHandler(web_driver, wait_timeout_seconds)
         event_handler = EventHandler(action_handler)
@@ -73,8 +74,6 @@ class BrowserAutomator:
                 stage_config, stage_name.id, key, body_elements[0], run_context)
 
             if not to_proceed:
-                logger.debug(f"Skipping actions for: "
-                             f"{self.__path(stage_name.id, key)} due to specified condition")
                 continue
 
             self.__act_on_element(
@@ -87,7 +86,7 @@ class BrowserAutomator:
                           stage_id: str,
                           run_context: RunContext) -> bool:
         page_bodies: List[WebElement] = self.__load_page_bodies(stage_config, run_context)
-        return self.__may_proceed(stage_config, stage_id, WHEN_KEY, page_bodies[0], run_context)
+        return self.__may_proceed(stage_config, stage_id, stage_id, page_bodies[0], run_context)
 
     def __load_page_bodies(self,
                            stage_config: dict[str, any],
@@ -103,18 +102,25 @@ class BrowserAutomator:
                       element_name: str,
                       body_element: WebElement,
                       run_context: RunContext) -> bool:
-        # WHEN_KEY does not have to be unique, since it is not included in the result set        ui_config =
-        # when_config = None if type(ui_config[element_name]) is str \
-        #     else ui_config[element_name].get(WHEN_KEY)
-        when_elem_parent_cfg = stage_config if element_name == WHEN_KEY \
+        when_elem_parent_cfg = stage_config if element_name == stage_id \
             else self.__ui_config(stage_config).get(element_name)
-        if when_elem_parent_cfg is None or type(when_elem_parent_cfg) is not dict:
+
+        if not when_elem_parent_cfg or not when_elem_parent_cfg.get(WHEN_KEY):
             return True
-        if when_elem_parent_cfg.get(element_name) is None:
-            return True
-        return self.__act_on_element(
-            stage_id, body_element, when_elem_parent_cfg,
-            WHEN_KEY, run_context).is_successful()
+
+        logger.debug(f'Item: {element_name}, condition: {when_elem_parent_cfg}')
+        try:
+            success = self.__act_on_element(
+                stage_id, body_element, when_elem_parent_cfg,
+                WHEN_KEY, run_context).is_successful()
+        except Exception as ex:
+            logger.debug(f'Error checking condition for: @{self.__path(stage_id, element_name)}'
+                         f', \nCause: {ex}')
+            success = False
+
+        logger.debug(f'May proceed: {success}, @{self.__path(stage_id, element_name)}, '
+                     f'due to condition: {when_elem_parent_cfg}')
+        return success
 
     @staticmethod
     def __ui_config(config: dict[str, any]) -> dict[str, any]:

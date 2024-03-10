@@ -5,7 +5,7 @@ from selenium import webdriver
 
 from ...main.aideas.action.action_result import ActionResult
 from ...main.aideas.config_loader import ConfigLoader
-from ...main.aideas.result.element_result_set import ElementResultSet
+from ...main.aideas.result.result_set import ElementResultSet
 from ...main.aideas.web.webdriver_creator import WebDriverCreator
 
 MAIN_SRC_DIR = f'{os.getcwd()}/python/main/aideas'

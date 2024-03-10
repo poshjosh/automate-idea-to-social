@@ -1,6 +1,7 @@
 class AgentName:
     PICTORY: str = "pictory"
     TRANSLATION: str = "translation"
+    YOUTUBE: str = "youtube"
     TIKTOK: str = "tiktok"
     BLOG: str = "blog"
 

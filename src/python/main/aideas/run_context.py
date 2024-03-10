@@ -4,9 +4,7 @@ from typing import Union
 from .action.action_result import ActionResult
 from .action.variable_parser import replace_all_variables
 from .agent.agent_args import AgentArgs
-from .result.agent_result_set import AgentResultSet
-from .result.element_result_set import ElementResultSet
-from .result.stage_result_set import StageResultSet
+from .result.result_set import AgentResultSet, ElementResultSet, StageResultSet
 
 
 class RunContext:

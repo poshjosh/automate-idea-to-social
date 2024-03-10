@@ -2,27 +2,21 @@ import logging
 import os
 import pickle
 
-from selenium.common.exceptions import InvalidCookieDomainException
+from selenium.common.exceptions import InvalidCookieDomainException, UnableToSetCookieException, \
+    NoSuchWindowException
 
 logger = logging.getLogger(__name__)
 
 
 class BrowserCookieStore:
-    @staticmethod
-    def create_file(path):
-        basedir = os.path.dirname(path)
-        if not os.path.exists(basedir):
-            os.makedirs(basedir)
-        if not os.path.exists(path):
-            with open(path, 'a'):
-                os.utime(path, None)
-
     def __init__(self, webdriver, domain: str):
         if webdriver is None:
             raise ValueError("webdriver cannot be None")
+        dir_path = os.path.join(os.getcwd(), 'resources', 'agent', domain, "cookies.pkl")
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path)
         self.__webdriver = webdriver
-        self.__cookie_path = os.path.join(os.getcwd(), 'resources', 'agent', domain, "cookies.pkl")
-        self.create_file(self.__cookie_path)
+        self.__cookie_path = os.path.join(dir_path, "cookies.pkl")
 
     def save(self):
         cookies: list[dict] = self.__webdriver.get_cookies()
@@ -44,4 +38,12 @@ class BrowserCookieStore:
             for cookie in cookies:
                 self.__webdriver.add_cookie(cookie)
         except InvalidCookieDomainException as ignored:
-            logger.debug(f'Cookies do not match domain: {self.__webdriver.current_url}')
+            logger.debug(f'Cookies do not match domain: {self.current_url()}')
+        except UnableToSetCookieException as ignored:
+            logger.debug(f'Unable to set cookies: {cookies}')
+
+    def current_url(self, result_if_none: str = None) -> str:
+        try:
+            return self.__webdriver.current_url
+        except NoSuchWindowException as ignored:
+            return result_if_none
