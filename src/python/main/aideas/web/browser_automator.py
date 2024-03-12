@@ -159,8 +159,10 @@ class BrowserAutomator:
                 body_element, key, search_config)
             
             if search_config is not None and search_config.search_for_needs_reordering():
-                search_for = search_config.reorder_search_for()
-                logger.debug(f"For @{'.'.join(path)} search-for re-ordered to:\n{search_for}")
+                before = search_config.get_search_for()
+                after = search_config.reorder_search_for()
+                logger.debug(f"For @{'.'.join(path)} "
+                             f"search-for re-ordered\nFrom: {before}\n  To:\n{after}")
 
             if element_actions:
                 result: ElementResultSet = self.__execute_all_actions(
