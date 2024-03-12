@@ -26,49 +26,52 @@ class EventHandler:
         self.__action_handler: ActionHandler = action_handler
 
     def handle_event(self,
-                     path: [str],
-                     event_name: str,
+                     agent_name: str,
                      config: AgentConfig,
-                     run_stages: Callable[[RunContext, OrderedDict[str, [Name]]], None],
-                     run_context: RunContext) -> ElementResultSet:
+                     config_path: [str],
+                     event_name: str,
+                     run_context: RunContext,
+                     run_stages: Callable[[RunContext, OrderedDict[str, [Name]]], None]) \
+            -> ElementResultSet:
         return self.__handle_event(
-            path, event_name, None, None,
-            config, None, run_stages, run_context, 1)
+            agent_name, config, config_path, event_name, run_context,
+            run_stages, trials=1)
 
     def handle_result_event(self,
-                            path: [str],
-                            exception: Exception,
-                            result: ElementResultSet,
+                            agent_name: str,
                             config: AgentConfig,
-                            retry: Callable[[int], ElementResultSet],
-                            run_stages: Callable[[RunContext, OrderedDict[str, [Name]]], None],
+                            config_path: [str],
                             run_context: RunContext,
+                            run_stages: Callable[[RunContext, OrderedDict[str, [Name]]], None],
+                            retry: Callable[[int], ElementResultSet] = None,
+                            exception: Exception = None,
+                            result: ElementResultSet = None,
                             trials: int = 1) -> ElementResultSet:
 
         event_name = self.__determine_result_event_name(
-            exception, result, path[-1], config.get(path))
+            exception, result, config_path[-1], config.get(config_path))
 
         return self.__handle_event(
-            path, event_name, exception, result, config,
-            retry, run_stages, run_context, trials)
+            agent_name, config, config_path, event_name, run_context,
+            run_stages, retry, exception, result, trials)
 
     def __handle_event(self,
-                       path: [str],
-                       event_name: str,
-                       exception: Exception,
-                       result: ElementResultSet,
+                       agent_name: str,
                        config: AgentConfig,
-                       retry: Callable[[int], ElementResultSet],
-                       run_stages: Callable[[RunContext, OrderedDict[str, [Name]]], None],
+                       config_path: [str],
+                       event_name: str,
                        run_context: RunContext,
+                       run_stages: Callable[[RunContext, OrderedDict[str, [Name]]], None],
+                       retry: Callable[[int], ElementResultSet] = None,
+                       exception: Exception = None,
+                       result: ElementResultSet = None,
                        trials: int = 1) -> ElementResultSet:
 
-        action_signature_list = event_action_signatures(config.get(path), event_name)
+        action_signature_list = event_action_signatures(config.get(config_path), event_name)
 
-        path_str = '.'.join(path)
-        agent_name = path[0]
-        stage_id = path[1]
-        key = path[-1]
+        config_path_str = '.'.join(config_path)
+        stage_id = config_path[1]
+        key = config_path[-1]
 
         index: int = -1
         for action_signature in action_signature_list:
@@ -79,14 +82,14 @@ class EventHandler:
                 return result
             elif action_signature == 'fail':
                 raise AgentError(
-                    f'Failed @{path_str}, result: {result}') from exception
+                    f'Failed @{config_path_str}, result: {result}') from exception
             elif action_signature.startswith('retry'):
                 if trials < self.__max_trials(action_signature):
                     logger.debug(f'Retrying: {key} after {event_name}, tried {trials} already')
                     return retry(trials + 1)
                 else:
                     raise AgentError(
-                        f'Max retries exceeded @{path_str}, result: {result}') from exception
+                        f'Max retries exceeded @{config_path_str}, result: {result}') from exception
             elif action_signature.startswith('run_stages'):
                 args: [str] = action_signature.split(' ')[1:]
                 agent_to_stages: OrderedDict[str, [Name]] = (
@@ -149,14 +152,25 @@ class NoopEventHandler(EventHandler):
     def __init__(self):
         super().__init__(ActionHandler.noop())
 
+    def handle_event(self,
+                     agent_name: str,
+                     config: AgentConfig,
+                     config_path: [str],
+                     event_name: str,
+                     run_context: RunContext,
+                     run_stages: Callable[[RunContext, OrderedDict[str, [Name]]], None]) \
+            -> ElementResultSet:
+        return ElementResultSet.none()
+
     def handle_result_event(self,
-                            path: [str],
-                            exception: Exception,
-                            result: ElementResultSet,
+                            agent_name: str,
                             config: AgentConfig,
-                            retry: Callable[[int], ElementResultSet],
-                            run_stages: Callable[[RunContext, OrderedDict[str, [Name]]], None],
+                            config_path: [str],
                             run_context: RunContext,
+                            run_stages: Callable[[RunContext, OrderedDict[str, [Name]]], None],
+                            retry: Callable[[int], ElementResultSet] = None,
+                            exception: Exception = None,
+                            result: ElementResultSet = None,
                             trials: int = 1) -> ElementResultSet:
         return result
 

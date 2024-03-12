@@ -2,7 +2,7 @@ import logging
 from time import sleep
 from typing import List, Callable, TypeVar
 
-from selenium.common import NoSuchWindowException, StaleElementReferenceException
+from selenium.common import NoSuchWindowException, StaleElementReferenceException, TimeoutException
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
@@ -238,6 +238,9 @@ class ElementSelector:
 
         try:
             return select_clickable_element()
+        except TimeoutException:
+            logger.debug(f"Timeout for element: {element_name} using: {xpath}")
+            return self.__webdriver.find_element(self.__select_by, xpath)
         except StaleElementReferenceException:
             logger.debug(f"Stale element: {element_name}")
             return StaleWebElement(

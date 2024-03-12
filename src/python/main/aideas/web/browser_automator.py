@@ -61,14 +61,14 @@ class BrowserAutomator:
 
         for stage_item in config.stage_item_names(stage):
 
-            path = config.path(stage.id, stage_item)
+            config_path = config.path(stage, stage_item)
 
-            to_proceed = self.__may_proceed(config, path, body_elements[0], run_context)
+            to_proceed = self.__may_proceed(config, config_path, body_elements[0], run_context)
 
             if not to_proceed:
                 continue
 
-            self.__act_on_element(config, path, body_elements[0], run_context)
+            self.__act_on_element(config, config_path, body_elements[0], run_context)
 
         return run_context.get_element_results(self.__agent_name, stage.id)
 
@@ -77,8 +77,7 @@ class BrowserAutomator:
                           stage: Name,
                           run_context: RunContext) -> bool:
         page_bodies: List[WebElement] = self.__load_page_bodies(config, stage, run_context)
-        return self.__may_proceed(
-            config, config.path(stage.id), page_bodies[0], run_context)
+        return self.__may_proceed(config, config.path(stage), page_bodies[0], run_context)
 
     def __load_page_bodies(self,
                            config: AgentConfig,
@@ -91,68 +90,70 @@ class BrowserAutomator:
 
     def __may_proceed(self,
                       config: AgentConfig,
-                      path: [str],
+                      config_path: [str],
                       body_element: WebElement,
                       run_context: RunContext) -> bool:
 
-        path = [e for e in path]  # Use a copy
-        path.append(WHEN_KEY)
+        config_path = [e for e in config_path]  # Use a copy
+        config_path.append(WHEN_KEY)
 
-        condition = config.get(path)
+        condition = config.get(config_path)
 
         if not condition:
             return True
 
-        path_str = f'@{".".join(path)}'
+        config_path_str = f'@{".".join(config_path)}'
 
         try:
             success = self.__act_on_element(
-                config, path, body_element, run_context).is_successful()
+                config, config_path, body_element, run_context).is_successful()
         except Exception as ex:
-            logger.debug(f'Error checking condition for: {path_str}, \nCause: {ex}')
+            logger.debug(f'Error checking condition for: {config_path_str}, \nCause: {ex}')
             success = False
 
-        logger.debug(f'May proceed: {success}, {path_str}, due to condition: {condition}')
+        logger.debug(f'May proceed: {success}, {config_path_str}, due to condition: {condition}')
         return success
 
     def __act_on_element(self,
                          config: AgentConfig,
-                         path: [str],
+                         config_path: [str],
                          body_element: WebElement,
                          run_context: RunContext,
                          trials: int = 1) -> ElementResultSet:
 
-        stage_id = path[1]
-        key = path[-1]
+        stage_id = config_path[1]
+        key = config_path[-1]
 
-        element_config: dict[str, any] = config.get(path)
+        target_config: dict[str, any] = config.get(config_path)
+        logger.debug(f"config_path: {config_path}, config: {target_config}")
 
-        parent_config = config.get(path[:-1])
-        element_actions: list[str] = [] if not parent_config \
-            else element_action_signatures(parent_config, key)
+        target_parent_config = config.get(config_path[:-1])
+        element_actions: list[str] = [] if not target_parent_config \
+            else element_action_signatures(target_parent_config, key)
 
         result = ElementResultSet.none()
 
-        if not element_config and not element_actions:
+        if not target_config and not element_actions:
             return result
 
         def retry_event(_trials: int) -> ElementResultSet:
-            return self.__act_on_element(config, path, body_element, run_context, _trials)
+            return self.__act_on_element(config, config_path, body_element, run_context, _trials)
 
         def run_stages_event(context: RunContext,
                              agent_to_stages: OrderedDict[str, [Name]]):
-            raise ValueError(f'Event: run_stages is not supported for: {".".join(path)}')
+            raise ValueError(f'Event: run_stages is not supported for: {".".join(config_path)}')
 
-        search_config = SearchConfig.of(element_config)
+        search_config = SearchConfig.of(target_config)
 
         exception = None
         try:
 
             self.__event_handler.handle_event(
-                path, ON_START, config, run_stages_event, run_context)
+                self.get_agent_name(), config, config_path, 
+                ON_START, run_context, run_stages_event)
 
-            timeout = self.__wait_timeout_seconds if type(element_config) is not dict \
-                else element_config.get('wait-timeout-seconds', self.__wait_timeout_seconds)
+            timeout = self.__wait_timeout_seconds if type(target_config) is not dict \
+                else target_config.get('wait-timeout-seconds', self.__wait_timeout_seconds)
 
             selector = self.__element_selector.with_timeout(timeout)
             element: WebElement = None if search_config is None else selector.select_element(
@@ -161,7 +162,7 @@ class BrowserAutomator:
             if search_config is not None and search_config.search_for_needs_reordering():
                 before = search_config.get_search_for()
                 after = search_config.reorder_search_for()
-                logger.debug(f"For @{'.'.join(path)} "
+                logger.debug(f"For @{'.'.join(config_path)} "
                              f"search-for re-ordered\nFrom: {before}\n  To:\n{after}")
 
             if element_actions:
@@ -171,7 +172,8 @@ class BrowserAutomator:
             exception = ex
 
         result = self.__event_handler.handle_result_event(
-            path, exception, result, config, retry_event, run_stages_event, run_context, trials)
+            self.get_agent_name(), config, config_path, run_context,
+            run_stages_event, retry_event, exception, result, trials)
 
         return ElementResultSet.none() if result is None else result
 

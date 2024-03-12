@@ -78,9 +78,10 @@ class BrowserAgent(Agent):
                     stage: Name,
                     trials) -> ElementResultSet:
 
-        path: [str] = [self.get_name(), stage.value]
+        config_path: [str] = self.get_config().path(stage)
 
-        logger.debug(f"Executing stage: @{path}")
+        logger.debug(f"Executing stage: @{'.'.join(config_path)}, "
+                     f"config: {self.get_config().get(config_path)}")
 
         def retry_event(_trials: int) -> ElementResultSet:
             return self.__run_stage(run_context, stage, _trials)
@@ -103,8 +104,8 @@ class BrowserAgent(Agent):
                 return result
 
             self.__event_handler.handle_event(
-                path, ON_START,
-                config, run_stages_event, run_context)
+                self.get_name(), config, config_path,
+                ON_START, run_context, run_stages_event)
 
             result: ElementResultSet = self.__browser_automator.act_on_elements(
                 config, stage, run_context)
@@ -115,7 +116,8 @@ class BrowserAgent(Agent):
             exception = ex
 
         result = self.__event_handler.handle_result_event(
-            path, exception, result, config, retry_event, run_stages_event, run_context, trials)
+            self.get_name(), config, config_path, run_context,
+            run_stages_event, retry_event, exception, result, trials)
 
         return ElementResultSet.none() if result is None else result
 
