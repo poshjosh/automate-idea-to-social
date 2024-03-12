@@ -3,7 +3,7 @@ import unittest
 
 from ...agent.translation.test_translation_agent import TestTranslationAgent
 from ...test_functions import delete_saved_files, get_config_loader, init_logging
-from .....main.aideas.result.stage_result_set import StageResultSet
+from .....main.aideas.result.result_set import StageResultSet
 from .....main.aideas.agent.agent_name import AgentName
 from .....main.aideas.run_context import RunContext
 

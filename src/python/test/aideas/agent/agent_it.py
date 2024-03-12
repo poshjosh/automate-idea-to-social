@@ -7,7 +7,7 @@ from typing import Callable
 from ..test_functions import delete_saved_files, get_config_loader, get_test_path, init_logging
 from ....main.aideas.agent.agent_name import AgentName
 from ....main.aideas.agent.browser_agent import BrowserAgent
-from ....main.aideas.config.name import Name
+from ....main.aideas.config import Name, STAGES_KEY, STAGE_ITEMS_KEY
 from ....main.aideas.env import Env
 from ....main.aideas.result.result_set import ElementResultSet
 from ....main.aideas.run_context import RunContext
@@ -32,7 +32,7 @@ class AgentIT(unittest.TestCase):
         action_signature = ('get_first_file ${agents.dir}/' + pictory_agent + '/' +
                             pictory_stage + '/save-file $video.output.type')
         actions: [str] = [action_signature, 'log DEBUG $results.me[0]']
-        config['stages'][tiktok_stage] = {'ui': {tiktok_target: {'actions': actions}}}
+        config[STAGES_KEY][tiktok_stage] = {STAGE_ITEMS_KEY: {tiktok_target: {'actions': actions}}}
         return config
 
     def test_pictory_saved_video_is_available_for_other_agents(self):

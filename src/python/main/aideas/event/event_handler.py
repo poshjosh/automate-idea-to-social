@@ -6,7 +6,7 @@ from ..action.action import Action
 from ..action.action_handler import ActionHandler
 from ..action.action_signatures import event_action_signatures
 from ..agent.agent import AgentError
-from ..config.name import Name
+from ..config import AgentConfig, Name
 from ..result.result_set import ElementResultSet
 from ..run_context import RunContext
 
@@ -26,48 +26,49 @@ class EventHandler:
         self.__action_handler: ActionHandler = action_handler
 
     def handle_event(self,
-                     agent_name: str,
-                     stage_id: str,
+                     path: [str],
                      event_name: str,
-                     key: str,
-                     event_config: dict[str, any],
+                     config: AgentConfig,
                      run_stages: Callable[[RunContext, OrderedDict[str, [Name]]], None],
                      run_context: RunContext) -> ElementResultSet:
         return self.__handle_event(
-            agent_name, stage_id, event_name, None, None, key,
-            event_config, None, run_stages, run_context, 1)
+            path, event_name, None, None,
+            config, None, run_stages, run_context, 1)
 
     def handle_result_event(self,
-                            agent_name: str,
-                            stage_id: str,
+                            path: [str],
                             exception: Exception,
                             result: ElementResultSet,
-                            key: str,
-                            event_config: dict[str, any],
+                            config: AgentConfig,
                             retry: Callable[[int], ElementResultSet],
                             run_stages: Callable[[RunContext, OrderedDict[str, [Name]]], None],
                             run_context: RunContext,
                             trials: int = 1) -> ElementResultSet:
-        event_name = self.__determine_result_event_name(exception, result, key, event_config)
+
+        event_name = self.__determine_result_event_name(
+            exception, result, path[-1], config.get(path))
+
         return self.__handle_event(
-            agent_name, stage_id, event_name, exception, result, key,
-            event_config, retry, run_stages, run_context, trials)
+            path, event_name, exception, result, config,
+            retry, run_stages, run_context, trials)
 
     def __handle_event(self,
-                       agent_name: str,
-                       stage_id: str,
+                       path: [str],
                        event_name: str,
                        exception: Exception,
                        result: ElementResultSet,
-                       key: str,
-                       config: dict[str, any],
+                       config: AgentConfig,
                        retry: Callable[[int], ElementResultSet],
                        run_stages: Callable[[RunContext, OrderedDict[str, [Name]]], None],
                        run_context: RunContext,
                        trials: int = 1) -> ElementResultSet:
-        action_signature_list = event_action_signatures(config, event_name)
 
-        path = f'{agent_name}.{stage_id}.{key}'
+        action_signature_list = event_action_signatures(config.get(path), event_name)
+
+        path_str = '.'.join(path)
+        agent_name = path[0]
+        stage_id = path[1]
+        key = path[-1]
 
         index: int = -1
         for action_signature in action_signature_list:
@@ -78,14 +79,14 @@ class EventHandler:
                 return result
             elif action_signature == 'fail':
                 raise AgentError(
-                    f'Failed @{path}, result: {result}') from exception
+                    f'Failed @{path_str}, result: {result}') from exception
             elif action_signature.startswith('retry'):
                 if trials < self.__max_trials(action_signature):
                     logger.debug(f'Retrying: {key} after {event_name}, tried {trials} already')
                     return retry(trials + 1)
                 else:
                     raise AgentError(
-                        f'Max retries exceeded @{path}, result: {result}') from exception
+                        f'Max retries exceeded @{path_str}, result: {result}') from exception
             elif action_signature.startswith('run_stages'):
                 args: [str] = action_signature.split(' ')[1:]
                 agent_to_stages: OrderedDict[str, [Name]] = (
@@ -149,12 +150,10 @@ class NoopEventHandler(EventHandler):
         super().__init__(ActionHandler.noop())
 
     def handle_result_event(self,
-                            agent_name: str,
-                            stage_id: str,
+                            path: [str],
                             exception: Exception,
                             result: ElementResultSet,
-                            key: str,
-                            event_config: dict[str, any],
+                            config: AgentConfig,
                             retry: Callable[[int], ElementResultSet],
                             run_stages: Callable[[RunContext, OrderedDict[str, [Name]]], None],
                             run_context: RunContext,

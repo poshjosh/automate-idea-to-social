@@ -9,7 +9,7 @@ from ..agent import Agent
 from ...agent.agent_name import AgentName
 from ...action.action import Action
 from ...action.action_result import ActionResult
-from ...config.name import Name
+from ...config import Name
 from ...result.result_set import ElementResultSet
 from ...env import Env
 from ...run_context import RunContext
@@ -32,8 +32,8 @@ class TranslationAgent(Agent):
 
     def run_stage(self,
                   run_context: RunContext,
-                  stage_name: Name) -> ElementResultSet:
-        file_type = self.get_stage_config(stage_name.value)['file-type']
+                  stage: Name) -> ElementResultSet:
+        file_type = self.get_config().get_stage_value(stage, 'file-type')
         dir_path: str = run_context.get_env(Env.VIDEO_OUTPUT_DIR)
         target_languages_str: str = run_context.get_env(Env.TRANSLATION_OUTPUT_LANGUAGES)
         target_language_codes: [str] = target_languages_str.split(',')
@@ -42,8 +42,8 @@ class TranslationAgent(Agent):
                      f'dir: {dir_path}, files: {filepaths}')
         for filepath in filepaths:
             self.__translate_all(
-                stage_name.id, filepath, target_language_codes, run_context)
-        return run_context.get_element_results(self.get_name(), stage_name.id)
+                stage.id, filepath, target_language_codes, run_context)
+        return run_context.get_element_results(self.get_name(), stage.id)
 
     def __translate_all(self,
                         stage_id: str,

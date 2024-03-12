@@ -3,10 +3,10 @@ stages:
     url: https://www.youtube.com/
     events:
       onerror: continue
-    ui:
+    stage-items:
       accept-cookies:
         when:
-          search-x-paths: $self.stages.pre-login.ui.accept-cookies.search-x-paths
+          search-x-paths: $self.stages.pre-login.stage-items.accept-cookies.search-x-paths
           actions: is_displayed
         search-x-paths:
           - //*[@id="content"]/div[2]/div[6]/div[1]/ytd-button-renderer[2]/yt-button-shape/button
@@ -28,16 +28,16 @@ stages:
     #url: https://accounts.google.com/ServiceLogin?service=youtube&uilel=3&passive=true&continue=https%3A%2F%2Fwww.youtube.com%2Fsignin%3Faction_handle_signin%3Dtrue%26app%3Ddesktop%26hl%3Den-GB%26next%3Dhttps%253A%252F%252Fwww.youtube.com%252F&hl=en-GB&ec=65620
     #url: https://accounts.google.com/v3/signin/identifier?continue=https%3A%2F%2Fwww.youtube.com%2Fsignin%3Faction_handle_signin%3Dtrue%26app%3Ddesktop%26hl%3Den-GB%26next%3Dhttps%253A%252F%252Fwww.youtube.com%252F&ec=65620&hl=en-GB&ifkv=ATuJsjwUx3ACMl1_9VaWspgFMcreZUMSVAsQRPD58rd2F-etbIvhM7xcUx2PwHFJ8g_F8nUcTljGWg&passive=true&service=youtube&uilel=3&flowName=GlifWebSignIn&flowEntry=ServiceLogin&dsh=S1073791863%3A1709994962980094&theme=mn
     url: https://accounts.google.com/ServiceLogin?service=youtube&passive=true&continue=https%3A%2F%2Fwww.youtube.com%2Fsignin%3Faction_handle_signin%3Dtrue%26app%3Ddesktop%26hl%3Den-GB%26next%3Dhttps%253A%252F%252Fwww.youtube.com%252F&hl=en-GB
-    ui:
+    stage-items:
       fill-email:
         when:
-          search-x-paths: $self.stages.login.ui.fill-email.search-x-paths
+          search-x-paths: $self.stages.login.stage-items.fill-email.search-x-paths
           actions: is_displayed
         search-x-paths: //*[@id="identifierId"]
         actions: enter_text $youtube.user.email
       select-account:
         when:
-          search-x-paths: $self.stages.login.ui.select-account.search-x-paths
+          search-x-paths: $self.stages.login.stage-items.select-account.search-x-paths
           actions: is_displayed
         search-x-paths:
           - //*[@id="view_container"]//ul/li[contains(text(), "${youtube.user.email}")]
@@ -68,7 +68,7 @@ stages:
     events:
       onstart: dismiss_alert 7 # Wait at most 7 seconds for the alert to appear
       onerror: continue
-    ui:
+    stage-items:
       dismiss-account-update-option:
         search-x-paths:
           - //*[@id="yDmH0d"]/c-wiz[2]/div/div/div/div[2]/div[4]/div[1]/button
@@ -76,7 +76,7 @@ stages:
   add-video-details:
 #    url: https://www.youtube.com/
     url: https://www.youtube.com/upload
-    ui:
+    stage-items:
 #      display-post-options:
 #        search-x-paths:
 #          - //*[@id="masthead"]//*[@id="buttons"]//*[@id="button"]
@@ -121,7 +121,7 @@ stages:
   add-video-playlist:
     events:
       onerror: continue
-    ui:
+    stage-items:
       expand-play-list-options:
         search-x-paths:
           - //*[@id="basics"]/div[4]/div[3]/div[1]
@@ -142,7 +142,7 @@ stages:
           - //*[@id="dialog"]/div[2]/ytcp-button[2]/div
           - //*[@id="dialog"]//div[contains(text(), "Done")]
   audience:
-    ui:
+    stage-items:
       # Without this an error will be displayed when we try to move to the next stage
       specify-age-restrictions:
         search-x-paths:
@@ -151,7 +151,7 @@ stages:
           - //*[@id="audience"]/ytkc-made-for-kids-select/div[4]/tp-yt-paper-radio-group//*[@id="radioLabel"]/*[contains(text(), "not made for kids")]
           - //*[@id="audience"]/ytkc-made-for-kids-select/div[4]/tp-yt-paper-radio-group/tp-yt-paper-radio-button[2]
   proceed:
-    ui:
+    stage-items:
       click-next-button:
         search-x-paths:
           - //*[@id="next-button"]/div
@@ -160,7 +160,7 @@ stages:
     events:
       onerror: run_stages proceed
       onsuccess: run_stages proceed
-    ui:
+    stage-items:
       expand-options:
         search-x-paths: //*[@id="shorts-content-links-add-button"]
       select-related-video:
@@ -173,11 +173,11 @@ stages:
   # We don't implement for now because we need to confirm if the added subtitles work as expected
   #subtitles:
   checks:
-    ui:
+    stage-items:
       events:
         onstart: run_stages proceed
   visibility:
-    ui:
+    stage-items:
       select-visibility:
         search-x-paths:
           - //*[@id="radioLabel"]/*[contains(text(), "Public")]
@@ -186,13 +186,13 @@ stages:
           - click
           - wait 2 # The button text changes based on the selected visibility
   publish-video:
-    ui:
+    stage-items:
       click-publish-button:
         search-x-paths:
           - //*[@id="done-button"]
           - //*[@id="done-button"]/div
   wait-for-video-link:
-    ui:
+    stage-items:
       get-video-link:
         wait-timeout-seconds: 60
         search-x-paths: //*[@id="share-url"]

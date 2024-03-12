@@ -3,7 +3,7 @@ stages:
   # TODO - Requires user input, implement notifying the user
   login:
     url: https://www.tiktok.com/login/phone-or-email/email
-    ui:
+    stage-items:
       enter-username:
         search-x-paths: //*[@id="loginContainer"]/div[1]/form/div[1]/input
         actions:
@@ -19,7 +19,7 @@ stages:
           - wait 30 # !!! USER ASSISTANCE IS REQUIRED TO SOLVE CHALLENGE !!!
   enter-upload-video-details:
     url: https://www.tiktok.com/creator-center/upload?from=upload&lang=en
-    ui:
+    stage-items:
 #      click-to-open-upload-dialog:
 #        wait-timeout-seconds: 15
 #        events:
@@ -47,7 +47,7 @@ stages:
 #  enter-video-cover-image-details:
 #    events:
 #      onerror: continue
-#    ui:
+#    stage-items:
 #      proceed-to-edit-video-cover:
 #        search-x-paths: //*[@id="root"]/div/div/div/div[2]/div[2]/div[2]/div[2]/div/div/*[name()="svg"]
 #      select-to-upload-video-cover:
@@ -62,6 +62,6 @@ stages:
 #          - click
 #          - wait 5 # The time it takes for the cover image to be uploaded
   submit-video:
-    ui:
+    stage-items:
       click-submit-video:
         search-x-paths: //*[@id="root"]/div/div/div/div[2]/div[2]/div[2]/div[6]/div[2]/button

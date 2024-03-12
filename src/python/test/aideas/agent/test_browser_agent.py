@@ -5,7 +5,7 @@ from ..web.test_browser_automator import TestBrowserAutomator
 from ....main.aideas.agent.agent import Agent
 from ....main.aideas.agent.browser_agent import BrowserAgent
 from ....main.aideas.event.event_handler import EventHandler
-from ....main.aideas.config.name import Name
+from ....main.aideas.config import Name
 from ....main.aideas.result.result_set import ElementResultSet
 from ....main.aideas.run_context import RunContext
 
@@ -34,5 +34,5 @@ class TestBrowserAgent(BrowserAgent):
     def without_events(self) -> 'BrowserAgent':
         browser_automator = self.get_browser_automator().with_event_handler(EventHandler.noop())
         return TestBrowserAgent(
-            self.get_name(), self.get_config(), self._get_dependencies(),
+            self.get_name(), self.get_config().root(), self._get_dependencies(),
             browser_automator, self.get_interval_seconds())

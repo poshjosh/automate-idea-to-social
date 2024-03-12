@@ -10,8 +10,8 @@ from selenium.webdriver.support import expected_conditions as WaitCondition
 from selenium.webdriver.support.wait import WebDriverWait, D
 
 from .browser_cookie_store import BrowserCookieStore
-from .element_search_config import ElementSearchConfig, SearchBy
 from .stale_web_element import StaleWebElement
+from ..config import SearchConfig, SearchBy
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +45,7 @@ class ElementSelector:
     def select_element(self,
                        root_element: WebElement,
                        element_name: str,
-                       search_config: ElementSearchConfig) -> WebElement:
+                       search_config: SearchConfig) -> WebElement:
         self.validate_search_inputs(root_element, element_name, search_config)
 
         search_from: str = search_config.get_search_from()
@@ -69,8 +69,12 @@ class ElementSelector:
         if no_search_for_list:
             return search_from_element
 
-        return self.__select_first_element(
+        tup: [WebElement, int] = self.__select_first_element(
             search_from_element, element_name, search_for_list, search_config.get_search_by())
+
+        search_config.set_successful_query_index(tup[1])
+
+        return tup[0]
 
     def load_page_bodies(self, link: str) -> List[WebElement]:
         self.validate_link(link)
@@ -96,7 +100,7 @@ class ElementSelector:
                                search_from_element: WebElement,
                                element_name: str,
                                search_for_list: [str],
-                               search_by: SearchBy) -> WebElement:
+                               search_by: SearchBy) -> [WebElement, int]:
         exception: Exception = None
         index: int = -1
         for search_for in search_for_list:
@@ -107,7 +111,7 @@ class ElementSelector:
                     search_from_element, element_name, search_for, timeout, search_by)
                 if selected is not None:
                     logger.debug(f'Found {element_name} using: {search_by} = {search_for}')
-                    return selected
+                    return selected, index
             except Exception as ex:
                 exception = ex
                 continue
@@ -143,7 +147,7 @@ class ElementSelector:
                          by: SearchBy) -> WebElement:
         if by == SearchBy.SHADOW_ATTRIBUTE:
             return self.__select_shadow_by_attributes(
-                root_element, timeout_seconds, ElementSearchConfig.to_attr_dict(search_for))
+                root_element, timeout_seconds, SearchConfig.to_attr_dict(search_for))
 
         return self.__wait_for_element(
             root_element, element_name, search_for, timeout_seconds)
@@ -242,11 +246,11 @@ class ElementSelector:
     @staticmethod
     def validate_search_inputs(root_element: WebElement,
                                element_name: str,
-                               search_config: ElementSearchConfig) -> WebElement:
+                               search_config: SearchConfig) -> WebElement:
         if root_element is None:
             raise ValueError('root element for searching is None')
         if element_name is None or element_name == '':
-            raise ValueError('element_name is None or empty')
+            raise ValueError('stage_item is None or empty')
         if search_config is None:
             raise ValueError('search_config is None')
         return WebElement({}, None)

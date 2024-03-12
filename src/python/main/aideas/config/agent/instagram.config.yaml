@@ -9,7 +9,7 @@ stages:
     url: https://www.instagram.com/
     events:
       onerror: continue
-    ui:
+    stage-items:
       decline-optional-cookies:
         events:
           onerror: continue
@@ -34,7 +34,7 @@ stages:
   login-via-facebook:
     when:
       # When the submit button from above is displayed
-      search-x-paths: $self.stages.login.ui.submit.search-x-paths[0]
+      search-x-paths: $self.stages.login.stage-items.submit.search-x-paths[0]
       actions: is_displayed
     events:
       onstart: run_stages facebook.login
@@ -45,13 +45,13 @@ stages:
   if-still-not-logged-in:
     url: https://www.instagram.com/
     when:
-      search-x-paths: $self.stages.login.ui.submit.search-x-paths[0]
+      search-x-paths: $self.stages.login.stage-items.submit.search-x-paths[0]
       actions: is_displayed
     events:
       onerror:
         - wait 2
         - retry 1
-    ui:
+    stage-items:
       proceed-to-facebook-login:
         search-x-paths:
           - //*[@id="loginForm"]/div/div[5]/button[contains(text(), "Facebook")]
@@ -80,11 +80,11 @@ stages:
     url: https://www.instagram.com/
     events:
       onerror: continue
-    ui:
+    stage-items:
       dismiss-notifications:
         search-x-paths: /html/body/div[3]/div[1]/div/div[2]/div/div/div/div/div[2]/div/div/div[3]/button[2]
   proceed-to-post:
-    ui:
+    stage-items:
       click-create:
         search-x-paths:
           - //*[starts-with(@id,"mount_0_0_")]/div/div/div[2]/div/div/div[1]/div[1]/div[1]/div/div/div/div/div[2]/div[7]/div/span/div/a

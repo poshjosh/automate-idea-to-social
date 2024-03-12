@@ -4,7 +4,7 @@ import time
 from typing import Union
 
 from .agent import Agent, AgentError
-from ..config.name import Name
+from ..config import AgentConfig, Name
 from ..event.event_handler import EventHandler, ON_START
 from ..result.result_set import ElementResultSet
 from ..run_context import RunContext
@@ -63,7 +63,7 @@ class BrowserAgent(Agent):
 
     def without_events(self) -> 'BrowserAgent':
         browser_automator = self.__browser_automator.with_event_handler(EventHandler.noop())
-        return BrowserAgent(self.get_name(), self.get_config(), self._get_dependencies(),
+        return BrowserAgent(self.get_name(), self.get_config().root(), self._get_dependencies(),
                             browser_automator, self.get_interval_seconds())
 
     def run_stage(self,
@@ -75,37 +75,39 @@ class BrowserAgent(Agent):
 
     def __run_stage(self,
                     run_context: RunContext,
-                    stage_name: Name,
+                    stage: Name,
                     trials) -> ElementResultSet:
-        logger.debug(f"Executing stage: {stage_name}")
+
+        path: [str] = [self.get_name(), stage.value]
+
+        logger.debug(f"Executing stage: @{path}")
 
         def retry_event(_trials: int) -> ElementResultSet:
-            return self.__run_stage(run_context, stage_name, _trials)
+            return self.__run_stage(run_context, stage, _trials)
 
         def run_stages_event(context: RunContext,
                              agent_to_stages: OrderedDict[str, [Name]]):
             # We don't want an infinite loop, so we run this event without events.
             self.without_events()._run_agent_stages(context, agent_to_stages)
 
-        stage_id: str = stage_name.id
-        stage_config = self.get_stage_config(stage_name.value)
+        config: AgentConfig = self.get_config()
 
         exception = None
         result = ElementResultSet.none()
         try:
 
             to_proceed = self.__browser_automator.stage_may_proceed(
-                stage_config, stage_id, run_context)
+                config, stage, run_context)
 
             if not to_proceed:
                 return result
 
             self.__event_handler.handle_event(
-                self.get_name(), stage_id, ON_START, stage_id,
-                stage_config, run_stages_event, run_context)
+                path, ON_START,
+                config, run_stages_event, run_context)
 
             result: ElementResultSet = self.__browser_automator.act_on_elements(
-                self.get_stages_config(), stage_name, run_context)
+                config, stage, run_context)
 
         except ElementNotFoundError as ex:
             exception = ex
@@ -113,8 +115,7 @@ class BrowserAgent(Agent):
             exception = ex
 
         result = self.__event_handler.handle_result_event(
-            self.get_name(), stage_name.id, exception, result, stage_id,
-            stage_config, retry_event, run_stages_event, run_context, trials)
+            path, exception, result, config, retry_event, run_stages_event, run_context, trials)
 
         return ElementResultSet.none() if result is None else result
 

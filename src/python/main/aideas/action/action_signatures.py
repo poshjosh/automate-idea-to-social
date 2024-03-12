@@ -1,15 +1,16 @@
 from typing import TypeVar, Union
 
+from ..config import AgentConfig, DEFAULT_ACTIONS_KEY
+
 STR_OR_DICT = TypeVar("STR_OR_DICT", bound=Union[str, dict])
 STR_OR_LIST = TypeVar("STR_OR_LIST", bound=Union[str, list[str]])
 
 
-DEFAULT_ACTIONS_KEY: str = 'default-actions'
 DEFAULT_ACTIONS: list[str] = ['click']
 
 
 def element_action_signatures(config: dict[str, any], element_name: str) -> list[str]:
-    if element_name == DEFAULT_ACTIONS_KEY:
+    if AgentConfig.is_default_actions_key(element_name):
         raise ValueError(f'The provided key (i.e {element_name}) is a reserved word.')
     default_actions: list[str] = __element_action_signatures(
         config, DEFAULT_ACTIONS_KEY, DEFAULT_ACTIONS)
@@ -25,7 +26,8 @@ def element_action_signatures(config: dict[str, any], element_name: str) -> list
 def __element_action_signatures(config: dict[str, any],
                                 name: str,
                                 result_if_none: list[str]) -> list[str]:
-    default_actions: STR_OR_LIST = config.get(name, result_if_none)
+    default_actions: STR_OR_LIST = result_if_none if not config \
+        else config.get(name, result_if_none)
     if isinstance(default_actions, str):
         return [default_actions]
     elif isinstance(default_actions, list):
@@ -41,7 +43,7 @@ def event_action_signatures(config: dict[str, any], event_name: str) -> list[str
 
 def __get_event_config(config: dict[str, any], event_name: str) -> Union[str, list]:
     default_action: str = 'fail' if event_name == 'onerror' else 'continue'
-    events_config = config.get('events')
+    events_config = None if not config else config.get('events')
     return default_action if events_config is None \
         else events_config.get(event_name, default_action)
 

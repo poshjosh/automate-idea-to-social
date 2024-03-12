@@ -6,6 +6,7 @@ from .agent_name import AgentName
 from .blog_agent import BlogAgent
 from .browser_agent import BrowserAgent
 from .translation.translation_agent import TranslationAgent
+from ..config import AgentConfig
 from ..config_loader import ConfigLoader
 
 logger = logging.getLogger(__name__)
@@ -47,11 +48,11 @@ class AgentFactory:
 
     def __add_dependencies(self, author: Union[Agent, None]):
         author_name = author.get_name()
-        author_config = author.get_config()
-        dependencies: [str] = author_config.get('depends-on', [])
+        author_config: AgentConfig = author.get_config()
+        dependencies: [str] = author_config.get_depends_on()
         for dep_name in dependencies:
             dep_config = self.__load_agent_config(dep_name)
-            if author_name in dep_config.get('depends-on', []):
+            if author_name in AgentConfig(dep_config).get_depends_on():
                 # We try to detect some circular dependencies. Other circular
                 # dependencies will be detected by the recursive call involved.
                 raise ValueError(f'Circular dependency detected: '

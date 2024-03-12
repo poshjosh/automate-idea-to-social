@@ -3,7 +3,7 @@
 stages:
   login:
     url: https://www.facebook.com/
-    ui:
+    stage-items:
       decline-optional-cookies:
         events:
           onerror: continue
@@ -30,7 +30,7 @@ stages:
         actions: none
   post-content:
     url: https://www.facebook.com/me/ # Takes us to the current logged-in user profile
-    ui:
+    stage-items:
       click-post-textarea:
         search-x-paths:
           - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[4]/div[2]/div/div[2]/div[1]/div/div/div/div/div[1]/div

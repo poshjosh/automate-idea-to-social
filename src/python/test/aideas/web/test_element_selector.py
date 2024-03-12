@@ -4,7 +4,7 @@ from selenium.webdriver.remote.webelement import WebElement
 
 from ..web.noop_cookie_store import NoopCookieStore
 from ....main.aideas.web.browser_cookie_store import BrowserCookieStore
-from ....main.aideas.web.element_search_config import ElementSearchConfig
+from ....main.aideas.config import SearchConfig
 from ....main.aideas.web.element_selector import ElementSelector
 
 
@@ -27,7 +27,7 @@ class TestElementSelector(ElementSelector):
     def select_element(self,
                        root_element: WebElement,
                        element_name: str,
-                       search_config: ElementSearchConfig) -> WebElement:
+                       search_config: SearchConfig) -> WebElement:
         self.validate_search_inputs(root_element, element_name, search_config)
         return WebElement({}, None)
 

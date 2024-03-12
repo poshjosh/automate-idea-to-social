@@ -4,7 +4,7 @@ stages:
   email:
     #url: https://twitter.com/i/flow/login
     url: https://twitter.com/i/flow/login?redirect_after_login=%2Fhome
-    ui:
+    stage-items:
       enter-email:
         search-x-paths:
           - //*[@id="layers"]/div[1]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div/div/div/div[5]/label/div/div[2]/div/input
@@ -19,7 +19,7 @@ stages:
   username:
     events:
       onerror: continue
-    ui:
+    stage-items:
       enter-username:
         wait-timeout-seconds: 120
         search-x-paths:
@@ -33,7 +33,7 @@ stages:
           - //*[@id="layers"]/div[1]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[2]/div/div/div/div/div/span/span
           - //*[@id="layers"]/div[2]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[2]/div/div/div/div/div/span/span
   password:
-    ui:
+    stage-items:
       enter-password:
         search-x-paths:
           - //*[@id="layers"]/div[1]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[1]/div/div/div[3]/div/label/div/div[2]/div[1]/input
@@ -50,7 +50,7 @@ stages:
           - wait 5
   tweet:
     url: https://twitter.com/home
-    ui:
+    stage-items:
       dismiss-initial-alert:
         actions: dismiss_alert 3
       enter-tweet:
@@ -69,7 +69,7 @@ stages:
           - click
           - wait 5
 #  ensure-posted:
-#    ui:
+#    stage-items:
 #      wait-for-post-to-appear:
 #        search-x-paths: //*[@id="react-root"]/div/div/div[2]/main/div/div/div/div[1]/div/div[5]/div/section/div/div/div[2]/div/div/article/div/div/div[2]/div[2]/div[1]/div/div[1]/div/div/div[2]/div/div[3]/a/time
 #        actions:

@@ -11,7 +11,7 @@ from .agent import Agent
 from ..agent.agent_name import AgentName
 from ..action.action import Action
 from ..action.action_result import ActionResult
-from ..config.name import Name
+from ..config import Name
 from ..env import Env
 from ..io.shell import (grant_execute_permission_if_need, run_command,
                         run_commands_from_dir, run_script)
@@ -87,7 +87,7 @@ class BlogAgent(Agent):
         return ActionResult(action, success, output_dir)
 
     def convert_to_markdown(self, action: Action, run_context: RunContext) -> ActionResult:
-        script_path: str = self.get_config()['app']['script']['convert-to-markdown']
+        script_path: str = self.get_convert_to_markdown_script()
         input_file: str = run_context.get_env(Env.VIDEO_INPUT_FILE)
 
         output_file: str = self.__convert_to_markdown(script_path, input_file, None)
@@ -133,14 +133,14 @@ class BlogAgent(Agent):
         return os.path.join(os.path.dirname(video_input_file), 'blog')
 
     def update_blog(self, action: Action, run_context: RunContext) -> ActionResult:
-        script_config = self.get_config()['app']['script']
 
-        grant_execute_permission_if_need(script_config['docker-entrypoint'])
+        grant_execute_permission_if_need(self.get_docker_entrypoint_script())
 
         args: [str] = self._get_update_blog_command_args(run_context)
-        timeout = self.get_stage_config("update-blog").get("wait-timeout-seconds", 1200)
 
-        return_code = run_script(script_config['update-blog'], args, timeout)
+        timeout = self.get_config().get_stage_wait_timeout('update-blog', 1200)
+
+        return_code = run_script(self.get_update_blog_script(), args, timeout)
         return ActionResult(action, return_code == 0)
 
     def __download_and_extract_zip_to_dir(self,
@@ -236,23 +236,41 @@ class BlogAgent(Agent):
         app_image_name = self.get_app_docker_image_name()
         return ['-d', app_location, '-e', app_env_file, '-i', app_image_name]
 
+    def __app(self):
+        return self.get_config().get('app')
+
+    def __blog(self):
+        return self.get_config().get('blog')
+
+    def __script(self):
+        return self.__app().get('script')
+
+    def get_convert_to_markdown_script(self) -> str:
+        return self.__script().get('convert-to-markdown')
+
+    def get_docker_entrypoint_script(self) -> str:
+        return self.__script().get('docker-entrypoint')
+
+    def get_update_blog_script(self) -> str:
+        return self.__script().get('update-blog')
+
     def get_app_base_dir(self) -> str:
-        return self.get_config()['app']['base']['dir']
+        return self.__app()['base']['dir']
 
     def get_app_docker_image_name(self) -> str:
-        return self.get_config()['app']['docker']['image']
+        return self.__app()['docker']['image']
 
     def get_app_src_url(self) -> str:
-        return self.get_config()['app']['source']['url']
+        return self.__app()['source']['url']
 
     def get_app_tgt_dir(self) -> str:
-        return self.get_config()['app']['target']['dir']
+        return self.__app()['target']['dir']
 
     def get_blog_base_dir(self) -> str:
-        return self.get_config()['blog']['base']['dir']
+        return self.__blog()['base']['dir']
 
     def get_blog_src_url(self) -> str:
-        return self.get_config()['blog']['source']['url']
+        return self.__blog()['source']['url']
 
     def get_blog_tgt_dir(self) -> str:
-        return self.get_config()['blog']['target']['dir']
+        return self.__blog()['target']['dir']

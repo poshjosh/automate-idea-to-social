@@ -4,7 +4,7 @@ interval-seconds: 1
 stages:
   login:
     url: https://app.pictory.ai/login
-    ui:
+    stage-items:
       username:
         search-x-paths: //*[@id="mui-1"]
         actions: enter_text $pictory.user.name
@@ -24,7 +24,7 @@ stages:
       on_error:
         - *default_wait
         - retry 1
-    ui:
+    stage-items:
       select-script-input:
         search-x-paths: //*[@id="root"]/div[1]/div[4]/div[1]/div[3]/div[1]/div[1]/div[3]/button
       title:
@@ -46,7 +46,7 @@ stages:
     url: https://app.pictory.ai/storyboard/scripttovideo
     events:
       onerror: continue
-    ui:
+    stage-items:
       select-first-scene:
         search-x-paths:
           - //*[@id="AllSceneTitleText_1_1"]
@@ -77,7 +77,7 @@ stages:
           - //*[@id="tbinner-3"]/div/div[2]/div/div[1]/div/div/div[2]/div/div[1]/a/div
           - //*[@id="tbinner-3"]/div/div[2]/div/div[1]/div/div/div[2]/div/div[1]/a/div/img
   branding:
-    ui:
+    stage-items:
       branding-tab:
         search-x-paths: //*[@id="templates-tab"]
         actions:
@@ -115,7 +115,7 @@ stages:
         wait-timeout-seconds: 45  # TODO - Change to 120
         search-x-paths: /div/div[contains(text(), "applied")]
   download-video:
-    ui:
+    stage-items:
       expand-download-options:
         search-x-paths: //*[@id="generate-button-dropdown"]/a
         actions:
@@ -146,7 +146,7 @@ stages:
           - click
           - wait 2
   save-downloaded-video:
-    ui:
+    stage-items:
       get-file:
         actions: get_newest_file_in_dir $video.output.dir $video.output.type 120
       save-file:
@@ -158,7 +158,7 @@ stages:
   download-video-layout-2:
     events:
       onsuccess: run_stages download-video save-downloaded-video
-    ui:
+    stage-items:
       expand-layout-2-options:
         search-x-paths: //*[@id="step-3-fixed-height"]/div[2]/div[1]/div/div[2]/div/div/div[2]/div/div/div
       select-layout-2:
@@ -169,7 +169,7 @@ stages:
   download-video-layout-3:
     events:
       onsuccess: run_stages download-video save-downloaded-video
-    ui:
+    stage-items:
       expand-layout-3-options:
         search-x-paths: //*[@id="step-3-fixed-height"]/div[2]/div[1]/div/div[2]/div/div/div[2]/div/div/div
       select-layout-3:
@@ -179,7 +179,7 @@ stages:
           - wait 6  # An 8 mb video took 2 seconds
   download-subtitles:
     url: https://app.pictory.ai/myvideos
-    ui:
+    stage-items:
       click-first-project:
         search-x-paths: //*[@id="h-tb1"]/div/div/div/div/div[1]/div[2]/div/div[1]/div[2]/div/div/div[1]
       download-subtitles-file:

@@ -4,23 +4,19 @@ from typing import List, Union
 
 from selenium.webdriver.remote.webelement import WebElement
 
-from .element_search_config import ElementSearchConfig
 from .element_selector import ElementNotFoundError, ElementSelector
 from .webdriver_creator import WEB_DRIVER, WebDriverCreator
 from ..action.action import Action
 from ..action.action_result import ActionResult
-from ..action.action_signatures import DEFAULT_ACTIONS_KEY, element_action_signatures
+from ..action.action_signatures import element_action_signatures
 from ..action.element_action_handler import ElementActionHandler
 from ..agent.agent_name import AgentName
-from ..config.name import Name
+from ..config import AgentConfig, Name, SearchConfig, WHEN_KEY
 from ..result.result_set import ElementResultSet
 from ..event.event_handler import EventHandler, ON_START
 from ..run_context import RunContext
 
 logger = logging.getLogger(__name__)
-
-
-WHEN_KEY = 'when'
 
 
 class BrowserAutomator:
@@ -57,135 +53,125 @@ class BrowserAutomator:
             event_handler, self.__element_selector, self.__action_handler)
 
     def act_on_elements(self,
-                        stages_config: dict[str, any],
-                        stage_name: Name,
+                        config: AgentConfig,
+                        stage: Name,
                         run_context: RunContext) -> ElementResultSet:
-        stage_config: dict[str, any] = stages_config[stage_name.value]
 
-        body_elements: List[WebElement] = self.__load_page_bodies(stage_config, run_context)
+        body_elements: List[WebElement] = self.__load_page_bodies(config, stage, run_context)
 
-        elem_parent_cfg: dict[str, any] = self.__ui_config(stage_config)
+        for stage_item in config.stage_item_names(stage):
 
-        for key in elem_parent_cfg.keys():
-            if key == DEFAULT_ACTIONS_KEY:
-                continue
+            path = config.path(stage.id, stage_item)
 
-            to_proceed = self.__may_proceed(
-                stage_config, stage_name.id, key, body_elements[0], run_context)
+            to_proceed = self.__may_proceed(config, path, body_elements[0], run_context)
 
             if not to_proceed:
                 continue
 
-            self.__act_on_element(
-                stage_name.id, body_elements[0], elem_parent_cfg, key, run_context)
+            self.__act_on_element(config, path, body_elements[0], run_context)
 
-        return run_context.get_element_results(self.__agent_name, stage_name.id)
+        return run_context.get_element_results(self.__agent_name, stage.id)
 
     def stage_may_proceed(self,
-                          stage_config: dict[str, any],
-                          stage_id: str,
+                          config: AgentConfig,
+                          stage: Name,
                           run_context: RunContext) -> bool:
-        page_bodies: List[WebElement] = self.__load_page_bodies(stage_config, run_context)
-        return self.__may_proceed(stage_config, stage_id, stage_id, page_bodies[0], run_context)
+        page_bodies: List[WebElement] = self.__load_page_bodies(config, stage, run_context)
+        return self.__may_proceed(
+            config, config.path(stage.id), page_bodies[0], run_context)
 
     def __load_page_bodies(self,
-                           stage_config: dict[str, any],
+                           config: AgentConfig,
+                           stage: Name,
                            run_context: RunContext) -> List[WebElement]:
-        link: str = stage_config.get('url', self.__webdriver.current_url)
+        link: str = config.get_url(stage, self.__webdriver.current_url)
         body_elements: List[WebElement] = self.__element_selector.load_page_bodies(link)
         run_context.set_current_url(link)
         return body_elements
 
     def __may_proceed(self,
-                      stage_config: dict[str, any],
-                      stage_id: str,
-                      element_name: str,
+                      config: AgentConfig,
+                      path: [str],
                       body_element: WebElement,
                       run_context: RunContext) -> bool:
-        when_elem_parent_cfg = stage_config if element_name == stage_id \
-            else self.__ui_config(stage_config).get(element_name)
 
-        if not when_elem_parent_cfg or not when_elem_parent_cfg.get(WHEN_KEY):
+        path = [e for e in path]  # Use a copy
+        path.append(WHEN_KEY)
+
+        condition = config.get(path)
+
+        if not condition:
             return True
 
-        logger.debug(f'Item: {element_name}, condition: {when_elem_parent_cfg}')
+        path_str = f'@{".".join(path)}'
+
         try:
             success = self.__act_on_element(
-                stage_id, body_element, when_elem_parent_cfg,
-                WHEN_KEY, run_context).is_successful()
+                config, path, body_element, run_context).is_successful()
         except Exception as ex:
-            logger.debug(f'Error checking condition for: @{self.__path(stage_id, element_name)}'
-                         f', \nCause: {ex}')
+            logger.debug(f'Error checking condition for: {path_str}, \nCause: {ex}')
             success = False
 
-        logger.debug(f'May proceed: {success}, @{self.__path(stage_id, element_name)}, '
-                     f'due to condition: {when_elem_parent_cfg}')
+        logger.debug(f'May proceed: {success}, {path_str}, due to condition: {condition}')
         return success
 
-    @staticmethod
-    def __ui_config(config: dict[str, any]) -> dict[str, any]:
-        return config.get('ui', {})
-
-    """
-        ########################
-        #   UI config format   #
-        ########################
-        # default-actions: # optional
-        #   - click
-        #   - wait 2
-        # element-0: //*[@id="element-0"]
-        # element-1: //*[@id="element-1"] 
-    """
-
     def __act_on_element(self,
-                         stage_id: str,
+                         config: AgentConfig,
+                         path: [str],
                          body_element: WebElement,
-                         elem_parent_cfg: dict[str, any],
-                         element_name: str,
                          run_context: RunContext,
                          trials: int = 1) -> ElementResultSet:
 
+        stage_id = path[1]
+        key = path[-1]
+
+        element_config: dict[str, any] = config.get(path)
+
+        parent_config = config.get(path[:-1])
+        element_actions: list[str] = [] if not parent_config \
+            else element_action_signatures(parent_config, key)
+
+        result = ElementResultSet.none()
+
+        if not element_config and not element_actions:
+            return result
+
         def retry_event(_trials: int) -> ElementResultSet:
-            return self.__act_on_element(
-                stage_id, body_element, elem_parent_cfg, element_name, run_context, _trials)
+            return self.__act_on_element(config, path, body_element, run_context, _trials)
 
         def run_stages_event(context: RunContext,
                              agent_to_stages: OrderedDict[str, [Name]]):
-            raise ValueError(f'Event: run_stages is not supported for: '
-                             f'{self.__path(stage_id, element_name)}')
+            raise ValueError(f'Event: run_stages is not supported for: {".".join(path)}')
 
-        element_actions: list[str] = element_action_signatures(elem_parent_cfg, element_name)
-        element_config: dict[str, any] = elem_parent_cfg[element_name]
-        search_config = ElementSearchConfig.of(element_config)
+        search_config = SearchConfig.of(element_config)
 
         exception = None
-        result = ElementResultSet.none()
         try:
 
             self.__event_handler.handle_event(
-                self.__agent_name, stage_id, ON_START, element_name,
-                element_config, run_stages_event, run_context)
+                path, ON_START, config, run_stages_event, run_context)
 
             timeout = self.__wait_timeout_seconds if type(element_config) is not dict \
                 else element_config.get('wait-timeout-seconds', self.__wait_timeout_seconds)
 
             selector = self.__element_selector.with_timeout(timeout)
             element: WebElement = None if search_config is None else selector.select_element(
-                body_element, element_name, search_config)
+                body_element, key, search_config)
+            
+            if search_config is not None and search_config.search_for_needs_reordering():
+                search_for = search_config.reorder_search_for()
+                logger.debug(f"For @{'.'.join(path)} search-for re-ordered to:\n{search_for}")
 
-            result: ElementResultSet = self.__execute_all_actions(
-                stage_id, element, timeout, element_name, element_actions, run_context)
+            if element_actions:
+                result: ElementResultSet = self.__execute_all_actions(
+                    stage_id, element, timeout, key, element_actions, run_context)
         except ElementNotFoundError as ex:
             exception = ex
 
         result = self.__event_handler.handle_result_event(
-            self.__agent_name, stage_id, exception, result, element_name,
-            element_config, retry_event, run_stages_event, run_context, trials)
+            path, exception, result, config, retry_event, run_stages_event, run_context, trials)
 
         return ElementResultSet.none() if result is None else result
-
-    def __path(self, stage_id: str, element_name: str) -> str:
-        return f'{self.__agent_name}.{stage_id}.{element_name}'
 
     def __execute_all_actions(self,
                               stage_id: str,

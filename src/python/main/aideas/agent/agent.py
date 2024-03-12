@@ -1,7 +1,7 @@
 import logging
 from collections import OrderedDict
 
-from ..config.name import Name
+from ..config import AgentConfig, Name
 from ..result.result_set import ElementResultSet, StageResultSet
 from ..run_context import RunContext
 
@@ -18,7 +18,7 @@ class Agent:
                  agent_config: dict[str, any],
                  dependencies: dict[str, 'Agent'] = None):
         self.__name = name
-        self.__config = agent_config
+        self.__config = AgentConfig(agent_config)
         self.__dependencies = {} if dependencies is None else dependencies
 
     def add_dependency(self, agent_name: str, agent: 'Agent') -> 'Agent':
@@ -32,9 +32,10 @@ class Agent:
     def run(self, run_context: RunContext) -> StageResultSet:
         """Run all the stages of the agent and return True if successful, False otherwise."""
         try:
-            self.__config = run_context.replace_variables(self.__name, self.__config)
+            self.__config = AgentConfig(
+                run_context.replace_variables(self.__name, self.__config.root()))
 
-            stages: [Name] = Name.of_lists(list(self.get_stages_config().keys()))
+            stages: [Name] = self.__config.get_stage_names()
 
             # We only close the result for the agent after all stages have been run.
             return self._run_stages(run_context, stages).close()
@@ -84,14 +85,8 @@ class Agent:
     def get_name(self) -> str:
         return self.__name
 
-    def get_config(self) -> dict[str, any]:
+    def get_config(self) -> AgentConfig:
         return self.__config
-
-    def get_stages_config(self) -> dict[str, any]:
-        return self.__config['stages']
-
-    def get_stage_config(self, stage_name: str) -> dict[str, any]:
-        return self.get_stages_config()[stage_name]
 
     def _get_dependencies(self) -> dict[str, 'Agent']:
         return self.__dependencies

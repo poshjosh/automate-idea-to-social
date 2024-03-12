@@ -45,7 +45,7 @@ class Action:
                     [agent_name, stage_id, target_id], args[i], run_context)
 
         action = Action(agent_name, stage_id, target_id, name, args)
-        action.__agents_dir = run_context.get_env(Env.AGENTS_DIR)
+        action.__agents_dir = None if run_context is None else run_context.get_env(Env.AGENTS_DIR)
         return action
 
     def __init__(self,
