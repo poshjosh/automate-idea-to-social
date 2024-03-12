@@ -7,9 +7,10 @@ logger = logging.getLogger(__name__)
 
 class Name:
     @staticmethod
-    def of_list(names: list[str], alias: Union[str, None] = None) -> ['Name']:
-        aliases = [names] if alias is None else [alias for _ in names]
-        return Name.of_lists(names, aliases)
+    def of(name: Union[str, 'Name'], identifier: Union[str, None] = None) -> 'Name':
+        if isinstance(name, Name):
+            return name
+        return Name(name, identifier)
 
     @staticmethod
     def of_lists(names: list[str], aliases: Union[list[str], None] = None) -> ['Name']:
@@ -19,24 +20,52 @@ class Name:
             aliases: [str] = [name for name in names]
         return [Name(names[i], aliases[i]) for i in range(len(names))]
 
-    @staticmethod
-    def of(name: str, alias: Union[str, None] = None) -> 'Name':
-        return Name(name, alias)
-
-    def __init__(self, name: str, alias: Union[str, None] = None):
+    def __init__(self, name: str, identifier: Union[str, None] = None):
         if name is None:
             raise ValueError('name cannot be None')
-        self.value = name
-        self.id = name if alias is None else alias
+        self.__value = name
+        self.__id = name if identifier is None else identifier
+
+    def get_id(self) -> str:
+        return self.__id
+
+    def get_value(self) -> str:
+        return self.__value
 
     def __eq__(self, other) -> bool:
-        return self.value == other.value and self.id == other.id
+        return self.__value == other.value and self.__id == other.__id
 
     def __hash__(self) -> int:
-        return hash(self.value) + hash(self.id)
+        return hash(self.__value) + hash(self.__id)
 
     def __str__(self) -> str:
-        return self.value if self.value == self.id else f'({self.value}|{self.id})'
+        return self.__value if self.__value == self.__id else f'({self.__value}|{self.__id})'
+
+
+class ConfigPath(tuple[Name]):
+    @staticmethod
+    def of(stage: Union[str, Name], stage_item: Union[str, Name] = None) -> 'ConfigPath':
+        path = [Name.of(STAGES_KEY), Name.of(stage)]
+        if not stage_item:
+            return ConfigPath(path)
+        path.append(Name.of(STAGE_ITEMS_KEY))
+        path.append(Name.of(stage_item))
+        return ConfigPath(path)
+
+    def with_appended(self, name: Union[str, Name]) -> 'ConfigPath':
+        return ConfigPath([e for e in self] + [Name.of(name)])
+
+    def stage(self) -> Name:
+        return self[1]
+
+    def stage_item(self) -> Name:
+        return self[3]
+
+    def name(self) -> Name:
+        return self[-1]
+
+    def __str__(self) -> str:
+        return f'@{".".join([str(e) for e in self])}'
 
 
 SEARCH_CONFIG_PARENT = TypeVar("SEARCH_CONFIG_PARENT", bound=Union[str, dict])
@@ -48,53 +77,6 @@ class SearchBy(Enum):
 
 
 class SearchConfig:
-    @staticmethod
-    def to_attr_dict(value: str) -> dict[str, str]:
-        """
-        Converts a string to a dictionary of attributes.
-        Input: key_0=value_0 key_1="value with spaces"
-        Output: {key_0: value_0, key_1: value with spaces}
-        :param value: The value to parse into a dictionary.
-        :return: The dictionary of attributes.
-        """
-        separator = ' '
-        value = value.replace('=', separator)
-        quote = '"'
-        parts = value.split(separator)
-        result = []
-        sub = []
-        for i in range(len(parts)):
-            part = parts[i]
-            if part.startswith(quote):
-                if i == 0:
-                    raise ValueError(f'Attribute name cannot have quotes: {part}')
-                sub.append(part[1:])
-                continue
-            if part.endswith(quote):
-                if len(sub) == 0:
-                    raise ValueError(f'Wrongly placed quote in: {part}')
-                sub.append(part[:-1])
-                result.append(separator.join(sub))
-                sub = []
-                continue
-            if len(sub) > 0:
-                sub.append(part)
-                continue
-            result.append(part)
-
-        if len(sub) > 0:
-            raise ValueError(f'Unmatched quote: {quote}{sub[0]}')
-
-        k = None
-        pairs = {}
-        for i in range(len(result)):
-            if not k:
-                k = result[i]
-            else:
-                pairs[k] = result[i]
-                k = None
-        return pairs
-
     @staticmethod
     def of(config: SEARCH_CONFIG_PARENT) -> Union['SearchConfig', None]:
         if isinstance(config, str):
@@ -121,37 +103,6 @@ class SearchConfig:
         else:
             raise ValueError(f'Invalid search config: {config}')
         return SearchConfig(search_from, search_for, search_by)
-    #
-    # @staticmethod
-    # def update(
-    #         config: SEARCH_CONFIG_PARENT, elem_search_cfg: 'SearchConfig') -> SEARCH_CONFIG_PARENT:
-    #     if elem_search_cfg.__successful_query_index < 1:
-    #         return config
-    #
-    #     if isinstance(config, str):
-    #         return config
-    #     elif isinstance(config, dict):
-    #         search_config = SearchConfig.__get_search_config(config)
-    #         search_by = SearchConfig.__get_search_by(config)
-    #
-    #         if search_config is None:
-    #             return config
-    #         elif isinstance(search_config, str):
-    #             return config
-    #         elif isinstance(search_config, list):
-    #             logger.debug(f"Before: {config}")
-    #             config[search_by] = elem_search_cfg.reorder_search_for()
-    #             logger.debug(f" After: {config}")
-    #             return config
-    #         elif isinstance(search_config, dict):
-    #             logger.debug(f"Before: {config}")
-    #             config[search_by]['search-for'] = elem_search_cfg.reorder_search_for()
-    #             logger.debug(f" After: {config}")
-    #             return config
-    #         else:
-    #             raise ValueError(f'Invalid search config: {config}')
-    #     else:
-    #         raise ValueError(f'Invalid search config: {config}')
 
     @staticmethod
     def __get_search_config(config: SEARCH_CONFIG_PARENT):
@@ -199,6 +150,7 @@ STAGES_KEY: str = "stages"
 STAGE_ITEMS_KEY: str = "stage-items"
 WHEN_KEY: str = 'when'
 DEFAULT_ACTIONS_KEY: str = 'default-actions'
+TIMEOUT_KEY: str = 'wait-timeout-seconds'
 
 VALUE = TypeVar("VALUE", bound=Union[any, None])
 
@@ -207,15 +159,6 @@ class AgentConfig:
     @staticmethod
     def is_default_actions_key(stage_item: Union[str, Name]) -> bool:
         return AgentConfig.__value(stage_item) == DEFAULT_ACTIONS_KEY
-
-    @staticmethod
-    def path(stage: Union[str, Name], stage_item: Union[str, Name] = None) -> [str]:
-        path = [STAGES_KEY, AgentConfig.__value(stage)]
-        if not stage_item:
-            return path
-        path.append(STAGE_ITEMS_KEY)
-        path.append(AgentConfig.__value(stage_item))
-        return path
 
     def __init__(self, config: dict[str, any]):
         self.__config = config
@@ -236,10 +179,10 @@ class AgentConfig:
     def get_stage_names(self) -> [Name]:
         return Name.of_lists(list(self.stages().keys()))
 
-    def stage(self, stage: Union[str, Name], result_if_none = None) -> any:
+    def stage(self, stage: Union[str, Name], result_if_none=None) -> any:
         return self.stages().get(self.__value(stage), result_if_none)
 
-    def stage_items(self, stage: Union[str, Name], result_if_none = None) -> any:
+    def stage_items(self, stage: Union[str, Name], result_if_none=None) -> any:
         """
             #################################
             #   stage-items config format   #
@@ -266,7 +209,8 @@ class AgentConfig:
             self, stage: Union[str, Name], item: Union[str, Name], result_if_none=None) -> any:
         return self.stage_items(stage, {}).get(self.__value(item), result_if_none)
 
-    def search(self, stage: Union[str, Name], stage_item: Union[str, Name]) -> dict[str, any] or None:
+    def search(
+            self, stage: Union[str, Name], stage_item: Union[str, Name]) -> dict[str, any] or None:
         search_config_parent: SEARCH_CONFIG_PARENT = self.__search_parent(stage, stage_item)
         if not isinstance(search_config_parent, dict):
             return None
@@ -285,14 +229,15 @@ class AgentConfig:
         return self.__config.get('depends-on', [])
 
     def get_stage_wait_timeout(self, stage: Union[str, Name], result_if_none: int = 0) -> int:
-        return self.get_stage_value(stage, 'wait-timeout-seconds', result_if_none)
+        return self.get_stage_value(stage, TIMEOUT_KEY, result_if_none)
 
-    def get_stage_value(self, stage: Union[str, Name], key: str, result_if_none: VALUE = 0) -> VALUE:
+    def get_stage_value(
+            self, stage: Union[str, Name], key: str, result_if_none: VALUE = 0) -> VALUE:
         return self.stage(stage, {}).get(key, result_if_none)
 
     def get_stage_item_wait_timeout(
             self, stage: Union[str, Name], item: Union[str, Name], result_if_none: int = 0) -> int:
-        return self.get_stage_item_value(stage, item, 'wait-timeout-seconds', result_if_none)
+        return self.get_stage_item_value(stage, item, TIMEOUT_KEY, result_if_none)
 
     def get_stage_item_value(self,
                              stage: Union[str, Name],
@@ -301,7 +246,7 @@ class AgentConfig:
                              result_if_none: VALUE = 0) -> VALUE:
         return self.stage_item(stage, item, {}).get(key, result_if_none)
 
-    def get(self, path: Union[str, list[str], list[Name]], result_if_none=None) -> any:
+    def get(self, path: Union[str, list[str], list[Name], tuple[Name]], result_if_none=None) -> any:
         path: [str] = self.__value_list(path)
         result = self.__config
         for k in path:
@@ -320,16 +265,65 @@ class AgentConfig:
             return self.stage_item(stage, stage_item, None)
 
     @staticmethod
-    def __value_list(path: Union[str, list[str], list[Name]]) -> [str]:
+    def __value_list(path: Union[str, list[str], list[Name], tuple[Name]]) -> [str]:
         if isinstance(path, str):
             return [path]
         result = []
         for e in path:
-            result.append(e if isinstance(e, str) else AgentConfig.__value(e))
+            result.append(AgentConfig.__value(e))
         return result
 
     @staticmethod
     def __value(name: Union[str, Name]) -> Union[str, None]:
-        if name is None:
-            return None
-        return name if isinstance(name, str) else name.value
+        return None if name is None else Name.of(name).get_value()
+
+
+def list_to_dict(result: list) -> dict:
+    k = None
+    pairs = {}
+    for i in range(len(result)):
+        if not k:
+            k = result[i]
+        else:
+            pairs[k] = result[i]
+            k = None
+    return pairs
+
+
+def parse_attributes(value: str) -> dict[str, str]:
+    """
+    Converts a string to a dictionary of attributes.
+    Input: key_0=value_0 key_1="value with spaces"
+    Output: {key_0: value_0, key_1: value with spaces}
+    :param value: The value to parse into a dictionary.
+    :return: The dictionary of attributes.
+    """
+    separator = ' '
+    value = value.replace('=', separator)
+    quote = '"'
+    parts = value.split(separator)
+    result = []
+    sub = []
+    for i in range(len(parts)):
+        part = parts[i]
+        if part.startswith(quote):
+            if i == 0:
+                raise ValueError(f'Attribute name cannot have quotes: {part}')
+            sub.append(part[1:])
+            continue
+        if part.endswith(quote):
+            if len(sub) == 0:
+                raise ValueError(f'Wrongly placed quote in: {part}')
+            sub.append(part[:-1])
+            result.append(separator.join(sub))
+            sub = []
+            continue
+        if len(sub) > 0:
+            sub.append(part)
+            continue
+        result.append(part)
+
+    if len(sub) > 0:
+        raise ValueError(f'Unmatched quote: {quote}{sub[0]}')
+
+    return list_to_dict(result)

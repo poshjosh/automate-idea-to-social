@@ -39,16 +39,16 @@ class BlogAgent(Agent):
 
     def run_stage(self,
                   run_context: RunContext,
-                  stage_name: Name) -> ElementResultSet:
-        stage_id: str = stage_name.id
+                  stage: Name) -> ElementResultSet:
+        stage_id: str = stage.get_id()
         action = Action.of_generic(AgentName.BLOG, stage_id)
-        return self.__run_stage(action, run_context, stage_name)
+        return self.__run_stage(action, run_context, stage)
 
     def __run_stage(self,
                     action: Action,
                     run_context: RunContext,
-                    stage_name: Name) -> ElementResultSet:
-        stage_id = stage_name.id
+                    stage: Name) -> ElementResultSet:
+        stage_id = stage.get_id()
 
         if stage_id == AgentName.BlogUpdaterStage.DOWNLOAD_APP:
             result: ActionResult = self.download_app(action)
@@ -61,7 +61,7 @@ class BlogAgent(Agent):
         elif stage_id == AgentName.BlogUpdaterStage.UPDATE_BLOG:
             result: ActionResult = self.update_blog(action, run_context)
         else:
-            raise ValueError(f"Unsupported stage: {stage_name}")
+            raise ValueError(f"Unsupported stage: {stage}")
 
         run_context.add_action_result(self.get_name(), stage_id, result)
 

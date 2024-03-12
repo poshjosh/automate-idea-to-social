@@ -26,19 +26,31 @@ stages:
         - retry 1
     stage-items:
       select-script-input:
-        search-x-paths: //*[@id="root"]/div[1]/div[4]/div[1]/div[3]/div[1]/div[1]/div[3]/button
+        search-x-paths:
+          - //*[@id="root"]//button[contains(text(), "Proceed")]
+          - //*[@id="root"]/div[1]/div[3]/div[1]/div[3]/div[1]/div[1]/div[3]/button
+          - //*[@id="root"]/div[1]/div[4]/div[1]/div[3]/div[1]/div[1]/div[3]/button
       title:
-        search-x-paths: //*[@id="root"]/div[1]/div[4]/div/main/div/div/div[4]/input
+        search-x-paths:
+          - //*[@id="root"]//*[@role="textbox"]/preceding-sibling::*/input
+          - //*[@id="root"]/div[1]/div[3]/div/main/div/div/div[4]/input
+          - //*[@id="root"]/div[1]/div[4]/div/main/div/div/div[4]/input
         actions: enter_text $video.title
       text:
-        search-x-paths: //*[@id="root"]/div[1]/div[4]/div/main/div/div/div[5]
+        search-x-paths:
+          - //*[@id="root"]//*[@role="textbox"]
+          - //*[@id="root"]/div[1]/div[3]/div/main/div/div/div[5]
+          - //*[@id="root"]/div[1]/div[4]/div/main/div/div/div[5]
         actions:
           - enter_text $video.description
           # Without this we got redirected back probably because
           # submit button is only enabled a short while after entering text
           - wait 5
       script-input-submit:
-        search-x-paths: //*[@id="root"]/div[1]/div[4]/div/main/div/div/div[2]/span[2]/div/div[2]/button[contains(text(), "Proceed")]
+        search-x-paths:
+          - //*[@id="root"]//button[contains(text(), "Proceed")]
+          - //*[@id="root"]/div[1]/div[3]/div/main/div/div/div[2]/span[2]/div/div[2]/button[contains(text(), "Proceed")]
+          - //*[@id="root"]/div[1]/div[4]/div/main/div/div/div[2]/span[2]/div/div[2]/button[contains(text(), "Proceed")]
         actions:
           - click
           - wait 15 # TODO - Change to 30, also check if we even need this

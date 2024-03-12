@@ -115,7 +115,7 @@ class RunContext:
                   agent_names: Union[str, list[str], None] = None) -> list[str]:
         if agent_names is None or agent_names == '':
             return config.get('agents', [])
-        elif type(agent_names) is list:
+        elif isinstance(agent_names, list):
             return config.get('agents', []) if len(agent_names) == 0 else agent_names
         else:
             return config.get('agents', []) if len(agent_names) == 0 else [str(agent_names)]

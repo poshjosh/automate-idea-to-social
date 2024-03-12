@@ -26,9 +26,8 @@ class TestElementSelector(ElementSelector):
 
     def select_element(self,
                        root_element: WebElement,
-                       element_name: str,
                        search_config: SearchConfig) -> WebElement:
-        self.validate_search_inputs(root_element, element_name, search_config)
+        self.validate_search_inputs(root_element, search_config)
         return WebElement({}, None)
 
     def load_page_bodies(self, link: str) -> List[WebElement]:

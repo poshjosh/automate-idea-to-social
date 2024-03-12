@@ -11,12 +11,11 @@ class ElementSelectorTest(unittest.TestCase):
     def test_select_login(self):
         element_selector = get_element_selector()
         link = get_agent_resource("pictory", "login_page.html")
-        element_name = 'username'
         search_from = ''
         search_for = '//*[@id="mui-1"]'
         search_config: SearchConfig = SearchConfig(search_from, search_for)
         body_element = element_selector.load_page_bodies(link)[0]
-        result = element_selector.select_element(body_element, element_name, search_config)
+        result = element_selector.select_element(body_element, search_config)
         self.assertIsNotNone(result)
 
     # A few seconds after loading the page, the page was emptied of most

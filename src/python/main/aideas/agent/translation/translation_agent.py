@@ -42,8 +42,8 @@ class TranslationAgent(Agent):
                      f'dir: {dir_path}, files: {filepaths}')
         for filepath in filepaths:
             self.__translate_all(
-                stage.id, filepath, target_language_codes, run_context)
-        return run_context.get_element_results(self.get_name(), stage.id)
+                stage.get_id(), filepath, target_language_codes, run_context)
+        return run_context.get_element_results(self.get_name(), stage.get_id())
 
     def __translate_all(self,
                         stage_id: str,

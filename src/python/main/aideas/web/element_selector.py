@@ -11,7 +11,7 @@ from selenium.webdriver.support.wait import WebDriverWait, D
 
 from .browser_cookie_store import BrowserCookieStore
 from .stale_web_element import StaleWebElement
-from ..config import SearchConfig, SearchBy
+from ..config import parse_attributes, SearchConfig, SearchBy
 
 logger = logging.getLogger(__name__)
 
@@ -44,9 +44,8 @@ class ElementSelector:
 
     def select_element(self,
                        root_element: WebElement,
-                       element_name: str,
                        search_config: SearchConfig) -> WebElement:
-        self.validate_search_inputs(root_element, element_name, search_config)
+        self.validate_search_inputs(root_element, search_config)
 
         search_from: str = search_config.get_search_from()
         search_for_list: [str] = search_config.get_search_for()
@@ -55,22 +54,21 @@ class ElementSelector:
 
         if search_from is None or search_from == '':
             if no_search_for_list:
-                raise ValueError(
-                    f'search_from and search_for are both None or empty for {element_name}')
+                raise ValueError('search-from and search-for are both None or empty')
             search_from_element = root_element
         else:
             search_from_element = self.__select_element(
-                root_element, element_name, search_from,
+                root_element, search_from,
                 self.__wait_timeout_seconds, search_config.get_search_by())
 
         if search_from_element is None:
-            raise ValueError(f'For {element_name} search_from is not valid: {search_from}')
+            raise ValueError(f'search-from is not valid: {search_from}')
 
         if no_search_for_list:
             return search_from_element
 
         tup: [WebElement, int] = self.__select_first_element(
-            search_from_element, element_name, search_for_list, search_config.get_search_by())
+            search_from_element, search_for_list, search_config.get_search_by())
 
         search_config.set_successful_query_index(tup[1])
 
@@ -98,7 +96,6 @@ class ElementSelector:
 
     def __select_first_element(self,
                                search_from_element: WebElement,
-                               element_name: str,
                                search_for_list: [str],
                                search_by: SearchBy) -> [WebElement, int]:
         exception: Exception = None
@@ -108,16 +105,15 @@ class ElementSelector:
             timeout: float = self.__wait_timeout_seconds if index == 0 else INTERVAL
             try:
                 selected = self.__select_element(
-                    search_from_element, element_name, search_for, timeout, search_by)
+                    search_from_element, search_for, timeout, search_by)
                 if selected is not None:
-                    logger.debug(f'Found {element_name} using: {search_by} = {search_for}')
+                    logger.debug(f'Found element using: {search_by} = {search_for}')
                     return selected, index
             except Exception as ex:
                 exception = ex
                 continue
 
-        error_msg: str = (f"Failed to select {element_name} element, "
-                          f"current url: {self.current_url()}.")
+        error_msg: str = f"Failed to select element, current url: {self.current_url()}."
         if exception is not None:
             raise ElementNotFoundError(error_msg) from exception
         else:
@@ -141,24 +137,20 @@ class ElementSelector:
 
     def __select_element(self,
                          root_element: D,
-                         element_name: str,
                          search_for: str,
                          timeout_seconds: float,
                          by: SearchBy) -> WebElement:
         if by == SearchBy.SHADOW_ATTRIBUTE:
             return self.__select_shadow_by_attributes(
-                root_element, timeout_seconds, SearchConfig.to_attr_dict(search_for))
+                root_element, timeout_seconds, parse_attributes(search_for))
 
-        return self.__wait_for_element(
-            root_element, element_name, search_for, timeout_seconds)
+        return self.__wait_for_element(root_element, search_for, timeout_seconds)
 
     def __select_shadow_by_attributes(self,
                                       root_element: D,
                                       timeout_seconds: float,
                                       attributes: dict[str, str]) -> WebElement:
         collection: list = []
-
-        logger.debug(f"Selecting shadow element by attributes: {attributes}")
 
         def has_attribute(element: WebElement, name: str, value: str) -> bool:
             candidate = element.get_attribute(name)
@@ -213,7 +205,6 @@ class ElementSelector:
 
     def __wait_for_element(self,
                            root_element: D,
-                           element_name: str,
                            xpath: str,
                            timeout_seconds: float) -> WebElement:
 
@@ -239,21 +230,18 @@ class ElementSelector:
         try:
             return select_clickable_element()
         except TimeoutException:
-            logger.debug(f"Timeout for element: {element_name} using: {xpath}")
+            logger.debug(f"Timeout for element using: {xpath}")
             return self.__webdriver.find_element(self.__select_by, xpath)
         except StaleElementReferenceException:
-            logger.debug(f"Stale element: {element_name}")
+            logger.debug(f"Stale element using: {xpath}")
             return StaleWebElement(
                 select_located_element(), select_clickable_element, timeout_seconds)
 
     @staticmethod
     def validate_search_inputs(root_element: WebElement,
-                               element_name: str,
                                search_config: SearchConfig) -> WebElement:
         if root_element is None:
             raise ValueError('root element for searching is None')
-        if element_name is None or element_name == '':
-            raise ValueError('stage_item is None or empty')
         if search_config is None:
             raise ValueError('search_config is None')
         return WebElement({}, None)

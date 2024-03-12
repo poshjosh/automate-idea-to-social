@@ -4,7 +4,7 @@ import time
 from typing import Union
 
 from .agent import Agent, AgentError
-from ..config import AgentConfig, Name
+from ..config import AgentConfig, ConfigPath, Name
 from ..event.event_handler import EventHandler, ON_START
 from ..result.result_set import ElementResultSet
 from ..run_context import RunContext
@@ -68,8 +68,8 @@ class BrowserAgent(Agent):
 
     def run_stage(self,
                   run_context: RunContext,
-                  stage_name: Name) -> ElementResultSet:
-        result = self.__run_stage(run_context, stage_name, 1)
+                  stage: Name) -> ElementResultSet:
+        result = self.__run_stage(run_context, stage, 1)
         self.__sleep()
         return result
 
@@ -78,10 +78,10 @@ class BrowserAgent(Agent):
                     stage: Name,
                     trials) -> ElementResultSet:
 
-        config_path: [str] = self.get_config().path(stage)
+        config: AgentConfig = self.get_config()
+        config_path: ConfigPath = ConfigPath.of(stage)
 
-        logger.debug(f"Executing stage: @{'.'.join(config_path)}, "
-                     f"config: {self.get_config().get(config_path)}")
+        logger.debug(f"Executing stage {config_path}")
 
         def retry_event(_trials: int) -> ElementResultSet:
             return self.__run_stage(run_context, stage, _trials)
@@ -91,14 +91,11 @@ class BrowserAgent(Agent):
             # We don't want an infinite loop, so we run this event without events.
             self.without_events()._run_agent_stages(context, agent_to_stages)
 
-        config: AgentConfig = self.get_config()
-
         exception = None
         result = ElementResultSet.none()
         try:
 
-            to_proceed = self.__browser_automator.stage_may_proceed(
-                config, stage, run_context)
+            to_proceed = self.__browser_automator.stage_may_proceed(config, stage, run_context)
 
             if not to_proceed:
                 return result
