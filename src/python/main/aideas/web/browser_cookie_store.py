@@ -12,7 +12,7 @@ class BrowserCookieStore:
     def __init__(self, webdriver, domain: str):
         if webdriver is None:
             raise ValueError("webdriver cannot be None")
-        dir_path = os.path.join(os.getcwd(), 'resources', 'agent', domain, "cookies.pkl")
+        dir_path = os.path.join(os.getcwd(), 'resources', 'agent', domain)
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
         self.__webdriver = webdriver
