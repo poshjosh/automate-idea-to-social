@@ -7,6 +7,7 @@ import os
 import sys
 from typing import Union, Callable, TypeVar
 
+from .action.variable_parser import RESULTS_KEY
 from .agent.agent_factory import AgentFactory
 from .io.file import create_file
 from .result.result_set import AgentResultSet, StageResultSet
@@ -61,7 +62,7 @@ class App:
         :return: None
         """
         now = datetime.now()
-        object_path: str = os.path.join("resources", "app-results", agent_name,
+        object_path: str = os.path.join("resources", RESULTS_KEY, agent_name,
                                         now.strftime("%Y"), now.strftime("%m"),
                                         f"{now.strftime('%d_%H-%M-%S')}-{uuid.uuid4().hex}.pkl")
         create_file(object_path)

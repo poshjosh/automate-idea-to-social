@@ -2,9 +2,8 @@
 .mp4
 .vtt
 
-# Saved results from running a program
+# Saved results from running the application
 results/
-app-results/
 
 .DS_Store
 
