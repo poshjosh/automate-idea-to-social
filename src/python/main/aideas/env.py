@@ -30,6 +30,7 @@ class Env(Enum):
     PICTORY_USER_PASS = f'{_pictory}.user.pass'
 
     TRANSLATION_OUTPUT_LANGUAGES = f'{_translation}.output.languages'
+    TRANSLATION_FILE_EXTENSION = f'{_translation}.file.extension'
 
     YOUTUBE_USER_EMAIL = f'{_youtube}.user.email'
     YOUTUBE_USER_PASS = f'{_youtube}.user.pass'

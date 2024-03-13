@@ -1,4 +1,4 @@
-from typing import List
+import uuid
 
 from selenium.webdriver.remote.webelement import WebElement
 
@@ -25,11 +25,10 @@ class TestElementSelector(ElementSelector):
             self.get_webdriver(), timeout, self.get_browser_cookie_store())
 
     def select_element(self,
-                       root_element: WebElement,
                        search_config: SearchConfig) -> WebElement:
-        self.validate_search_inputs(root_element, search_config)
-        return WebElement({}, None)
+        self.validate_search_inputs(search_config)
+        return WebElement({}, str(uuid.uuid4().hex))
 
-    def load_page_bodies(self, link: str) -> List[WebElement]:
+    def load_page(self, link: str) -> bool:
         self.validate_link(link)
-        return [WebElement({}, None)]
+        return True

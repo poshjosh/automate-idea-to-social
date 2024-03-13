@@ -9,6 +9,15 @@ STR_OR_LIST = TypeVar("STR_OR_LIST", bound=Union[str, list[str]])
 DEFAULT_ACTIONS: list[str] = ['click']
 
 
+def action_signatures(source: Union[str, list]) -> list[str]:
+    if isinstance(source, str):
+        return [source]
+    elif isinstance(source, list):
+        return source
+    else:
+        raise ValueError(f'Invalid type for: {source}, expected list | str')
+
+
 def element_action_signatures(config: dict[str, any], element_name: str) -> list[str]:
     if AgentConfig.is_default_actions_key(element_name):
         raise ValueError(f'The provided key (i.e {element_name}) is a reserved word.')
@@ -28,17 +37,12 @@ def __element_action_signatures(config: dict[str, any],
                                 result_if_none: list[str]) -> list[str]:
     default_actions: STR_OR_LIST = result_if_none if not config \
         else config.get(name, result_if_none)
-    if isinstance(default_actions, str):
-        return [default_actions]
-    elif isinstance(default_actions, list):
-        return default_actions
-    else:
-        raise ValueError(f'Unexpected default actions type: {type(default_actions)}')
+    return action_signatures(default_actions)
 
 
 def event_action_signatures(config: dict[str, any], event_name: str) -> list[str]:
     event_config = __get_event_config(config, event_name)
-    return __make_list(event_config)
+    return action_signatures(event_config)
 
 
 def __get_event_config(config: dict[str, any], event_name: str) -> Union[str, list]:
@@ -46,12 +50,3 @@ def __get_event_config(config: dict[str, any], event_name: str) -> Union[str, li
     events_config = None if not config else config.get('events')
     return default_action if events_config is None \
         else events_config.get(event_name, default_action)
-
-
-def __make_list(event_config) -> list[str]:
-    if isinstance(event_config, str):
-        return [event_config]
-    elif isinstance(event_config, list):
-        return event_config
-    else:
-        raise ValueError(f'Invalid type for events: {event_config}, expected list | str')

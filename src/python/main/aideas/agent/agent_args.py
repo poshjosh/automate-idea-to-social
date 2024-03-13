@@ -5,7 +5,8 @@ from ..env import Env
 
 
 class AgentArgs:
-    __DEFAULT_OUTPUT_LANGUAGES = ["ar", "bn", "de", "es", "fr", "hi", "it", "ja", "ko", "ru", "zh", "zh-TW"]
+    __DEFAULT_OUTPUT_LANGUAGES = [
+        "ar", "bn", "de", "es", "fr", "hi", "it", "ja", "ko", "ru", "zh", "zh-TW"]
 
     @staticmethod
     def from_config(config: dict[str, any]) -> 'AgentArgs':
@@ -25,12 +26,24 @@ class AgentArgs:
         self.__add_cwd(result, Env.VIDEO_COVER_IMAGE.value)
         self.__add_cwd(result, Env.VIDEO_COVER_IMAGE_SQUARE.value)
 
-        file_path = result[Env.VIDEO_INPUT_FILE.value]
-        if result.get(Env.VIDEO_TILE.value) is None:
+        self.require_file_exists(result, Env.VIDEO_COVER_IMAGE)
+        self.require_file_exists(result, Env.VIDEO_COVER_IMAGE_SQUARE)
+        file_path = self.require_file_exists(result, Env.VIDEO_INPUT_FILE)
+
+        if not result.get(Env.VIDEO_TILE.value):
             result[Env.VIDEO_TILE.value] = os.path.basename(file_path).split('.')[0]
-        file_content = self.read_file(file_path)
-        result[Env.VIDEO_DESCRIPTION.value] = file_content
+        if not result.get(Env.VIDEO_DESCRIPTION.value):
+            file_content = self.read_file(file_path)
+            result[Env.VIDEO_DESCRIPTION.value] = file_content
+
         return result
+
+    @staticmethod
+    def require_file_exists(source: dict, env: Env):
+        file = source[env.value]
+        if not file or not os.path.exists(file):
+            raise ValueError(f'File not found: {env.value}')
+        return file
 
     @staticmethod
     def __add_cwd(result: dict[str, any], key: str):

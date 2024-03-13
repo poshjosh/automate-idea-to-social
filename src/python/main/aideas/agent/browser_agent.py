@@ -3,13 +3,12 @@ import logging
 import time
 from typing import Union
 
-from .agent import Agent, AgentError
+from .agent import Agent
 from ..config import AgentConfig, ConfigPath, Name
-from ..event.event_handler import EventHandler, ON_START
+from ..event.event_handler import ON_START
 from ..result.result_set import ElementResultSet
 from ..run_context import RunContext
 from ..web.browser_automator import BrowserAutomator
-from ..web.element_selector import ElementNotFoundError
 
 logger = logging.getLogger(__name__)
 
@@ -62,9 +61,8 @@ class BrowserAgent(Agent):
             self.__browser_automator, self.__interval_seconds)
 
     def without_events(self) -> 'BrowserAgent':
-        browser_automator = self.__browser_automator.with_event_handler(EventHandler.noop())
         return BrowserAgent(self.get_name(), self.get_config().root(), self._get_dependencies(),
-                            browser_automator, self.get_interval_seconds())
+                            self.__browser_automator.without_events(), self.get_interval_seconds())
 
     def run_stage(self,
                   run_context: RunContext,
@@ -83,11 +81,11 @@ class BrowserAgent(Agent):
 
         logger.debug(f"Executing stage {config_path}")
 
-        def retry_event(_trials: int) -> ElementResultSet:
+        def do_retry(_trials: int) -> ElementResultSet:
             return self.__run_stage(run_context, stage, _trials)
 
-        def run_stages_event(context: RunContext,
-                             agent_to_stages: OrderedDict[str, [Name]]):
+        def do_run_stages(context: RunContext,
+                          agent_to_stages: OrderedDict[str, [Name]]):
             # We don't want an infinite loop, so we run this event without events.
             self.without_events()._run_agent_stages(context, agent_to_stages)
 
@@ -102,19 +100,17 @@ class BrowserAgent(Agent):
 
             self.__event_handler.handle_event(
                 self.get_name(), config, config_path,
-                ON_START, run_context, run_stages_event)
+                ON_START, run_context, do_run_stages)
 
             result: ElementResultSet = self.__browser_automator.act_on_elements(
                 config, stage, run_context)
 
-        except ElementNotFoundError as ex:
-            exception = ex
-        except AgentError as ex:
+        except Exception as ex:
             exception = ex
 
         result = self.__event_handler.handle_result_event(
             self.get_name(), config, config_path, run_context,
-            run_stages_event, retry_event, exception, result, trials)
+            do_run_stages, do_retry, exception, result, trials)
 
         return ElementResultSet.none() if result is None else result
 

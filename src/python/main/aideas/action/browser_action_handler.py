@@ -30,18 +30,17 @@ class BrowserActionHandler(ActionHandler):
             return self
         return BrowserActionHandler(self.__web_driver, timeout)
 
-    def execute(self, action: Action) -> ActionResult:
-        name: str = action.get_name()
-        if name.endswith("alert"):  # accept_alert|dismiss_alert
+    def _execute(self, key: str, action: Action) -> ActionResult:
+        if key.endswith("alert"):  # accept_alert|dismiss_alert
             result = self.__handle_alert(action)
-        elif name == "execute_script":
+        elif key == "execute_script":
             result = self.__execute_script(action)
-        elif name == "execute_script_on":
+        elif key == "execute_script_on":
             result = self.__execute_script_on(action)
-        elif name == "refresh":
+        elif key == "refresh":
             result = self.__refresh(action)
         else:
-            return super().execute(action)
+            return super()._execute(key, action)
         logger.debug(f'{result}')
         return result
 

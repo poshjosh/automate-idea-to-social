@@ -1,14 +1,13 @@
 import logging
-from collections import OrderedDict
-from typing import List, Union
+from typing import Union
 
 from selenium.webdriver.remote.webelement import WebElement
 
-from .element_selector import ElementNotFoundError, ElementSelector
+from .element_selector import ElementSelector
 from .webdriver_creator import WEB_DRIVER, WebDriverCreator
 from ..action.action import Action
 from ..action.action_result import ActionResult
-from ..action.action_signatures import element_action_signatures
+from ..action.action_signatures import action_signatures, element_action_signatures
 from ..action.element_action_handler import ElementActionHandler
 from ..agent.agent_name import AgentName
 from ..config import AgentConfig, ConfigPath, Name, SearchConfig, TIMEOUT_KEY, WHEN_KEY
@@ -47,6 +46,9 @@ class BrowserAutomator:
         self.__element_selector = element_selector
         self.__action_handler = action_handler
 
+    def without_events(self) -> 'BrowserAutomator':
+        return self.with_event_handler(EventHandler.noop())
+
     def with_event_handler(self, event_handler: EventHandler) -> 'BrowserAutomator':
         return BrowserAutomator(
             self.__webdriver, self.__wait_timeout_seconds, self.__agent_name,
@@ -57,18 +59,18 @@ class BrowserAutomator:
                         stage: Name,
                         run_context: RunContext) -> ElementResultSet:
 
-        body_elements: List[WebElement] = self.__load_page_bodies(config, stage, run_context)
+        self.__load_page(config, stage, run_context)
 
         for stage_item in config.stage_item_names(stage):
 
             config_path: ConfigPath = ConfigPath.of(stage, stage_item)
 
-            to_proceed = self.__may_proceed(config, config_path, body_elements[0], run_context)
+            to_proceed = self.__may_proceed(config, config_path, run_context)
 
             if not to_proceed:
                 continue
 
-            self.__act_on_element(config, config_path, body_elements[0], run_context)
+            self.__act_on_element(config, config_path, run_context)
 
         return run_context.get_element_results(self.__agent_name, stage.get_id())
 
@@ -76,22 +78,20 @@ class BrowserAutomator:
                           config: AgentConfig,
                           stage: Name,
                           run_context: RunContext) -> bool:
-        page_bodies: List[WebElement] = self.__load_page_bodies(config, stage, run_context)
-        return self.__may_proceed(config, ConfigPath.of(stage), page_bodies[0], run_context)
+        self.__load_page(config, stage, run_context)
+        return self.__may_proceed(config, ConfigPath.of(stage), run_context)
 
-    def __load_page_bodies(self,
-                           config: AgentConfig,
-                           stage: Name,
-                           run_context: RunContext) -> List[WebElement]:
+    def __load_page(self,
+                    config: AgentConfig,
+                    stage: Name,
+                    run_context: RunContext):
         link: str = config.get_url(stage, self.__webdriver.current_url)
-        body_elements: List[WebElement] = self.__element_selector.load_page_bodies(link)
+        self.__element_selector.load_page(link)
         run_context.set_current_url(link)
-        return body_elements
 
     def __may_proceed(self,
                       config: AgentConfig,
                       config_path: ConfigPath,
-                      body_element: WebElement,
                       run_context: RunContext) -> bool:
 
         config_path = config_path.with_appended(WHEN_KEY)
@@ -102,8 +102,8 @@ class BrowserAutomator:
             return True
 
         try:
-            success = self.__act_on_element(
-                config, config_path, body_element, run_context).is_successful()
+            success = self.without_events().__act_on_element(
+                config, config_path, run_context).is_successful()
         except Exception as ex:
             logger.debug(f'Error checking condition for {config_path}, \nCause: {ex}')
             success = False
@@ -114,7 +114,6 @@ class BrowserAutomator:
     def __act_on_element(self,
                          config: AgentConfig,
                          config_path: ConfigPath,
-                         body_element: WebElement,
                          run_context: RunContext,
                          trials: int = 1) -> ElementResultSet:
 
@@ -130,11 +129,10 @@ class BrowserAutomator:
         if not target_config and not element_actions:
             return result
 
-        def retry_event(_trials: int) -> ElementResultSet:
-            return self.__act_on_element(config, config_path, body_element, run_context, _trials)
+        def do_retry(_trials: int) -> ElementResultSet:
+            return self.__act_on_element(config, config_path, run_context, _trials)
 
-        def run_stages_event(context: RunContext,
-                             agent_to_stages: OrderedDict[str, [Name]]):
+        def do_run_stages(_, __):
             raise ValueError(f'Event: run_stages is not supported for {config_path}')
 
         search_config = SearchConfig.of(target_config)
@@ -143,16 +141,18 @@ class BrowserAutomator:
         try:
 
             self.__event_handler.handle_event(
-                self.get_agent_name(), config, config_path, 
-                ON_START, run_context, run_stages_event)
+                self.get_agent_name(), config, config_path,
+                ON_START, run_context, do_run_stages)
 
             timeout = self.__wait_timeout_seconds if not isinstance(target_config, dict) \
                 else target_config.get(TIMEOUT_KEY, self.__wait_timeout_seconds)
 
             selector = self.__element_selector.with_timeout(timeout)
-            element: WebElement = None if not search_config else selector.select_element(
-                body_element, search_config)
-            
+            element: WebElement = None if not search_config \
+                else selector.select_element(search_config)
+
+            run_context.set_current_element(element)
+
             if search_config is not None and search_config.search_for_needs_reordering():
                 before = search_config.get_search_for()
                 after = search_config.reorder_search_for()
@@ -162,13 +162,24 @@ class BrowserAutomator:
             if element_actions:
                 result: ElementResultSet = self.__execute_all_actions(
                     config_path, element, timeout, element_actions, run_context)
-        except ElementNotFoundError as ex:
+
+                # Handle expectations if present
+                expected = None if not target_config else target_config.get('expected', None)
+                expectation_actions: list[str] = [] if not expected else action_signatures(expected)
+                if expectation_actions:
+                    # Since we use the same config_path as above, the
+                    # results of the expectation will be added to the
+                    # above results
+                    self.__execute_all_actions(
+                        config_path, element, timeout, expectation_actions, run_context)
+
+        except Exception as ex:
             logger.debug(f"Error acting on {config_path} {type(ex)}")
             exception = ex
 
         result = self.__event_handler.handle_result_event(
             self.get_agent_name(), config, config_path, run_context,
-            run_stages_event, retry_event, exception, result, trials)
+            do_run_stages, do_retry, exception, result, trials)
 
         return ElementResultSet.none() if result is None else result
 

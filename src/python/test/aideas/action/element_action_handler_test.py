@@ -59,11 +59,11 @@ def _collect_stage_actions(
         stage_name: str,
         stage_config: dict) -> dict[str, list[str]]:
     collect_into: dict[str, list[str]] = {}
-    ui_config: dict[str, any] = stage_config[STAGE_ITEMS_KEY]
-    for key in ui_config.keys():
+    stage_items_config: dict[str, any] = stage_config[STAGE_ITEMS_KEY]
+    for key in stage_items_config.keys():
         if AgentConfig.is_default_actions_key(key):
             continue
-        actions = element_action_signatures(ui_config, key)
+        actions = element_action_signatures(stage_items_config, key)
         print(f'element: {key}, actions: {actions}')
         collect_into[f'{stage_name}.{key}'] = actions
     return collect_into

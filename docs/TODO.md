@@ -1,5 +1,19 @@
 ## TODO
 
+For ResultSet introduce composition and de-composition
+from and to dict. Use this when saving results to disc.
+Example de-composition:
+
+```python
+    def decompose(self) -> dict[str, RESULT]:
+        output = {}
+        for key in self.__results.keys():
+            value = self.__results[key]
+            output[key] = value.results() if isinstance(value, ResultSet) else value
+        return output
+```
+
+Resolve variables related TODOs in yaml files 
 page body vs webdriver for finding elements
 
 Allow variables in .env file

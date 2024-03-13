@@ -8,6 +8,8 @@ from ..env import Env
 
 logger = logging.getLogger(__name__)
 
+NOT = 'not'
+
 
 class Action:
     @staticmethod
@@ -35,14 +37,11 @@ class Action:
         if len(parts) == 0:
             raise ValueError(f'Unsupported action: {target_id}.{action_signature}')
 
-        name = parts[0]
-        args: list = []
+        name, args = Action.__split_into_name_and_args(parts)
 
-        if len(parts) > 1:
-            args = parts[1:]
-            for i in range(len(args)):
-                args[i] = parse_run_arg(
-                    [agent_name, stage_id, target_id], args[i], run_context)
+        for i in range(len(args)):
+            args[i] = parse_run_arg(
+                [agent_name, stage_id, target_id], args[i], run_context)
 
         action = Action(agent_name, stage_id, target_id, name, args)
         action.__agents_dir = None if run_context is None else run_context.get_env(Env.AGENTS_DIR)
@@ -80,11 +79,33 @@ class Action:
     def get_name(self) -> str:
         return self.__name
 
+    def is_negation(self) -> bool:
+        return self.get_name().startswith(f'{NOT} ')
+
+    def get_name_without_negation(self) -> str:
+        name: str = self.get_name()
+        return name.split(' ')[1] if self.is_negation() else name
+
     def get_first_arg(self, result_if_none: any = None) -> any:
         return len(self.__args) > 0 and self.__args[0] or result_if_none
 
     def get_args(self) -> list:
         return self.__args
+
+    @staticmethod
+    def __split_into_name_and_args(parts: list[str]) -> tuple[str, [str]]:
+        """
+        Input: wait 3
+        Output: (wait, [3])
+        Input: not is_displayed
+        Output: (not is_displayed, [])
+        :param parts: The parts to split
+        :return: The name and the arguments split from the parts
+        """
+        args_offset: int = 2 if parts[0] == NOT else 1
+        name = ' '.join(parts[0:args_offset])
+        args: [str] = parts[args_offset:] if len(parts) > args_offset else []
+        return name, args
 
     def __eq__(self, other) -> bool:
         return (self.__agent_name == other.__agent_name and self.__stage_id == other.__stage_id

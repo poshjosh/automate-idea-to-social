@@ -7,6 +7,9 @@ from .agent.agent_args import AgentArgs
 from .result.result_set import AgentResultSet, ElementResultSet, StageResultSet
 
 
+CURRENT_URL = 'current_url'
+CURRENT_ELEMENT = 'current_element'
+
 class RunContext:
     @staticmethod
     def none() -> 'RunContext':
@@ -101,10 +104,17 @@ class RunContext:
         return self.__values.get(key, result_if_none)
 
     def get_current_url(self, result_if_none: str = None) -> str:
-        return self.get('current_url', result_if_none)
+        return self.get(CURRENT_URL, result_if_none)
 
     def set_current_url(self, value: str) -> 'RunContext':
-        self.__values['current_url'] = value
+        self.__values[CURRENT_URL] = value
+        return self
+
+    def get_current_element(self, result_if_none: any = None) -> any:
+        return self.get(CURRENT_ELEMENT, result_if_none)
+
+    def set_current_element(self, value: any) -> 'RunContext':
+        self.__values[CURRENT_ELEMENT] = value
         return self
 
     def get_result_set(self) -> AgentResultSet:

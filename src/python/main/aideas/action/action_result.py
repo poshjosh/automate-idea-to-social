@@ -11,6 +11,9 @@ class ActionResult:
         self.__result = result
         self.__success = success
 
+    def flip(self) -> 'ActionResult':
+        return ActionResult(self.__action, not self.__success, self.__result)
+
     def get_action(self) -> Action:
         return self.__action
 

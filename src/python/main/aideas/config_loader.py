@@ -14,11 +14,15 @@ class ConfigLoader:
     def __init__(self, config_path: str):
         self.__config_path = config_path
 
-    def load_app_config(self) -> dict[str, any]:
-        return self.__load_from_path(self.get_app_config_path())
+    def load_app_config(self, path: str = None) -> dict[str, any]:
+        if not path:
+            path = self.get_app_config_path()
+        return self.__load_from_path(path)
 
-    def load_logging_config(self) -> dict[str, any]:
-        return self.__load_from_path(self.get_logging_config_path())
+    def load_logging_config(self, path: str = None) -> dict[str, any]:
+        if not path:
+            path = self.get_logging_config_path()
+        return self.__load_from_path(path)
 
     def load_agent_config(self, agent_name: str) -> dict[str, any]:
         return self.__load_from_path(self.get_agent_config_path(agent_name))

@@ -2,13 +2,13 @@ import pickle
 import shutil
 import uuid
 from datetime import datetime
-import logging.config
+import logging
 import os
 import sys
 from typing import Union, Callable, TypeVar
 
 from .agent.agent_factory import AgentFactory
-from .io.file import create_file, load_yaml
+from .io.file import create_file
 from .result.result_set import AgentResultSet, StageResultSet
 from .config_loader import ConfigLoader
 from .run_context import RunContext
@@ -18,26 +18,17 @@ logger = logging.getLogger(__name__)
 
 class App:
     @staticmethod
-    def of_defaults(config_path: str,
-                    logging_config_yaml: str = None,
-                    app_config_yaml: str = None):
-        config_loader = ConfigLoader(config_path)
-        if logging_config_yaml is None:
-            logging_config_yaml = config_loader.get_logging_config_path()
-
-        App.init_logging(logging.config, logging_config_yaml)
-
-        if app_config_yaml is None:
-            config = config_loader.load_app_config()
+    def of_defaults(source: Union[str, ConfigLoader]) -> 'App':
+        if isinstance(source, str):
+            config_loader = ConfigLoader(source)
+        elif isinstance(source, ConfigLoader):
+            config_loader = source
         else:
-            config = ConfigLoader.load_from_path(app_config_yaml)
+            raise ValueError(f"Source must be a string or a ConfigLoader, not {type(source)}")
+
+        config = config_loader.load_app_config()
         agent_factory = AgentFactory(config_loader, config)
         return App(agent_factory, config)
-
-    @staticmethod
-    def init_logging(logging_config, yaml_file_path):
-        config = load_yaml(yaml_file_path)
-        logging_config.dictConfig(config)
 
     def __init__(self,
                  agent_factory: AgentFactory,

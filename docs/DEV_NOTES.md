@@ -1,3 +1,14 @@
+### Requirements
+
+#### python requirements:
+
+See `src/python/main/requirements.txt`
+
+#### other requirements:
+
+- docker
+- git
+
 ### Directory Structure
 
 Run the app with the working directory set to `${PROJECT_DIR}/src/python/main`

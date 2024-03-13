@@ -166,15 +166,8 @@ class AgentConfig:
     def root(self) -> dict[str, any]:
         return self.__config
 
-    def stages(self,
-               path: Union[str, list[str], list[Name], None] = None,
-               result_if_none=None) -> Union[dict[str, any], any, None]:
-        if not path:
-            return self.__config[STAGES_KEY]
-        else:
-            path = [e for e in path]
-            path.insert(0, STAGES_KEY)
-            return self.get(path, result_if_none)
+    def stages(self, result_if_none=Union[dict[str, any], None]) -> Union[dict[str, any], None]:
+        return self.__config.get(STAGES_KEY, result_if_none)
 
     def get_stage_names(self) -> [Name]:
         return Name.of_lists(list(self.stages().keys()))

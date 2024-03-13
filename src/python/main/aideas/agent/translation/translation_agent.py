@@ -33,7 +33,7 @@ class TranslationAgent(Agent):
     def run_stage(self,
                   run_context: RunContext,
                   stage: Name) -> ElementResultSet:
-        file_type = self.get_config().get_stage_value(stage, 'file-type')
+        file_type = run_context.get_env(Env.TRANSLATION_FILE_EXTENSION)
         dir_path: str = run_context.get_env(Env.VIDEO_OUTPUT_DIR)
         target_languages_str: str = run_context.get_env(Env.TRANSLATION_OUTPUT_LANGUAGES)
         target_language_codes: [str] = target_languages_str.split(',')

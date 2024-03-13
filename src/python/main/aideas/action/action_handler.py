@@ -19,7 +19,7 @@ def execute_for_result(func: Callable[[any], any],
     try:
         result = func(arg)
     except Exception as ex:
-        logger.warning(f'{ex}')
+        logger.warning(f'Error while executing {action}\n{ex}')
         return ActionResult(action, False, type(ex))
     else:
         return ActionResult(action, True, result)
@@ -41,23 +41,30 @@ class ActionHandler:
         return NOOP
 
     def execute(self, action: Action) -> ActionResult:
+        key = action.get_name_without_negation() if action.is_negation() else action.get_name()
+        result = self._execute(key, action)
+        if action.is_negation():
+            result = result.flip()
+        return result
+
+    def _execute(self, key: str, action: Action) -> ActionResult:
         if action == Action.none():
             result = ActionResult.none()
-        elif action.get_name() == ActionHandler.ACTION_GET_FILES:
+        elif key == ActionHandler.ACTION_GET_FILES:
             result: ActionResult = self.get_files(action)
-        elif action.get_name() == ActionHandler.ACTION_GET_FIRST_FILE:
+        elif key == ActionHandler.ACTION_GET_FIRST_FILE:
             result: ActionResult = self.get_first_file(action)
-        elif action.get_name() == ActionHandler.ACTION_GET_NEWEST_FILE:
+        elif key == ActionHandler.ACTION_GET_NEWEST_FILE:
             result: ActionResult = self.get_newest_file_in_dir(action)
-        elif action.get_name() == ActionHandler.ACTION_LOG:
+        elif key == ActionHandler.ACTION_LOG:
             result: ActionResult = self.log(action)
-        elif action.get_name() == ActionHandler.ACTION_SAVE_FILE:
+        elif key == ActionHandler.ACTION_SAVE_FILE:
             result: ActionResult = self.save_file(action)
-        elif action.get_name() == ActionHandler.ACTION_SAVE_TO_FILE:
+        elif key == ActionHandler.ACTION_SAVE_TO_FILE:
             result: ActionResult = self.save_to_file(action)
-        elif action.get_name() == ActionHandler.ACTION_STARTS_WITH:
+        elif key == ActionHandler.ACTION_STARTS_WITH:
             result: ActionResult = self.starts_with(action)
-        elif action.get_name() == ActionHandler.ACTION_WAIT:
+        elif key == ActionHandler.ACTION_WAIT:
             result: ActionResult = self.wait(action)
         else:
             raise ValueError(f'Unsupported: {action}')
@@ -121,13 +128,18 @@ class ActionHandler:
 
     @staticmethod
     def starts_with(action: Action) -> ActionResult:
+        success, prefix = ActionHandler.__starts_with(action)
+        return ActionResult(action, success, prefix)
+
+    @staticmethod
+    def __starts_with(action: Action) -> tuple[bool, str or None]:
         args: [str] = action.get_args()
         value: str = args[0]
         prefixes: [str] = args[1:]
         for prefix in prefixes:
             if value.startswith(prefix):
-                return ActionResult(action, True, prefix)
-        return ActionResult(action, False)
+                return True, prefix
+        return False, None
 
     @staticmethod
     def get_first_file(action: Action) -> ActionResult:

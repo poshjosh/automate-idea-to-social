@@ -3,7 +3,7 @@ from typing import Callable
 from selenium.webdriver.remote.webelement import WebElement
 
 
-class StaleWebElement(WebElement):
+class ReloadableWebElement(WebElement):
     def __init__(self,
                  delegate: WebElement,
                  reload: Callable[[int], WebElement],
@@ -13,7 +13,7 @@ class StaleWebElement(WebElement):
         self.__timeout = timeout
 
     def reload(self) -> WebElement:
-        return StaleWebElement.__run_till_success(self.__reload, self.__timeout)
+        return ReloadableWebElement.__run_till_success(self.__reload, self.__timeout)
 
     @staticmethod
     def __run_till_success(func: Callable[[int], WebElement], timeout: float = 60) -> WebElement:

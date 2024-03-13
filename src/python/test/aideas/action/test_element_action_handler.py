@@ -19,8 +19,8 @@ class TestElementActionHandler(ElementActionHandler):
         # For tests, we don't implement element based actions.
         return self.execute(action)
 
-    def execute(self, action: Action) -> ActionResult:
-        if action.get_name() == TestElementActionHandler.ACTION_GET_NEWEST_FILE:
+    def _execute(self, key: str, action: Action) -> ActionResult:
+        if key == TestElementActionHandler.ACTION_GET_NEWEST_FILE:
             file_type = os.environ[Env.VIDEO_OUTPUT_TYPE.value]
             return ActionResult(action, True, f'test-downloaded-video.{file_type}')
         return ActionResult(action, True, 'test-result')

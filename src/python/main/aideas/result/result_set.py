@@ -37,8 +37,8 @@ class ResultSet:
     def keys(self) -> set[str]:
         return set(self.__results.keys())
 
-    def values(self) -> set[RESULT]:
-        return set(self.__results.values())
+    def values(self) -> list[RESULT]:
+        return [e for e in self.__results.values()]
 
     def set_all(self, result_set: 'ResultSet') -> 'ResultSet':
         for key, result in result_set.__results.items():

@@ -54,6 +54,15 @@ stages:
         actions:
           - click
           - wait 15 # TODO - Change to 30, also check if we even need this
+  pre-post:
+    url: https://app.pictory.ai/storyboard/scripttovideo
+    events:
+      onerror: continue
+    stage-items:
+      close-app-cues:
+        search-x-paths:
+          - /html/body/appcues/div/a
+          - /html/body/appcues//*[starts-with(@aria-label, "Close") or contains(@aria-label, "close")]
   add-cover-image:
     url: https://app.pictory.ai/storyboard/scripttovideo
     events:
@@ -63,31 +72,44 @@ stages:
         search-x-paths:
           - //*[@id="AllSceneTitleText_1_1"]
           - //*[@id="AllSceneTitleText_1_1"]/span[1]
+          - //*[contains(text(), "Scene 1")]
       select-visuals-tab:
         search-x-paths:
           - //*[@id="visuals"]
-          - //*[@id="side-navbar"]/ul/li[contains(text(), "Visuals")]
+          - //*[@id="side-navbar"]/ul/li[contains(text(), "Visuals") or contains(text(), "visual")]
       select-uploads-button:
-        search-x-paths: //*[@id="step-3-fixed-height"]/div[1]/div/div[2]/div[1]/div[1]/div/div/div/button[contains(text(), "uploads")]
+        search-x-paths:
+          - //*[@id="step-3-fixed-height"]//button[contains(text(), "uploads")]
+          - //*[@id="step-3-fixed-height"]/div[1]/div/div[2]/div[1]/div[1]/div/div/div/button[contains(text(), "uploads")]
+          - //*[@role="tablist"]//button[contains(text(), "uploads")]
       enter-cover-image:
         search-x-paths:
+          - //form[starts-wth(@class, "upload-")]//*[@id="file"]
           - //*[@id="file"]
           - //*[@id="tbinner-3"]/div/div[2]/div/div[1]/div/div/div[1]/form/div/input[@type="file"]
         actions:
           - enter_text $video.cover.image
           - wait 2
+  save-cover-image:
+    stage-items:
       click-save:
+        expected: not is_displayed
+        events:
+          onerror: retry 1
         search-x-paths:
-          - //*[@id="UploadImageModel"]/div/div/div/div[2]/div[2]/button
-          - //*[@id="UploadImageModel"]/div/div/*[contains(text(), "Save")]
+          - //*[@id="UploadImageModel"]/div/div/div/div[2]/div[2]/button[contains(text(), "Save")]
+          - //*[@id="UploadImageModel"]//*[contains(text(), "Save")]
         actions:
           - click
           - wait 15 # Actual upload happens here
-      select-uploaded-cover:
+  select-saved-cover-image:
+    stage-items:
+      select-saved-cover:
         search-x-paths:
-          - //*[@id="tbinner-3"]/div/div[2]/div/div[1]/div/div/div[2]/div/div[1]/a
-          - //*[@id="tbinner-3"]/div/div[2]/div/div[1]/div/div/div[2]/div/div[1]/a/div
-          - //*[@id="tbinner-3"]/div/div[2]/div/div[1]/div/div/div[2]/div/div[1]/a/div/img
+          - //*[@id="tbinner-3"]//div[@role="rowgroup"]/div[2]
+          - //*[@id="tbinner-3"]//div[@role="rowgroup"]/div[2]/div/div[1]/a
+          - //*[@id="tbinner-3"]//div[@role="rowgroup"]/div[2]/div/div[1]/a/div
+          - //*[@id="tbinner-3"]//div[@role="rowgroup"]/div[2]/div/div[1]/a/div/img
   branding:
     stage-items:
       branding-tab:
@@ -99,19 +121,22 @@ stages:
       select-brand:
         # We first identify the brand by its name, then we work upwards to the selectable element
         # TODO Variables in yaml. Then LiveAbove3D should be a variable
-        search-x-paths: //*[@id="menu-"]/div[3]/ul/li[2]/div/div/div[2]/span[contains(text(), "LiveAbove3D")]//..//..//..//..
+        search-x-paths:
+          - //*[@id="menu-"]/div[3]/ul/li[2]/div/div/div[2]/span[contains(text(), "LiveAbove3D")]//..//..//..//..
+          - //*[@id="menu-"]//ul/li//span[contains(text(), "LiveAbove3D")]//..//..//..//..
       accept-brand-changes-prompt:
         events:
           onerror: continue
-        search-x-paths: /html/body/div[11]/div[3]/div/div/p/div/div/div[2]/div/div[3]/div/div[2]/button[2]
+        search-x-paths: /html/body//*[@role="dialog"]//button[contains(text(), "Continue")]
       select-brand-background-music:
-        search-x-paths: //*[@id="step-3-fixed-height"]/div[1]/div/div[6]/div/div[2]/div[3]/div/div/div/div/span[contains(text(), "Savage Grace")]//..
+        # TODO - Use variable for Savage Grace
+        search-x-paths: //*[@id="step-3-fixed-height"]//span[contains(text(), "Savage Grace")]//..
         actions:
           - click
           - wait 3
       select-brand-voice:
-        #      //*[@id="step-3-fixed-height"]/div[1]/div/div[6]/div/div[2]/div[4]/div/div/div/div
-        search-x-paths: //*[@id="step-3-fixed-height"]/div[1]/div/div[6]/div/div[2]/div[4]/div/div/div/div/span[contains(text(), "Daniel")]//..
+        # TODO - Use variable for Daniel
+        search-x-paths: //*[@id="step-3-fixed-height"]//span[contains(text(), "Daniel")]//..
         actions:
           - move_to_center_offset 18 18
           - click_and_hold_current_position
@@ -125,23 +150,30 @@ stages:
           onerror: continue
         # There will be some default waiting for this element to appear
         wait-timeout-seconds: 45  # TODO - Change to 120
-        search-x-paths: /div/div[contains(text(), "applied")]
+        search-x-paths: //div[contains(text(), "applied")]
   download-video:
     stage-items:
       expand-download-options:
         search-x-paths: //*[@id="generate-button-dropdown"]/a
         actions:
           - move_to_element
+          - wait 3
       select-video-download:
+        events:
+          onerror:
+            - dismiss_alert 10
+            - retry 1
         search-x-paths: //*[@id="btnGenerate"]
       begin-download:
         wait-timeout-seconds: 600
-        search-x-paths: /html/body/div[10]/div[3]/div/div[3]/div[2]/button
+        search-x-paths:
+          - /html/body//div[@role="dialog"]//button[contains(text(), "Download")]
         actions:
           - click
           - *default_wait
       close-download-notice:
-        search-x-paths: /html/body/div[10]/div[3]/div/div[1]/*[name()="svg"]
+        search-x-paths:
+          - /html/body//div[@role="dialog"]//*[name()="svg"]
         actions:
           - click
           - wait 2
@@ -149,10 +181,10 @@ stages:
           - wait 2
       close-download-alert:
         when:
-          search-x-paths: //*[@id="notification-bell-dropdown"]/ul/div/div[1]/span[contains(text(), "Notifications")]//..
+          search-x-paths:
+            - //*[@id="notification-bell-dropdown"]//span[contains(text(), "Notifications")]//..
+            - //*[@id="notification-bell-dropdown"]/ul//span[contains(text(), "Notifications")]//..
           actions: is_displayed
-          events:
-            onerror: continue
         search-x-paths: //*[@id="notification-bell-dropdown"]
         actions:
           - click
@@ -172,9 +204,13 @@ stages:
       onsuccess: run_stages download-video save-downloaded-video
     stage-items:
       expand-layout-2-options:
-        search-x-paths: //*[@id="step-3-fixed-height"]/div[2]/div[1]/div/div[2]/div/div/div[2]/div/div/div
+        search-x-paths:
+          - //*[@id="step-3-fixed-height"]/div[2]/div[1]/div/div[2]/div/div/div[2]/div/div/div
+          - //*[@id="step-3-fixed-height"]//div[@role="combobox"]
       select-layout-2:
-        search-x-paths: //*[@id="menu-"]/div[3]/ul/li[2]
+        search-x-paths:
+          - //*[@id="menu-"]//ul/li[contains(text(), "Portrait")]
+          - //*[@id="menu-"]//ul/li[2]
         actions:
           - click
           - wait 6  # An 8 mb video took 2 seconds
@@ -183,20 +219,26 @@ stages:
       onsuccess: run_stages download-video save-downloaded-video
     stage-items:
       expand-layout-3-options:
-        search-x-paths: //*[@id="step-3-fixed-height"]/div[2]/div[1]/div/div[2]/div/div/div[2]/div/div/div
+        search-x-paths: $self.stages.download-video-layout-2.stage-items.expand-layout-2-options.search-x-paths
       select-layout-3:
-        search-x-paths: //*[@id="menu-"]/div[3]/ul/li[3]
+        search-x-paths:
+          - //*[@id="menu-"]//ul/li[contains(text(), "Square")]
+          - //*[@id="menu-"]//ul/li[3]
         actions:
           - click
           - wait 6  # An 8 mb video took 2 seconds
   download-subtitles:
     url: https://app.pictory.ai/myvideos
     stage-items:
-      click-first-project:
-        search-x-paths: //*[@id="h-tb1"]/div/div/div/div/div[1]/div[2]/div/div[1]/div[2]/div/div/div[1]
+      select-uploaded-video-project:
+        search-x-paths:
+          - //*[@id="h-tb1"]//video[@alt="${video.title}"]//..
+          - //*[@id="h-tb1"]//video[@alt="${video.title}"]//..//..
       download-subtitles-file:
         wait-timeout-seconds: 7
-        search-x-paths: //*[@id="h-tb1"]/div/div/div/div/div[1]/div[4]/div/div/div/div/div/div[2]/div[2]/*[name()="svg"]
+        search-x-paths:
+          search-from: //*[@id="h-tb1"]//div[@class="asset-title-assetview" and contains(text(), "${translation.file.extension}")]
+          search-for: //*[name()="svg"]
         actions:
           - click
           - wait 5

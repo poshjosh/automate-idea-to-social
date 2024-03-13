@@ -10,7 +10,7 @@ from selenium.webdriver.support import expected_conditions as WaitCondition
 from selenium.webdriver.support.wait import WebDriverWait, D
 
 from .browser_cookie_store import BrowserCookieStore
-from .stale_web_element import StaleWebElement
+from .reloadable_web_element import ReloadableWebElement
 from ..config import parse_attributes, SearchConfig, SearchBy
 
 logger = logging.getLogger(__name__)
@@ -42,10 +42,8 @@ class ElementSelector:
             return self
         return ElementSelector(self.__webdriver, timeout, self.__browser_cookie_store)
 
-    def select_element(self,
-                       root_element: WebElement,
-                       search_config: SearchConfig) -> WebElement:
-        self.validate_search_inputs(root_element, search_config)
+    def select_element(self, search_config: SearchConfig) -> WebElement:
+        self.validate_search_inputs(search_config)
 
         search_from: str = search_config.get_search_from()
         search_for_list: [str] = search_config.get_search_for()
@@ -55,35 +53,45 @@ class ElementSelector:
         if search_from is None or search_from == '':
             if no_search_for_list:
                 raise ValueError('search-from and search-for are both None or empty')
-            search_from_element = root_element
+            root = self.__webdriver
         else:
-            search_from_element = self.__select_element(
-                root_element, search_from,
+            root = self.__select_element(
+                self.__webdriver, search_from,
                 self.__wait_timeout_seconds, search_config.get_search_by())
-
-        if search_from_element is None:
-            raise ValueError(f'search-from is not valid: {search_from}')
+            if root is None:
+                raise ValueError(f'search-from is not valid: {search_from}')
 
         if no_search_for_list:
-            return search_from_element
+            return root
 
-        tup: [WebElement, int] = self.__select_first_element(
-            search_from_element, search_for_list, search_config.get_search_by())
+        element_to_successful_search_idx: [WebElement, int] = self.__select_first_element(
+            root, search_for_list, search_config.get_search_by())
 
-        search_config.set_successful_query_index(tup[1])
+        search_config.set_successful_query_index(element_to_successful_search_idx[1])
 
-        return tup[0]
+        return element_to_successful_search_idx[0]
 
-    def load_page_bodies(self, link: str) -> List[WebElement]:
+    def load_page(self, link: str) -> bool:
         self.validate_link(link)
 
-        page_newly_loaded: bool = self.__load_page(link)
-        page_bodies: List[WebElement] = self.__select_page_bodies()
+        if link == self.current_url():
+            logger.debug(f'Already at: {link}')
+            return False
+
+        self.__browser_cookie_store.load()
+
+        logger.debug(f'Opening page: {link}')
+        self.__webdriver.get(link)
+
         # We wait till the body elements are located
         # Then we save cookies, if the page is newly loaded.
-        if page_newly_loaded:
-            self.__browser_cookie_store.save()
-        return page_bodies
+        try:
+            self.__select_page_bodies()
+        except Exception:
+            logger.warning(f'Error selecting body elements of page: {link}')
+
+        self.__browser_cookie_store.save()
+        return True
 
     def get_webdriver(self):
         return self.__webdriver
@@ -95,17 +103,17 @@ class ElementSelector:
         return self.__browser_cookie_store
 
     def __select_first_element(self,
-                               search_from_element: WebElement,
+                               root: D,
                                search_for_list: [str],
                                search_by: SearchBy) -> [WebElement, int]:
-        exception: Exception = None
+        exception: Exception | None = None
         index: int = -1
         for search_for in search_for_list:
             index += 1
             timeout: float = self.__wait_timeout_seconds if index == 0 else INTERVAL
             try:
                 selected = self.__select_element(
-                    search_from_element, search_for, timeout, search_by)
+                    root, search_for, timeout, search_by)
                 if selected is not None:
                     logger.debug(f'Found element using: {search_by} = {search_for}')
                     return selected, index
@@ -113,20 +121,12 @@ class ElementSelector:
                 exception = ex
                 continue
 
-        error_msg: str = f"Failed to select element, current url: {self.current_url()}."
+        error_msg: str = (f"Failed to select element using: {search_by} = {search_for_list}, "
+                          f"current url: {self.current_url()}.")
         if exception is not None:
             raise ElementNotFoundError(error_msg) from exception
         else:
             raise ElementNotFoundError(error_msg)
-
-    def __load_page(self, link: str) -> bool:
-        if link == self.current_url():
-            logger.debug(f'Already at: {link}')
-            return False
-        self.__browser_cookie_store.load()
-        logger.debug(f'Opening page: {link}')
-        self.__webdriver.get(link)
-        return True
 
     def __select_page_bodies(self) -> List[WebElement]:
         body_elements: List[WebElement] = self.__webdriver.find_elements(By.TAG_NAME, 'body')
@@ -136,18 +136,33 @@ class ElementSelector:
         return body_elements
 
     def __select_element(self,
-                         root_element: D,
+                         root: D,
                          search_for: str,
                          timeout_seconds: float,
                          by: SearchBy) -> WebElement:
-        if by == SearchBy.SHADOW_ATTRIBUTE:
-            return self.__select_shadow_by_attributes(
-                root_element, timeout_seconds, parse_attributes(search_for))
 
-        return self.__wait_for_element(root_element, search_for, timeout_seconds)
+        if by == SearchBy.SHADOW_ATTRIBUTE:
+            attributes = parse_attributes(search_for)
+
+            def reload_by_shadow(attempts: int = 0) -> WebElement:
+                if attempts > 0:
+                    sleep(INTERVAL)
+                return self.__select_shadow_by_attributes(timeout_seconds, attributes)
+
+            element = self.__select_shadow_by_attributes(timeout_seconds, attributes)
+
+            return ReloadableWebElement(element, reload_by_shadow, timeout_seconds)
+
+        def reload_by_xpath(attempts: int = 0) -> WebElement:
+            if attempts > 0:
+                sleep(INTERVAL)
+            return self.__select_element_by_xpath(root, search_for, timeout_seconds)
+
+        element = self.__select_element_by_xpath(root, search_for, timeout_seconds)
+
+        return ReloadableWebElement(element, reload_by_xpath, timeout_seconds)
 
     def __select_shadow_by_attributes(self,
-                                      root_element: D,
                                       timeout_seconds: float,
                                       attributes: dict[str, str]) -> WebElement:
         collection: list = []
@@ -172,7 +187,7 @@ class ElementSelector:
             except Exception:
                 return False
 
-        self.__collect_shadows(root_element, timeout_seconds, collect)
+        self.__collect_shadows(timeout_seconds, collect)
 
         if len(collection) == 0:
             raise ElementNotFoundError(
@@ -183,7 +198,6 @@ class ElementSelector:
     # Adapted from jaksco's answer here:
     # https://stackoverflow.com/questions/37384458/how-to-handle-elements-inside-shadow-dom-from-selenium
     def __collect_shadows(self,
-                          root_element: D,
                           timeout_seconds: float,
                           collect: Callable[[WebElement], bool]) -> None:
 
@@ -198,53 +212,45 @@ class ElementSelector:
                     if collect(element):
                         break
 
-        elements = WebDriverWait(root_element, timeout_seconds).until(
+        elements = WebDriverWait(self.__webdriver, timeout_seconds).until(
                 WaitCondition.presence_of_all_elements_located((By.CSS_SELECTOR, '*')))
 
         visit_all_elements(self.__webdriver, elements)
 
-    def __wait_for_element(self,
-                           root_element: D,
-                           xpath: str,
-                           timeout_seconds: float) -> WebElement:
-
-        if timeout_seconds < 1:
-            # TODO - Using a web element as root for the find lead to error
-            #  selenium.common.exceptions.NoSuchElementException: Message: no such element: Unable to locate element
-            # return root_element.find_element(self.__select_by, xpath)
-            return self.__webdriver.find_element(self.__select_by, xpath)
+    def __select_element_by_xpath(self,
+                                  root: D,
+                                  xpath: str,
+                                  timeout_seconds: float) -> WebElement:
 
         def select_clickable_element(attempts: int = 0) -> WebElement:
             if attempts > 0:
                 sleep(INTERVAL)
-            return WebDriverWait(root_element, timeout_seconds).until(
+            return WebDriverWait(root, timeout_seconds).until(
                 WaitCondition.element_to_be_clickable((self.__select_by, xpath)))
 
-        def select_located_element() -> WebElement:
-            sleep(INTERVAL)
-            ignored_exceptions = [StaleElementReferenceException]
-            return WebDriverWait(
-                root_element, timeout_seconds, ignored_exceptions=ignored_exceptions).until(
-                WaitCondition.presence_of_element_located((self.__select_by, xpath)))
+        # def select_located_element() -> WebElement:
+        #     sleep(INTERVAL)
+        #     ignored_exceptions = [StaleElementReferenceException]
+        #     return WebDriverWait(
+        #         root, timeout_seconds, ignored_exceptions=ignored_exceptions).until(
+        #         WaitCondition.presence_of_element_located((self.__select_by, xpath)))
 
-        try:
-            return select_clickable_element()
-        except TimeoutException:
-            logger.debug(f"Timeout for element using: {xpath}")
-            return self.__webdriver.find_element(self.__select_by, xpath)
-        except StaleElementReferenceException:
-            logger.debug(f"Stale element using: {xpath}")
-            return StaleWebElement(
-                select_located_element(), select_clickable_element, timeout_seconds)
+        if timeout_seconds < 1:
+            return root.find_element(self.__select_by, xpath)
+        else:
+            try:
+                return select_clickable_element()
+            except TimeoutException:
+                logger.debug(f"Selecting element directly, despite timeout using: {xpath}")
+                return root.find_element(self.__select_by, xpath)
+            except StaleElementReferenceException:
+                logger.debug(f"Selecting element directly, despite staleness using: {xpath}")
+                return root.find_element(self.__select_by, xpath)
 
     @staticmethod
-    def validate_search_inputs(root_element: WebElement,
-                               search_config: SearchConfig) -> WebElement:
-        if root_element is None:
-            raise ValueError('root element for searching is None')
+    def validate_search_inputs(search_config: SearchConfig):
         if search_config is None:
             raise ValueError('search_config is None')
-        return WebElement({}, None)
 
     @staticmethod
     def validate_link(link: str):

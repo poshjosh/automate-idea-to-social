@@ -19,10 +19,8 @@ def is_variable(value: str) -> bool:
     return False
 
 
-"""Action variables are only available while the actions are being run"""
-
-
 def is_action_variable(value: str) -> bool:
+    """Action variables are only available while the actions are being run"""
     return (__is_variable_with_prefix(value, RESULTS_KEY)
             or __is_variable_with_prefix(value, CONTEXT_KEY))
 
@@ -61,7 +59,7 @@ def replace_all_variables(target: dict[str, any], source: dict[str, any]) -> dic
 def __visit_all_variables(target: dict[str, any],
                           visit: Callable[[str, [str]], str],
                           path: [str] = None):
-    # TODO - Implement 'me' expansion for $config related variables, test it too
+    # TODO - Implement 'me' expansion for $self related variables, test it too
     #  To achieve the above you need to implement the correct curr_path argument
     def iter_dict(d: dict[str, any], parent: any, curr_path: [str]):
         for k, v in d.items():
