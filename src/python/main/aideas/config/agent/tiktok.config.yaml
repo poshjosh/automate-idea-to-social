@@ -30,7 +30,7 @@ stages:
         actions:
           # Use the first result from the specified pictory download stage
           #- enter_text $results.pictory.download-video-layout-2.get-file[0]
-          - get_first_file ${agents.dir}/pictory/download-video-layout-2/save-file $video.output.type
+          - get_first_file ${agents.dir}/pictory/results/download-video-layout-2/save-file $video.output.type
           - enter_text $results.me[0]
       click-upload-button:
         wait-timeout-seconds: 5

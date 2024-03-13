@@ -51,7 +51,7 @@ stages:
         actions:
           # Use the first result from the specified pictory download stage
           #- enter_text $results.pictory.save-downloaded-video.get-file[0]
-          - get_first_file ${agents.dir}/pictory/save-downloaded-video/save-file $video.output.type
+          - get_first_file ${agents.dir}/pictory/results/save-downloaded-video/save-file $video.output.type
           - enter_text $results.me[0]
           - wait 5
       enter-post-text:

@@ -4,7 +4,7 @@ from typing import Callable
 
 from ..action.action import Action
 from ..action.action_handler import ActionHandler
-from ..action.action_signatures import event_action_signatures
+from ..action.action_signatures import event_action_signatures, parse_agent_to_stages
 from ..agent.agent import AgentError
 from ..config import AgentConfig, ConfigPath, Name
 from ..result.result_set import ElementResultSet
@@ -91,9 +91,8 @@ class EventHandler:
                     raise AgentError(
                         f'Max retries exceeded {config_path}, result: {result}') from exception
             elif action_signature.startswith('run_stages'):
-                args: [str] = action_signature.split(' ')[1:]
-                agent_to_stages: OrderedDict[str, [Name]] = (
-                    self.__parse_names(args, agent_name, config_path.stage()))
+                _, agent_to_stages = parse_agent_to_stages(
+                    action_signature, agent_name, config_path.stage())
                 run_stages(run_context, agent_to_stages)
             else:
                 action = self.__create_action(
@@ -113,18 +112,6 @@ class EventHandler:
             return ON_ERROR
         else:
             return ON_SUCCESS
-
-    @staticmethod
-    def __parse_names(agent_stages: [str],
-                      calling_agent: str, calling_stage: Name) -> OrderedDict[str, list['Name']]:
-        names: OrderedDict[str, list[Name]] = OrderedDict()
-        # target format = `agent_name.stage_name` or simply `stage_name`  (agent_name is optional)
-        for target in agent_stages:
-            agent_name = calling_agent if '.' not in target else target.split('.')[0]
-            stage_name = target if '.' not in target else target.split('.')[1]
-            stage_alias = calling_stage.get_id()  # if '.' not in target else target.split('.')[1]
-            names[agent_name] = [Name.of(stage_name, stage_alias)]
-        return names
 
     @staticmethod
     def __create_action(agent_name: str,

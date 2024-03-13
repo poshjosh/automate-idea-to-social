@@ -149,7 +149,7 @@ stages:
         events:
           onerror: continue
         # There will be some default waiting for this element to appear
-        wait-timeout-seconds: 45  # TODO - Change to 120
+        wait-timeout-seconds: 120
         search-x-paths: //div[contains(text(), "applied")]
   download-video:
     stage-items:
@@ -161,7 +161,7 @@ stages:
       select-video-download:
         events:
           onerror:
-            - dismiss_alert 10
+            - dismiss_alert 5
             - retry 1
         search-x-paths: //*[@id="btnGenerate"]
       begin-download:
@@ -197,7 +197,7 @@ stages:
         # By saving the file, other agents may access it from the local disc
         # event when pictory run context is no longer available
         # Will be saved to /pictory-dir/stage/stage-item/original-file-name.extension
-        # E.g. main/resources/agent/pictory/save-downloaded-video/save-file/original.mp4
+        # E.g. main/resources/agent/pictory/results/save-downloaded-video/save-file/original.mp4
         actions: save_file $results.pictory.save-downloaded-video.get-file[0]
   download-video-layout-2:
     events:

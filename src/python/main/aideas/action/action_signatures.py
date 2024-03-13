@@ -1,10 +1,10 @@
+from collections import OrderedDict
 from typing import TypeVar, Union
 
-from ..config import AgentConfig, DEFAULT_ACTIONS_KEY
+from ..config import AgentConfig, DEFAULT_ACTIONS_KEY, Name
 
 STR_OR_DICT = TypeVar("STR_OR_DICT", bound=Union[str, dict])
 STR_OR_LIST = TypeVar("STR_OR_LIST", bound=Union[str, list[str]])
-
 
 DEFAULT_ACTIONS: list[str] = ['click']
 
@@ -50,3 +50,24 @@ def __get_event_config(config: dict[str, any], event_name: str) -> Union[str, li
     events_config = None if not config else config.get('events')
     return default_action if events_config is None \
         else events_config.get(event_name, default_action)
+
+
+def parse_agent_to_stages(action_signature: [str],
+                          calling_agent: str,
+                          calling_stage: Union[str, Name]) \
+        -> tuple[str, OrderedDict[str, list[Name]]]:
+    calling_stage = Name.of(calling_stage)
+    parts = action_signature.split(' ')
+    action_name: str = parts[0]
+    agent_stages: [str] = parts[1:]
+    agent_to_stages: OrderedDict[str, list[Name]] = OrderedDict()
+    # target format = `agent_name.stage_name` or simply `stage_name`  (agent_name is optional)
+    for target in agent_stages:
+        agent_name = calling_agent if '.' not in target else target.split('.')[0]
+        stage_name = target if '.' not in target else target.split('.')[1]
+        stage_alias = calling_stage.get_id()  # if '.' not in target else target.split('.')[1]
+        stage = Name.of(stage_name, stage_alias)
+        stages = agent_to_stages.get(agent_name, [])
+        stages.append(stage)
+        agent_to_stages[agent_name] = stages
+    return action_name, agent_to_stages

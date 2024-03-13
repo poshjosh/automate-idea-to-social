@@ -3,6 +3,7 @@
 .vtt
 
 # Saved results from running a program
+results/
 app-results/
 
 .DS_Store

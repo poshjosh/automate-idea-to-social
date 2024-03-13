@@ -190,7 +190,7 @@ class ActionHandler:
 
     @staticmethod
     def __make_target_dirs_if_need(action: Action) -> str:
-        tgt_dir = action.get_target_dir()
+        tgt_dir = action.get_results_dir()
         if not os.path.exists(tgt_dir):
             os.makedirs(tgt_dir)
         return tgt_dir

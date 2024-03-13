@@ -3,7 +3,7 @@ import os
 import uuid
 from typing import Union
 
-from .variable_parser import parse_run_arg
+from .variable_parser import parse_run_arg, RESULTS_KEY
 from ..env import Env
 
 logger = logging.getLogger(__name__)
@@ -60,11 +60,11 @@ class Action:
         self.__name = name
         self.__args = [] if args is None else list(args)
 
-    def get_target_dir(self, agents_dir: Union[str, None] = None) -> str:
+    def get_results_dir(self, agents_dir: Union[str, None] = None) -> str:
         agents_dir = self.__agents_dir if not agents_dir else agents_dir
         if not agents_dir:
             raise ValueError('agents dir required')
-        return os.path.join(agents_dir, self.get_agent_name(),
+        return os.path.join(agents_dir, self.get_agent_name(), RESULTS_KEY,
                             self.get_stage_id(), self.get_target_id())
 
     def get_agent_name(self) -> str:
