@@ -80,14 +80,13 @@ class EventHandler:
             if action_signature == 'continue':
                 if event_name == ON_ERROR:
                     logger.warning(f'For {config_path}, will continue despite error!')
-                return result
             elif action_signature == 'fail':
                 raise AgentError(f'Error {config_path}, result: {result}') from exception
             elif action_signature.startswith('retry'):
                 if trials < self.__max_trials(action_signature):
                     logger.debug(f'Retrying: {config_path} after {event_name}, '
                                  f'tried {trials} already')
-                    return retry(trials + 1)
+                    retry(trials + 1)
                 else:
                     raise AgentError(
                         f'Max retries exceeded {config_path}, result: {result}') from exception
@@ -96,7 +95,6 @@ class EventHandler:
                 agent_to_stages: OrderedDict[str, [Name]] = (
                     self.__parse_names(args, agent_name, config_path.stage()))
                 run_stages(run_context, agent_to_stages)
-                return run_context.get_element_results(agent_name, stage_id)
             else:
                 action = self.__create_action(
                     agent_name, stage_id, target_id, index,
@@ -104,7 +102,9 @@ class EventHandler:
                 logger.debug(f"Executing event action: {action}")
                 action_result = self.__action_handler.execute(action)
                 run_context.add_action_result(agent_name, stage_id, action_result)
-                return run_context.get_element_results(agent_name, stage_id)
+
+        return run_context.get_element_results(agent_name, stage_id)
+
 
     @staticmethod
     def __determine_result_event_name(exception: Exception,
