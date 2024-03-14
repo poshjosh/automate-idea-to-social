@@ -276,7 +276,53 @@ class AgentConfig:
         return None if name is None else Name.of(name).get_value()
 
 
-def list_to_dict(result: list) -> dict:
+def tokenize(value: str, separator: str = ' ') -> list[str]:
+    """
+    Converts a string to a dictionary of attributes.
+    Input: key_0=value_0 key_1="value with spaces"
+    Output: {key_0: value_0, key_1: value with spaces}
+    :param value: The value to parse into a dictionary.
+    :param separator: The separator between the attributes.
+    :return: The dictionary of attributes.
+    """
+    quote = '"'
+    parts = value.split(separator)
+    result = []
+    sub = []
+    for i in range(len(parts)):
+        part = parts[i]
+        if len(sub) == 0 and part.startswith(quote):
+            if i == 0:
+                raise ValueError(f'Initial token cannot have quotes: {part}')
+            if part.endswith(quote) and part != quote:
+                sub.append(part[1:-1])
+                result.append(separator.join(sub))
+                sub = []
+            else:
+                sub.append(part[1:])
+            continue
+        if part.endswith(quote):
+            if len(sub) == 0:
+                raise ValueError(f'Wrongly placed quote in: {part}')
+            if part != quote:
+                sub.append(part[:-1])
+                result.append(separator.join(sub))
+            else:
+                result.append(separator)
+            sub = []
+            continue
+        if len(sub) > 0:
+            sub.append(part)
+            continue
+        result.append(part)
+
+    if len(sub) > 0:
+        raise ValueError(f'Unmatched quote: {quote}{sub[0]}')
+
+    return result
+
+
+def __list_to_dict(result: list) -> dict:
     k = None
     pairs = {}
     for i in range(len(result)):
@@ -298,30 +344,5 @@ def parse_attributes(value: str) -> dict[str, str]:
     """
     separator = ' '
     value = value.replace('=', separator)
-    quote = '"'
-    parts = value.split(separator)
-    result = []
-    sub = []
-    for i in range(len(parts)):
-        part = parts[i]
-        if part.startswith(quote):
-            if i == 0:
-                raise ValueError(f'Attribute name cannot have quotes: {part}')
-            sub.append(part[1:])
-            continue
-        if part.endswith(quote):
-            if len(sub) == 0:
-                raise ValueError(f'Wrongly placed quote in: {part}')
-            sub.append(part[:-1])
-            result.append(separator.join(sub))
-            sub = []
-            continue
-        if len(sub) > 0:
-            sub.append(part)
-            continue
-        result.append(part)
-
-    if len(sub) > 0:
-        raise ValueError(f'Unmatched quote: {quote}{sub[0]}')
-
-    return list_to_dict(result)
+    result: list[str] = tokenize(value, separator)
+    return __list_to_dict(result)

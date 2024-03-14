@@ -53,9 +53,9 @@ class ElementActionHandler(BrowserActionHandler):
         driver = self.get_web_driver()
         if key == 'clear_text':
             def clear_text(tgt: WebElement):
-                tgt.clear()  # May not work under certain conditions, so we try the following
                 tgt.send_keys(Keys.CONTROL, 'a')
                 tgt.send_keys(Keys.DELETE)
+                tgt.clear()  # May not work under certain conditions, so we try the following
 
             result = execute_for_result(lambda arg: clear_text, element, action)
         elif key == 'click':

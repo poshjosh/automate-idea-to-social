@@ -4,6 +4,7 @@ import uuid
 from typing import Union
 
 from .variable_parser import parse_run_arg, RESULTS_KEY
+from ..config import tokenize
 from ..env import Env
 
 logger = logging.getLogger(__name__)
@@ -33,7 +34,7 @@ class Action:
            run_context: 'RunContext' = None) -> 'Action':
         if action_signature == 'none':
             return Action.none()
-        parts: list[str] = action_signature.split(' ')
+        parts: list[str] = tokenize(action_signature)
         if len(parts) == 0:
             raise ValueError(f'Unsupported action: {target_id}.{action_signature}')
 

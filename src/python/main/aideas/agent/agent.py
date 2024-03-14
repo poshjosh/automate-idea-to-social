@@ -55,7 +55,7 @@ class Agent:
         for agent_name in agent_to_stages.keys():
             agent: Agent = self if agent_name == self.__name else self.get_dependency(agent_name)
             stage_names: [Name] = agent_to_stages[agent_name]
-            logger.debug(f"For {self.__name}, will run: {agent_name}, stages: {stage_names}")
+            logger.debug(f"For {self.__name}, will run stages: {[str(e) for e in stage_names]}")
 
             agent._run_stages(run_context, stage_names)
 

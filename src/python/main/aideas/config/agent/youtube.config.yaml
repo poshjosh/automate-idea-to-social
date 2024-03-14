@@ -66,8 +66,9 @@ stages:
           - //*[@id="title-wrapper"]//*[@id="textbox"]
           #- //*[@id="title-wrapper"]//*[@id="input"]
         actions:
-          - clear_text  # YouTube guesses a title for us, we don't want that
-          - enter_text $video.title "#shorts"
+          - clear_text  # YouTube guesses a title for us, we don't want that.
+          # We append a prefix here, because the guessed title was not cleared
+          - enter_text " " $video.title "#shorts"
       enter-video-description:
         search-x-paths:
           - //*[@id="description-wrapper"]//*[@id="textbox"]
@@ -140,10 +141,8 @@ stages:
   # We don't implement for now because we need to confirm if the added subtitles work as expected
   #subtitles:
   checks:
-    stage-items:
-      move-to-next:
-        events:
-          onstart: run_stages proceed
+    events:
+      onstart: run_stages proceed
   visibility:
     stage-items:
       select-visibility:

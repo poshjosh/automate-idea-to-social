@@ -125,8 +125,8 @@ class EventHandler:
                          action_signature, run_context)
 
     @staticmethod
-    def __max_trials(action: str) -> int:
-        max_retries: int = int(action.split(' ')[1])
+    def __max_trials(action_signature: str) -> int:
+        max_retries: int = int(action_signature.split(' ')[1])
         return max_retries + 1
 
 
