@@ -13,7 +13,7 @@ browser:
     options:
       args:
         - no-sandbox
-        - disable-dev-shm-usage - # We have shm_size: 2g, specified in docker-compose.yml
+        - disable-dev-shm-usage  # We have shm_size: 2g, specified in docker-compose.yml
         # TODO - Test headless mode
         #- headless
         # Location where chrome stores profiles
