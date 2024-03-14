@@ -106,7 +106,7 @@ class BrowserAutomator:
                 config, config_path, run_context).is_successful()
         except ElementNotFoundError as ex:
             logger.debug(f'Error checking condition for {config_path}, \nCause: {ex}')
-            logger.error(ex)
+            logger.exception(ex)
             success = False
 
         logger.debug(f'May proceed: {success}, {config_path}, due to condition: {condition}')
@@ -176,7 +176,7 @@ class BrowserAutomator:
 
         except ElementNotFoundError as ex:
             logger.debug(f"Error acting on {config_path} {type(ex)}")
-            logger.error(ex)
+            logger.exception(ex)
             raise ex
 
         result = self.__event_handler.handle_result_event(

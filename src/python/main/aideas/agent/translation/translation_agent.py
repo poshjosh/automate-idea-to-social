@@ -70,7 +70,7 @@ class TranslationAgent(Agent):
             self.__do_translate(filename_in, filename_out, output_language_code)
             return ActionResult(action, True, filename_out)
         except Exception as ex:
-            logger.error(f'{ex}')
+            logger.exception(ex)
             return ActionResult(action, False)
 
     def __do_translate(self,

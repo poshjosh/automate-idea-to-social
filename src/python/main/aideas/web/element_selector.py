@@ -227,24 +227,22 @@ class ElementSelector:
                                   root: D,
                                   xpath: str,
                                   timeout_seconds: float) -> WebElement:
-
-        def select_clickable_element(attempts: int = 0) -> WebElement:
-            if attempts > 0:
-                sleep(INTERVAL)
-            return WebDriverWait(root, timeout_seconds).until(
-                WaitCondition.element_to_be_clickable((self.__select_by, xpath)))
-
-        if timeout_seconds < 1:
-            return root.find_element(self.__select_by, xpath)
-        else:
-            try:
-                return select_clickable_element()
-            except TimeoutException:
-                logger.debug(f"Selecting element directly, despite timeout using: {xpath}")
+        try:
+            if timeout_seconds < 1:
                 return root.find_element(self.__select_by, xpath)
-            except StaleElementReferenceException:
-                logger.debug(f"Selecting element directly, despite staleness using: {xpath}")
-                return root.find_element(self.__select_by, xpath)
+            else:
+                try:
+                    return WebDriverWait(root, timeout_seconds).until(
+                        WaitCondition.element_to_be_clickable((self.__select_by, xpath)))
+                except TimeoutException:
+                    logger.debug(f"Selecting element directly, despite timeout using: {xpath}")
+                    return root.find_element(self.__select_by, xpath)
+                except StaleElementReferenceException:
+                    logger.debug(f"Selecting element directly, despite staleness using: {xpath}")
+                    return root.find_element(self.__select_by, xpath)
+        except Exception as ex:
+            raise ElementNotFoundError(f"Failed to select element using: {xpath}") from ex
+
 
     @staticmethod
     def validate_search_inputs(search_config: SearchConfig):
