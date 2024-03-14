@@ -1,3 +1,7 @@
+### Tips & Tricks
+
+- Disable 2-factor authentication on your accounts.
+
 ### Requirements
 
 #### python requirements:

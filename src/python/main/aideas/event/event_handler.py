@@ -79,13 +79,13 @@ class EventHandler:
             index += 1
             if action_signature == 'continue':
                 if event_name == ON_ERROR:
-                    logger.warning(f'For {config_path}, will continue despite error!')
+                    logger.warning(
+                        f'For {config_path}, will continue despite error: {type(exception)}!')
             elif action_signature == 'fail':
                 raise AgentError(f'Error {config_path}, result: {result}') from exception
             elif action_signature.startswith('retry'):
                 if trials < self.__max_trials(action_signature):
-                    logger.debug(f'Retrying: {config_path} after {event_name}, '
-                                 f'tried {trials} already')
+                    logger.debug(f'Retrying: {config_path}, tried {trials} already')
                     retry(trials + 1)
                 else:
                     raise AgentError(

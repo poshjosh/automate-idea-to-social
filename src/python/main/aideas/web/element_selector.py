@@ -241,7 +241,7 @@ class ElementSelector:
                     logger.debug(f"Selecting element directly, despite staleness using: {xpath}")
                     return root.find_element(self.__select_by, xpath)
         except Exception as ex:
-            raise ElementNotFoundError(f"Failed to select element using: {xpath}") from ex
+            raise ElementNotFoundError(f"Failed to select element by xpath: {xpath}") from ex
 
 
     @staticmethod
