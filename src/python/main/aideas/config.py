@@ -239,6 +239,11 @@ class AgentConfig:
                              result_if_none: VALUE = 0) -> VALUE:
         return self.stage_item(stage, item, {}).get(key, result_if_none)
 
+    def get_expected(self,
+                     path: Union[str, list[str], list[Name], tuple[Name]],
+                     result_if_none: Union[str, list, None] = None) -> Union[str, list, None]:
+        return self.get(path, {}).get('expected', result_if_none)
+
     def get(self, path: Union[str, list[str], list[Name], tuple[Name]], result_if_none=None) -> any:
         path: [str] = self.__value_list(path)
         result = self.__config

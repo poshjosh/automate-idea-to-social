@@ -3,7 +3,7 @@ from typing import Union
 
 from selenium.webdriver.remote.webelement import WebElement
 
-from .element_selector import ElementSelector
+from .element_selector import ElementSelector, ElementNotFoundError
 from .webdriver_creator import WEB_DRIVER, WebDriverCreator
 from ..action.action import Action
 from ..action.action_result import ActionResult
@@ -104,8 +104,9 @@ class BrowserAutomator:
         try:
             success = self.without_events().__act_on_element(
                 config, config_path, run_context).is_successful()
-        except Exception as ex:
+        except ElementNotFoundError as ex:
             logger.debug(f'Error checking condition for {config_path}, \nCause: {ex}')
+            logger.error(ex)
             success = False
 
         logger.debug(f'May proceed: {success}, {config_path}, due to condition: {condition}')
@@ -164,8 +165,8 @@ class BrowserAutomator:
                     config_path, element, timeout, element_actions, run_context)
 
                 # Handle expectations if present
-                expected = None if not target_config else target_config.get('expected', None)
-                expectation_actions: list[str] = [] if not expected else action_signatures(expected)
+                expected = config.get_expected(config_path, [])
+                expectation_actions: list[str] = action_signatures(expected)
                 if expectation_actions:
                     # Since we use the same config_path as above, the
                     # results of the expectation will be added to the
@@ -173,9 +174,10 @@ class BrowserAutomator:
                     self.__execute_all_actions(
                         config_path, element, timeout, expectation_actions, run_context)
 
-        except Exception as ex:
+        except ElementNotFoundError as ex:
             logger.debug(f"Error acting on {config_path} {type(ex)}")
-            exception = ex
+            logger.error(ex)
+            raise ex
 
         result = self.__event_handler.handle_result_event(
             self.get_agent_name(), config, config_path, run_context,

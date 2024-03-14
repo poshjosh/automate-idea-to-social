@@ -9,7 +9,7 @@ stages:
           search-x-paths: $self.stages.pre-login.stage-items.accept-cookies.search-x-paths
           actions: is_displayed
         search-x-paths:
-          - //*[@id="content"]/div[2]/div[6]/div[1]/ytd-button-renderer[2]/yt-button-shape/button
+          - //*[@id="content"]//ytd-button-renderer[2]/yt-button-shape/button
           - //*[@id="content"]//yt-button-shape/button[contains(text(), "Accept all")]
 # This failed severally, however the url in the next stage achieved the same effect
 #      proceed-to-login:
@@ -25,15 +25,15 @@ stages:
 #          - //*[@id="masthead"]//*[@id="buttons"]//a[contains(text(), "Sign in")]
 #          - //*[@id="masthead"]//*[@id="buttons"]/ytd-button-renderer/yt-button-shape/a/yt-touch-feedback-shape/div/div[2]
   login:
-    #url: https://accounts.google.com/ServiceLogin?service=youtube&uilel=3&passive=true&continue=https%3A%2F%2Fwww.youtube.com%2Fsignin%3Faction_handle_signin%3Dtrue%26app%3Ddesktop%26hl%3Den-GB%26next%3Dhttps%253A%252F%252Fwww.youtube.com%252F&hl=en-GB&ec=65620
-    #url: https://accounts.google.com/v3/signin/identifier?continue=https%3A%2F%2Fwww.youtube.com%2Fsignin%3Faction_handle_signin%3Dtrue%26app%3Ddesktop%26hl%3Den-GB%26next%3Dhttps%253A%252F%252Fwww.youtube.com%252F&ec=65620&hl=en-GB&ifkv=ATuJsjwUx3ACMl1_9VaWspgFMcreZUMSVAsQRPD58rd2F-etbIvhM7xcUx2PwHFJ8g_F8nUcTljGWg&passive=true&service=youtube&uilel=3&flowName=GlifWebSignIn&flowEntry=ServiceLogin&dsh=S1073791863%3A1709994962980094&theme=mn
     url: https://accounts.google.com/ServiceLogin?service=youtube&passive=true&continue=https%3A%2F%2Fwww.youtube.com%2Fsignin%3Faction_handle_signin%3Dtrue%26app%3Ddesktop%26hl%3Den-GB%26next%3Dhttps%253A%252F%252Fwww.youtube.com%252F&hl=en-GB
     stage-items:
       fill-email:
         when:
           search-x-paths: $self.stages.login.stage-items.fill-email.search-x-paths
           actions: is_displayed
-        search-x-paths: //*[@id="identifierId"]
+        search-x-paths:
+          - //*[@id="identifierId"]
+          - //*[@id="identifierId"]
         actions: enter_text $youtube.user.email
       select-account:
         when:
@@ -96,7 +96,8 @@ stages:
 #        search-shadow-attributes: type=file name=Filedata
         wait-timeout-seconds: 0  # Signal not to use webdriverwait
         search-x-paths:
-          - //input[@type='file']
+          - //input[@type="file"]
+          - //*[@id="content"]/input[@type="file"]
 #          #<input type="file" name="Filedata" multiple="" aria-hidden="true" tabindex="-1" style="position: absolute; overflow: hidden; height: 0px; width: 0px; opacity: 0; left: 0px; top: 0px; display: none;">
 #          - //*[@id="dialog"]//input[@type="file"]
 #          - //*[@id="ytcp-uploads-dialog-file-picker"]//*[@id="content"]/input[@type="file"]
@@ -110,13 +111,13 @@ stages:
       enter-video-title:
         search-x-paths:
           - //*[@id="title-wrapper"]//*[@id="textbox"]
-        #          - //*[@id="title-wrapper"]//*[@id="input"]
-        actions: enter_text $video.title '#shorts'
+          #- //*[@id="title-wrapper"]//*[@id="input"]
+        actions: enter_text $video.title "#shorts"
       enter-video-description:
         search-x-paths:
           - //*[@id="description-wrapper"]//*[@id="textbox"]
           - //*[@id="description-wrapper"]//*[@id="description-textarea"]
-#          - //*[@id="description-wrapper"]//*[@id="input"]
+          #- //*[@id="description-wrapper"]//*[@id="input"]
         actions: enter_text $video.description
   add-video-playlist:
     events:
@@ -124,20 +125,21 @@ stages:
     stage-items:
       expand-play-list-options:
         search-x-paths:
-          - //*[@id="basics"]/div[4]/div[3]/div[1]
-          - //*[@id="basics"]/div[4]/div[3]/div[1]/ytcp-video-metadata-playlists
-          - //*[@id="basics"]/div[4]/div[3]/div[1]/ytcp-video-metadata-playlists/ytcp-text-dropdown-trigger
-          - //*[@id="basics"]/div[4]/div[3]/div[1]/ytcp-video-metadata-playlists/ytcp-text-dropdown-trigger/ytcp-dropdown-trigger
-          - //*[@id="basics"]/div[4]/div[3]/div[1]/ytcp-video-metadata-playlists/ytcp-text-dropdown-trigger/ytcp-dropdown-trigger/div
-          - //*[@id="basics"]/div[4]/div[3]/div[1]/ytcp-video-metadata-playlists/ytcp-text-dropdown-trigger/ytcp-dropdown-trigger/div/div[2]/span
-          - //*[@id="basics"]/div[4]/div[3]/div[1]/ytcp-video-metadata-playlists/ytcp-text-dropdown-trigger/ytcp-dropdown-trigger//span[contains(text(), "Select")]
+          - //*[@id="basics"]//ytcp-video-metadata-playlists
+          - //*[@id="basics"]//ytcp-video-metadata-playlists/ytcp-text-dropdown-trigger
+          - //*[@id="basics"]//ytcp-video-metadata-playlists/ytcp-text-dropdown-trigger/ytcp-dropdown-trigger
+          - //*[@id="basics"]//ytcp-video-metadata-playlists/ytcp-text-dropdown-trigger/ytcp-dropdown-trigger/div
+          - //*[@id="basics"]//ytcp-video-metadata-playlists/ytcp-text-dropdown-trigger/ytcp-dropdown-trigger//span[contains(text(), "Select")]
       select-play-list:
         search-x-paths:
-          # TODO - REPLACE WITH VARIABLE youtube.playlist.name
           - //*[@id="items"]//span[contains(text(), "${youtube.playlist.name}")]
-#          - //*[@id="items"]/ytcp-ve[1]/li//span[contains(text(), "Discovery")]
+          - //*[@id="items"]/ytcp-ve[1]/li
+#          - //*[@id="items"]/ytcp-ve[1]/li//span[contains(text(), "${youtube.playlist.name}")]
         actions: click
       confirm-playlist:
+        expected: not is_displayed
+        events:
+          onerror: retry 1
         search-x-paths:
           - //*[@id="dialog"]/div[2]/ytcp-button[2]/div
           - //*[@id="dialog"]//div[contains(text(), "Done")]
@@ -146,14 +148,17 @@ stages:
       # Without this an error will be displayed when we try to move to the next stage
       specify-age-restrictions:
         search-x-paths:
-          - //*[@id="audience"]/ytkc-made-for-kids-select/div[4]/tp-yt-paper-radio-group/tp-yt-paper-radio-button//*[contains(text(), "not made for kids")]
-          - //*[@id="audience"]/ytkc-made-for-kids-select/div[4]/tp-yt-paper-radio-group//*[@id="radioLabel"]
-          - //*[@id="audience"]/ytkc-made-for-kids-select/div[4]/tp-yt-paper-radio-group//*[@id="radioLabel"]/*[contains(text(), "not made for kids")]
-          - //*[@id="audience"]/ytkc-made-for-kids-select/div[4]/tp-yt-paper-radio-group/tp-yt-paper-radio-button[2]
+          - //*[@id="audience"]//*[contains(text(), "not made for kids")]
+          - //*[@id="audience"]/ytkc-made-for-kids-select//*[@id="radioLabel"]/*[contains(text(), "not made for kids")]
+          - //*[@id="audience"]/ytkc-made-for-kids-select//tp-yt-paper-radio-group/tp-yt-paper-radio-button//*[contains(text(), "not made for kids")]
+          - //*[@id="audience"]/ytkc-made-for-kids-select//tp-yt-paper-radio-group//*[@id="radioLabel"]
+          - //*[@id="audience"]/ytkc-made-for-kids-select//tp-yt-paper-radio-group//*[@id="radioLabel"]/*[contains(text(), "not made for kids")]
+          - //*[@id="audience"]/ytkc-made-for-kids-select//tp-yt-paper-radio-group/tp-yt-paper-radio-button[2]
   proceed:
     stage-items:
       click-next-button:
         search-x-paths:
+          - //*[@id="next-button"]
           - //*[@id="next-button"]/div
           - //*[@id="next-button"]//*[contains(text(), "Next")]
   related-video:
@@ -162,13 +167,17 @@ stages:
       onsuccess: run_stages proceed
     stage-items:
       expand-options:
-        search-x-paths: //*[@id="shorts-content-links-add-button"]
+        search-x-paths:
+          - //*[@id="shorts-content-links-add-button"]
+          - //*[@id="shorts-content-links-add-button"]/div[contains(text(), "Add")]
       select-related-video:
         search-x-paths:
           # We select the first video in the list. If we want to select a specific video:
           # //*[@id="dialog"]/div[2]/div/ytcp-video-pick-dialog-contents/div/div/div/ytcp-entity-card//span[starts-with(text(), "${youtube.video.related.title}")]
-          - //*[@id="dialog"]/div[2]/div/ytcp-video-pick-dialog-contents/div/div/div/ytcp-entity-card[1]
-          - //*[@id="dialog"]/div[2]/div/ytcp-video-pick-dialog-contents/div/div/div/ytcp-entity-card[1]/*[@id="content"]
+          - //*[@id="dialog"]//ytcp-video-pick-dialog-contents//ytcp-entity-card[1]
+          - //*[@id="dialog"]//ytcp-video-pick-dialog-contents//ytcp-entity-card[1]/*[@id="content"]
+          - //*[@id="dialog"]//ytcp-entity-card[1]
+          - //*[@id="dialog"]//ytcp-entity-card[1]/*[@id="content"]
   # Only one subtitle can be added
   # We don't implement for now because we need to confirm if the added subtitles work as expected
   #subtitles:
@@ -180,6 +189,8 @@ stages:
     stage-items:
       select-visibility:
         search-x-paths:
+          - //*[@id="radioLabel"]/tp-yt-paper-radio-button[contains(text(), "Public")]
+          - //*[@id="privacy-radios"]/tp-yt-paper-radio-button[contains(text(), "Public")]
           - //*[@id="radioLabel"]/*[contains(text(), "Public")]
           - //*[@id="privacy-radios"]/tp-yt-paper-radio-button/*[contains(text(), "Public")]
         actions:
@@ -192,8 +203,10 @@ stages:
           - //*[@id="done-button"]
           - //*[@id="done-button"]/div
   wait-for-video-link:
+    events:
+      onerror: continue
     stage-items:
-      get-video-link:
+      save-video-link:
         wait-timeout-seconds: 60
         search-x-paths: //*[@id="share-url"]
         actions:

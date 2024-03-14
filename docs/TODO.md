@@ -1,5 +1,7 @@
 ## TODO
 
+Checkout https://github.com/Mozilla-Ocho/llamafile
+
 For ResultSet introduce composition and de-composition
 from and to dict. Use this when saving results to disc.
 Example de-composition:

@@ -9,8 +9,12 @@ class ReloadableWebElement(WebElement):
                  reload: Callable[[int], WebElement],
                  timeout: float) -> None:
         super().__init__(delegate.parent, delegate.id)
+        self.__delegate = delegate
         self.__reload = reload
         self.__timeout = timeout
+
+    def get_delegate(self) -> WebElement:
+        return self.__delegate
 
     def reload(self) -> WebElement:
         return ReloadableWebElement.__run_till_success(self.__reload, self.__timeout)

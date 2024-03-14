@@ -70,19 +70,17 @@ def find_parent_dir(path: str,
     return result_if_none
 
 
-"""
-..highlight:: python
-.. code-block:: python
-visit_dir('.', './abc', lambda src, dst: shutil.move(src, dst))
-
-Moves all the content of the current directory into directory 'abc'
-"""
-
-
 def visit_dir(root_src_dir: str,
               root_dst_dir: str,
               action: Callable[[str, str], None],
               test: Union[Callable[[str, str], bool], None] = None):
+    """
+    highlight:: python
+    code-block:: python
+    visit_dir('.', './abc', lambda src, dst: shutil.move(src, dst))
+
+    Moves all the content of the current directory into directory 'abc'
+    """
     if root_dst_dir is None or root_src_dir == '':
         raise ValueError("Source directory cannot be none or empty")
     if root_dst_dir is None or root_dst_dir == '':
@@ -96,6 +94,11 @@ def visit_dir(root_src_dir: str,
             dst_file = os.path.join(dst_dir, file_)
             if test is None or test(src_file, dst_file):
                 action(src_file, dst_dir)
+
+
+def read_content(file_path: str):
+    with open(file_path, 'r+') as text_file:
+        return text_file.read()
 
 
 def write_content(content: str, file_path: str):

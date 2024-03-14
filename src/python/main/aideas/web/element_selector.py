@@ -56,8 +56,8 @@ class ElementSelector:
             root = self.__webdriver
         else:
             root = self.__select_element(
-                self.__webdriver, search_from,
-                self.__wait_timeout_seconds, search_config.get_search_by())
+                self.__webdriver, search_from, self.__wait_timeout_seconds,
+                search_config.get_search_by(), False)
             if root is None:
                 raise ValueError(f'search-from is not valid: {search_from}')
 
@@ -112,8 +112,7 @@ class ElementSelector:
             index += 1
             timeout: float = self.__wait_timeout_seconds if index == 0 else INTERVAL
             try:
-                selected = self.__select_element(
-                    root, search_for, timeout, search_by)
+                selected = self.__select_element(root, search_for, timeout, search_by, True)
                 if selected is not None:
                     logger.debug(f'Found element using: {search_by} = {search_for}')
                     return selected, index
@@ -139,7 +138,8 @@ class ElementSelector:
                          root: D,
                          search_for: str,
                          timeout_seconds: float,
-                         by: SearchBy) -> WebElement:
+                         by: SearchBy,
+                         dynamic: bool) -> WebElement:
 
         if by == SearchBy.SHADOW_ATTRIBUTE:
             attributes = parse_attributes(search_for)
@@ -151,6 +151,9 @@ class ElementSelector:
 
             element = self.__select_shadow_by_attributes(timeout_seconds, attributes)
 
+            if not dynamic:
+                return element
+
             return ReloadableWebElement(element, reload_by_shadow, timeout_seconds)
 
         def reload_by_xpath(attempts: int = 0) -> WebElement:
@@ -159,6 +162,9 @@ class ElementSelector:
             return self.__select_element_by_xpath(root, search_for, timeout_seconds)
 
         element = self.__select_element_by_xpath(root, search_for, timeout_seconds)
+
+        if not dynamic:
+            return element
 
         return ReloadableWebElement(element, reload_by_xpath, timeout_seconds)
 
@@ -227,13 +233,6 @@ class ElementSelector:
                 sleep(INTERVAL)
             return WebDriverWait(root, timeout_seconds).until(
                 WaitCondition.element_to_be_clickable((self.__select_by, xpath)))
-
-        # def select_located_element() -> WebElement:
-        #     sleep(INTERVAL)
-        #     ignored_exceptions = [StaleElementReferenceException]
-        #     return WebDriverWait(
-        #         root, timeout_seconds, ignored_exceptions=ignored_exceptions).until(
-        #         WaitCondition.presence_of_element_located((self.__select_by, xpath)))
 
         if timeout_seconds < 1:
             return root.find_element(self.__select_by, xpath)

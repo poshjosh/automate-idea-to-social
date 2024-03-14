@@ -6,7 +6,7 @@ from typing import Callable, Union
 
 from .action import Action
 from .action_result import ActionResult
-from ..io.file import write_content
+from ..io.file import read_content, write_content
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +19,8 @@ def execute_for_result(func: Callable[[any], any],
     try:
         result = func(arg)
     except Exception as ex:
-        logger.warning(f'Error while executing {action}\n{ex}')
+        logger.warning(f'Error while executing {action} {type(ex)}')
+        logger.exception(ex)
         return ActionResult(action, False, type(ex))
     else:
         return ActionResult(action, True, result)
@@ -27,6 +28,7 @@ def execute_for_result(func: Callable[[any], any],
 
 class ActionHandler:
     __ALL_FILE_TYPES = '*'
+    ACTION_GET_FILE_CONTENT = 'get_file_content'
     ACTION_GET_FILES = 'get_files'
     ACTION_GET_FIRST_FILE = 'get_first_file'
     ACTION_GET_NEWEST_FILE = 'get_newest_file_in_dir'
@@ -50,6 +52,8 @@ class ActionHandler:
     def _execute(self, key: str, action: Action) -> ActionResult:
         if action == Action.none():
             result = ActionResult.none()
+        elif key == ActionHandler.ACTION_GET_FILE_CONTENT:
+            result: ActionResult = self.get_file_content(action)
         elif key == ActionHandler.ACTION_GET_FILES:
             result: ActionResult = self.get_files(action)
         elif key == ActionHandler.ACTION_GET_FIRST_FILE:
@@ -102,7 +106,7 @@ class ActionHandler:
     @staticmethod
     def log(action: Action) -> ActionResult:
         arg_list: [] = action.get_args()
-        logger.log(logging.getLevelName(arg_list[0]), arg_list[1])
+        logger.log(logging.getLevelName(arg_list[0]), ' '.join(arg_list[1:]))
         return ActionResult(action, True)
 
     @staticmethod
@@ -149,6 +153,11 @@ class ActionHandler:
         files: list[str] = files_result.get_result()
         first_file = None if files is None or len(files) == 0 else files[0]
         return ActionResult(action, first_file is not None, first_file)
+
+    @staticmethod
+    def get_file_content(action: Action) -> ActionResult:
+        file_path = action.get_first_arg()
+        return execute_for_result(lambda arg: read_content(arg), file_path, action)
 
     @staticmethod
     def get_files(action: Action) -> ActionResult:

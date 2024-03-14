@@ -29,7 +29,14 @@ class ElementActionHandler(BrowserActionHandler):
     def execute_on(self, action: Action, element: WebElement) -> ActionResult:
         key = action.get_name_without_negation() if action.is_negation() else action.get_name()
         try:
+            if isinstance(element, ReloadableWebElement):
+                # We use the actual web element for the action
+                # When we used the ReloadableWebElement, the action fails with message:
+                # TypeError: Object of type ReloadableWebElement is not JSON serializable
+                element = element.get_delegate()
+
             result = self._execute_on(key, action, element)
+
         except StaleElementReferenceException as ex:
             if isinstance(element, ReloadableWebElement):
                 logger.warning('Element is stale. Attempting to reload')

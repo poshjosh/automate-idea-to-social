@@ -237,11 +237,14 @@ stages:
           - //*[@id="h-tb1"]//img[@alt="${video.title}"]//..
           - //*[@id="h-tb1"]//img[@alt="${video.title}"]//..//..
       download-subtitles-file:
+        events:
+          onerror: log WARNING \n= = = = = = = FAILED TO DOWNLOAD SUBTITLES (Please do it manually) = = = = = = =\n
         wait-timeout-seconds: 7
-        search-x-paths: # //*[@id="h-tb1"]//span[contains(text(), "${translation.file.extension}")]//..//..//..//..//*[name()="svg"]
-          #            //*[@id="h-tb1"]//div[@class="asset-tile-assetview" and contains(text(), "${translation.file.extension}")]
-          search-from: //*[@id="h-tb1"]//div[contains(text(), "${translation.file.extension}")]
-          search-for: //*[name()="svg"]
+        search-x-paths:
+          - //*[@id="h-tb1"]/div/div/div/div/div/div[4]/div/div/div/div/div/div[2]/div[2]/*[name()="svg"]
+          - //*[@id="h-tb1"]//span[contains(text(), "${translation.file.extension}")]//..//..//..//..//*[name()="svg"]
+#          search-from: //*[@id="h-tb1"]//div[contains(text(), "${translation.file.extension}")]
+#          search-for: //*[name()="svg"]
         actions:
           - click
           - wait 5
