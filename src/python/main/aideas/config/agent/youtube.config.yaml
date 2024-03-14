@@ -58,7 +58,7 @@ stages:
           - //*[@id="content"]/input[@type="file"]
         actions:
           # Use the first result from the specified pictory download stage
-          - get_first_file ${agents.dir}/pictory/results/save-downloaded-video/save-file $video.output.type
+          - get_first_file ${agents.dir}/pictory/results/download-video-layout-2/save-file $video.output.type
           - enter_text $results.me[0]
           - wait 5
       enter-video-title:
