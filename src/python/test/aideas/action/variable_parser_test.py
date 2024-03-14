@@ -65,42 +65,42 @@ class VariableParserTest(unittest.TestCase):
             output.append(action_result)
         return output
 
-    def test_parse_all_variables_given_single_variable(self):
+    def test_parse_variables_given_single_variable(self):
         text = '$k'
         result = parse_variables(text, {'k': 'v'})
         self.assertEqual('v', result)
 
-    def test_parse_all_variables_given_single_enclosed_variable(self):
+    def test_parse_variables_given_single_enclosed_variable(self):
         text = '${k}'
         result = parse_variables(text, {'k': 'v'})
         self.assertEqual('v', result)
 
-    def test_parse_all_variables_given_multiple_variables_in_middle(self):
+    def test_parse_variables_given_multiple_variables_in_middle(self):
         text = 'before $k_0 $k_1 after'
         result = parse_variables(text, {'k_0': 'v_0', 'k_1': 'v_1'})
         self.assertEqual('before v_0 v_1 after', result)
 
-    def test_parse_all_variables_given_multiple_enclosed_variables_in_middle(self):
+    def test_parse_variables_given_multiple_enclosed_variables_in_middle(self):
         text = 'before ${k_0} ${k_1} after'
         result = parse_variables(text, {'k_0': 'v_0', 'k_1': 'v_1'})
         self.assertEqual('before v_0 v_1 after', result)
 
-    def test_parse_all_variables_given_multiple_variables_at_start(self):
+    def test_parse_variables_given_multiple_variables_at_start(self):
         text = '$k_0 $k_1 after'
         result = parse_variables(text, {'k_0': 'v_0', 'k_1': 'v_1'})
         self.assertEqual('v_0 v_1 after', result)
 
-    def test_parse_all_variables_given_multiple_enclosed_variables_at_start(self):
+    def test_parse_variables_given_multiple_enclosed_variables_at_start(self):
         text = '${k_0} ${k_1} after'
         result = parse_variables(text, {'k_0': 'v_0', 'k_1': 'v_1'})
         self.assertEqual('v_0 v_1 after', result)
 
-    def test_parse_all_variables_given_multiple_variables_at_end(self):
+    def test_parse_variables_given_multiple_variables_at_end(self):
         text = 'before $k_0 $k_1'
         result = parse_variables(text, {'k_0': 'v_0', 'k_1': 'v_1'})
         self.assertEqual('before v_0 v_1', result)
 
-    def test_parse_all_variables_given_multiple_enclosed_variables_at_end(self):
+    def test_parse_variables_given_multiple_enclosed_variables_at_end(self):
         text = 'before ${k_0} ${k_1}'
         result = parse_variables(text, {'k_0': 'v_0', 'k_1': 'v_1'})
         self.assertEqual('before v_0 v_1', result)
