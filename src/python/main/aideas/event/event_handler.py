@@ -81,6 +81,7 @@ class EventHandler:
                 if event_name == ON_ERROR:
                     logger.warning(
                         f'For {config_path}, will continue despite error: {type(exception)}!')
+                    logger.exception(exception)
             elif action_signature == 'fail':
                 raise AgentError(f'Error {config_path}, result: {result}') from exception
             elif action_signature.startswith('retry'):
