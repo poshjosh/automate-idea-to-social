@@ -57,7 +57,7 @@ stages:
         search-x-paths: //*[@id="react-root"]/div/div/div[2]/main/div/div/div/div[1]/div/div[3]/div/div[2]/div[1]/div/div/div/div[2]/div[1]/div/div/div/div/div/div/div/div/div/div/label/div[1]/div/div/div/div/div/div[2]/div
         actions:
           #- enter_text $video.title $video.link
-          - get_file_content ${agent.dir}/youtube/results/wait-for-video-link/save-video-link/result.txt
+          - get_file_content ${agents.dir}/youtube/results/wait-for-video-link/save-video-link/result.txt
           - enter_text $video.title $results.me[0]
           # When we enter a link, twitter retrieves some metadata from the link
           - wait 5
