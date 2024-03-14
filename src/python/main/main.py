@@ -7,10 +7,9 @@ from aideas.config_loader import ConfigLoader
 
 if __name__ == "__main__":
 
-    config_path = os.path.join('aideas', 'config')
-    config_loader = ConfigLoader(config_path)
+    config_loader = ConfigLoader(os.path.join('aideas', 'config'))
+
     logging.config.dictConfig(config_loader.load_logging_config())
 
-    agents: [str] = get_list_arg(ARG_AGENTS)
-    App.of_defaults(config_loader).run(agents)
+    App.of_defaults(config_loader).run(get_list_arg(ARG_AGENTS))
 

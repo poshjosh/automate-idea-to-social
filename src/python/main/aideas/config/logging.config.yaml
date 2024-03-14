@@ -12,7 +12,7 @@ loggers:
   aideas:
     level: DEBUG
     handlers: [console]
-    propagate: no
+    propagate: false
 root:
   level: DEBUG
   handlers: [console]

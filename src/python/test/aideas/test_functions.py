@@ -22,10 +22,10 @@ def init_logging(config):
 
 def __get_logging_config() -> dict[str, any]:
     return {
-        'version':1,
-        'formatters':{'simple':{'format':'%(asctime)s %(name)s %(levelname)s %(message)s'}},
-        'handlers': {'console':{'class':'logging.StreamHandler', 'level':'DEBUG', 'formatter':'simple'}},
-        'loggers':{'python':{'level': 'DEBUG', 'handlers':['console'], 'propagate':'no'}}
+        'version': 1,
+        'formatters': {'simple': {'format': '%(asctime)s %(name)s %(levelname)s %(message)s'}},
+        'handlers': {'console': {'class': 'logging.StreamHandler', 'level': 'DEBUG', 'formatter': 'simple'}},
+        'loggers': {'python': {'level': 'DEBUG', 'handlers': ['console'], 'propagate': False}}
     }
 
 
