@@ -57,7 +57,7 @@ class ElementActionHandler(BrowserActionHandler):
                 tgt.send_keys(Keys.DELETE)
                 tgt.clear()  # May not work under certain conditions, so we try the following
 
-            result = execute_for_result(lambda arg: clear_text, element, action)
+            result = execute_for_result(clear_text, element, action)
         elif key == 'click':
             result = execute_for_result(lambda arg: arg.click(), element, action)
         elif key == 'click_and_hold':
@@ -66,7 +66,7 @@ class ElementActionHandler(BrowserActionHandler):
 
             result = execute_for_result(click_and_hold, element, action)
         elif key == 'click_and_hold_current_position':
-            def click_and_hold_current_position(tgt: WebElement):
+            def click_and_hold_current_position(_: WebElement):
                 ActionChains(driver).click_and_hold(None).perform()
 
             result = execute_for_result(click_and_hold_current_position, element, action)
