@@ -153,7 +153,7 @@ class BrowserAutomator:
 
             run_context.set_current_element(element)
 
-            if search_config is not None and search_config.search_for_needs_reordering():
+            if search_config and search_config.search_for_needs_reordering():
                 before = search_config.get_search_for()
                 after = search_config.reorder_search_for()
                 logger.debug(f"For {config_path} "
@@ -164,14 +164,7 @@ class BrowserAutomator:
                     config_path, element, timeout, element_actions, run_context)
 
                 # Handle expectations if present
-                expected = config.get_expected(config_path, [])
-                expectation_actions: list[str] = action_signatures(expected)
-                if expectation_actions:
-                    # Since we use the same config_path as above, the
-                    # results of the expectation will be added to the
-                    # above results
-                    self.__execute_all_actions(
-                        config_path, element, timeout, expectation_actions, run_context)
+                self.__check_expectations(config, config_path, run_context, element, timeout)
 
         except ElementNotFoundError as ex:
             logger.debug(f"Error acting on {config_path} {type(ex)}")
@@ -182,6 +175,21 @@ class BrowserAutomator:
             do_run_stages, do_retry, exception, result, trials)
 
         return ElementResultSet.none() if result is None else result
+
+    def __check_expectations(self,
+                             config: AgentConfig,
+                             config_path: ConfigPath,
+                             run_context: RunContext,
+                             element: WebElement,
+                             timeout: int):
+        expected = config.get_expected(config_path, [])
+        expectation_actions: list[str] = action_signatures(expected)
+        if expectation_actions:
+            # Since we use the same config_path as above, the
+            # results of the expectation will be added to the
+            # above results
+            self.__execute_all_actions(
+                config_path, element, timeout, expectation_actions, run_context)
 
     def __execute_all_actions(self,
                               config_path: ConfigPath,
