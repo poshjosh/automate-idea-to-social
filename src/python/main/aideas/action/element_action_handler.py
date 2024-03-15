@@ -1,4 +1,5 @@
 import logging
+import time
 from typing import Tuple
 
 from selenium.common import StaleElementReferenceException
@@ -102,6 +103,14 @@ class ElementActionHandler(BrowserActionHandler):
                 ActionChains(driver).release(tgt).perform()
 
             result = execute_for_result(release, element, action)
+        elif key == 'send_keys':
+            def send_keys(txt: str):
+                for char in txt:
+                    element.send_keys(char)
+                    time.sleep(float(0.5))
+                return txt
+
+            result = execute_for_result(send_keys, ' '.join(action.get_args()), action)
         else:
             return super()._execute(key, action)  # Success state has already been printed
         logger.debug(f'{result}')
