@@ -27,6 +27,8 @@ stages:
         search-for:
           - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[2]/div[1]/a
           - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[2]/div[1]/a/*[name()="svg"]
+          - //*[starts-with(@id, "mount_0_0_")]//a
+          - //*[starts-with(@id, "mount_0_0_")]//a/*[name()="svg"]
         actions: none
   post-content:
     url: https://www.facebook.com/me/ # Takes us to the current logged-in user profile
@@ -50,7 +52,7 @@ stages:
           - //*[starts-with(@id, "mount_0_0_")]//input[@type="file"]
         actions:
           # Use the first result from the specified pictory download stage
-          #- enter_text $results.pictory.save-downloaded-video.get-file[0]
+          #- enter_text $results.pictory.save-downloaded-video.save-file[0]
           - get_first_file ${agents.dir}/pictory/results/save-downloaded-video/save-file $video.output.type
           - enter_text $results.me[0]
           - wait 5
