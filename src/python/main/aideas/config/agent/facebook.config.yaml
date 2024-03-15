@@ -9,7 +9,7 @@ stages:
           onerror: continue
         search-for:
           - //*[starts-with(@id, "u_0_j_")]
-          - //*[@id="facebook"]/body/div[3]/div[2]/div/div/div/div/div[4]/button[contains(text(), "cookies")]
+          - //*[@id="facebook"]//button[contains(text(), "cookies")]
       fill-username:
         search-for: //*[@id="email"]
         actions: enter_text $facebook.user.name
@@ -35,20 +35,18 @@ stages:
     stage-items:
       click-post-textarea:
         search-for:
-          - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[4]/div[2]/div/div[2]/div[1]/div/div/div/div/div[1]/div
-          - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[4]/div[2]/div/div[2]/div[1]/div/div/div/div/div[1]/div/div[1]
-          - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[4]/div[2]/div/div[2]/div[1]/div/div/div/div/div[1]/div/div[1]/span
+          - //*[starts-with(@id, "mount_0_0_")]//span[contains(text(), "on your mind")]
+          - //*[starts-with(@id, "mount_0_0_")]//*[contains(text(), "on your mind")]
         actions:
           - move_to_element
           - enter
       display-add-photo-or-video-options: # same input accepts either photo or video
         search-for:
-          - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[4]/div/div/div[1]/div/div[2]/div/div/div/form/div/div[1]/div/div/div/div[3]/div[1]/div[2]/div/div[1]/div/span
-          - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[4]/div/div/div[1]/div/div[2]/div/div/div/form/div/div[1]/div/div/div/div[3]/div[1]/div[2]/div/div[1]/div/span/div
-          - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[4]/div/div/div[1]/div/div[2]/div/div/div/form/div/div[1]/div/div/div/div[3]/div[1]/div[2]/div/div[1]/div/span/div/div
+          - //*[starts-with(@id, "mount_0_0_")]//form//*[@aria-label="Photo/video"]
+          - //*[starts-with(@id, "mount_0_0_")]//*[@aria-label="Photo/video"]
       add-video-or-cover-photo:
         search-for:
-          - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[4]/div/div/div[1]/div/div[2]/div/div/div/form/div/div[1]/div/div/div/div[2]/div[1]/div[2]/div/div[1]/div/div/input[@type="file"]
+          - //*[starts-with(@id, "mount_0_0_")]//form//input[@type="file"]
           - //*[starts-with(@id, "mount_0_0_")]//input[@type="file"]
         actions:
           # Use the first result from the specified pictory download stage
@@ -58,6 +56,8 @@ stages:
           - wait 5
       enter-post-text:
         search-for:
+          - //*[starts-with(@id, "mount_0_0_")]//form//div[@role="textbox"]
+          - //*[starts-with(@id, "mount_0_0_")]//*[@role="textbox"]
           - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[4]/div/div/div[1]/div/div[2]/div/div/div/form/div/div[1]/div/div/div/div[2]/div[1]/div[1]/div[1]/div/div/div[1]
           - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[4]/div/div/div[1]/div/div[2]/div/div/div/form/div/div[1]/div/div/div/div[2]/div[1]/div[1]/div[1]/div/div/div[1]/p
         actions:
@@ -65,9 +65,9 @@ stages:
           - wait 2
       submit-post:
         search-for:
-          - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[4]/div/div/div[1]/div/div[2]/div/div/div/form/div/div[1]/div/div/div/div[3]/div[2]
-          - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[4]/div/div/div[1]/div/div[2]/div/div/div/form/div/div[1]/div/div/div/div[3]/div[2]/div
-          - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[4]/div/div/div[1]/div/div[2]/div/div/div/form/div/div[1]/div/div/div/div[3]/div[2]/div/div
+          - //*[starts-with(@id, "mount_0_0_")]//form//div[@aria-label="Post"]
+          - //*[starts-with(@id, "mount_0_0_")]//*[@aria-label="Post"]
+          - //*[starts-with(@id, "mount_0_0_")]//*[contains(text(), "Post")]
         actions:
           - click
           - wait 10
