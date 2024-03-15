@@ -122,13 +122,16 @@ class ActionHandler:
     @staticmethod
     def save_to_file(action: Action) -> ActionResult:
         args: [str] = action.get_args()
-        content = args[0]
-        if not content:
+        if not args[0]:
             return ActionResult(action, False, f'No argument[0] provided for: {action}')
-        tgt_dir = ActionHandler.__make_target_dirs_if_need(action)
-        tgt = os.path.join(tgt_dir, DEFAULT_FILE_NAME if not args[1] else args[1])
-        logger.debug(f'Writing to {tgt}')
-        return execute_for_result(lambda arg: write_content(content, tgt), content, action)
+
+        def save_content(content: str):
+            tgt_dir = ActionHandler.__make_target_dirs_if_need(action)
+            tgt = os.path.join(tgt_dir, DEFAULT_FILE_NAME if len(args) < 2 else args[1])
+            logger.debug(f'Writing to {tgt}')
+            return write_content(content, tgt)
+
+        return execute_for_result(save_content, args[0], action)
 
     @staticmethod
     def starts_with(action: Action) -> ActionResult:
