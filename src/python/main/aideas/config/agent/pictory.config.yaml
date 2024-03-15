@@ -190,14 +190,15 @@ stages:
           - wait 2
   save-downloaded-video:
     stage-items:
-      get-file:
-        actions: get_newest_file_in_dir $video.output.dir $video.output.type 120
       save-file:
         # By saving the file, other agents may access it from the local disc
         # event when pictory run context is no longer available
         # Will be saved to /pictory-dir/stage/stage-item/original-file-name.extension
         # E.g. main/resources/agent/pictory/results/save-downloaded-video/save-file/original.mp4
-        actions: save_file $results.pictory.save-downloaded-video.get-file[0]
+        actions:
+          - wait 10 # Wait to make sure the file is downloaded
+          - get_newest_file_in_dir $video.output.dir $video.output.type 120
+          - save_file $results.me[0]
   download-video-layout-2:
     events:
       onsuccess: run_stages download-video save-downloaded-video
