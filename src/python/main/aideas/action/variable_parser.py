@@ -195,8 +195,6 @@ def __get_scoped_value(curr_path: [str],
     scope = None
     for k in parts:
         try:
-            # if k == 'stage-items' or k == 'submit' or k == 'search-x-paths':
-            #     print(f'Will search for {k} of {name} in:\n{scope}')
             scope = get_value(scope, k)
         except Exception as ex:
             raise ValueError(f'Value not found for: {k} of {name} in {scope}') from ex

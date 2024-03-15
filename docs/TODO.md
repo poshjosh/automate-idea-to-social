@@ -1,5 +1,9 @@
 ## TODO
 
+Find out why we have 3 landscape videos in pictory results dirs.
+Find out what is causing IndexError in final stage of youtube.
+  Try to get better logs for the above
+
 Checkout https://github.com/Mozilla-Ocho/llamafile
 
 For ResultSet introduce composition and de-composition

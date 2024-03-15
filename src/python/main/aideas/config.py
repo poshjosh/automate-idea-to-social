@@ -68,82 +68,91 @@ class ConfigPath(tuple[Name]):
         return f'@{".".join([str(e) for e in self])}'
 
 
-SEARCH_CONFIG_PARENT = TypeVar("SEARCH_CONFIG_PARENT", bound=Union[str, dict])
+SEARCH_CONFIG_PARENT = TypeVar("SEARCH_CONFIG_PARENT", bound=dict[str, any])
 
 
 class SearchBy(Enum):
-    XPATH = 'search-x-paths'
-    SHADOW_ATTRIBUTE = 'search-shadow-attributes'
+    XPATH = 'x-paths'
+    SHADOW_ATTRIBUTE = 'shadow-attributes'
 
 
 class SearchConfig:
     @staticmethod
-    def of(config: SEARCH_CONFIG_PARENT) -> Union['SearchConfig', None]:
-        if isinstance(config, str):
-            search_from = None
-            search_for = [str(config)]
-            search_by = SearchBy.XPATH
-        elif isinstance(config, dict):
-            search_config = SearchConfig.__get_search_config(config)
-            search_by = SearchConfig.__get_search_by(config)
+    def of(config: SEARCH_CONFIG_PARENT, key: str) -> Union['SearchConfig', None]:
+        """
+         Example inputs:
 
-            if search_config is None:
-                return None
-            elif isinstance(search_config, str):
-                search_from = None
-                search_for = [search_config]
-            elif isinstance(search_config, list):
-                search_from = None
-                search_for = search_config
-            elif isinstance(search_config, dict):
-                search_from = dict(search_config)['search-from']
-                search_for = dict(search_config)['search-for']  # str | list
-            else:
-                raise ValueError(f'Invalid search config: {config}')
+         {'search-for': {'x-paths': '//*[@id="element-0"]'}}
+
+         {'actions': ['wait 30']}  # No search config here
+
+        :param config: The configuration dict from which to create a SearchConfig
+        :param key: The key in the config dict. ['search-for'|'search-from']
+        :return: The SearchConfig or None if there is no search config in the input
+        """
+
+        search_config = config.get(key)
+
+        if search_config is None:
+            return None
+        elif isinstance(search_config, str):
+            search_by = SearchBy.XPATH
+            queries = [search_config]
+        elif isinstance(search_config, list):
+            search_by = SearchBy.XPATH
+            queries = search_config
+        elif isinstance(search_config, dict):
+            search_by: SearchBy = [e for e in SearchBy if e.value in search_config.keys()][0]
+            queries = search_config.get(search_by.value)
         else:
             raise ValueError(f'Invalid search config: {config}')
-        return SearchConfig(search_from, search_for, search_by)
 
-    @staticmethod
-    def __get_search_config(config: SEARCH_CONFIG_PARENT):
-        search_config = config.get(SearchBy.SHADOW_ATTRIBUTE.value)
-        return config.get(SearchBy.XPATH.value) if search_config is None else search_config
-
-    @staticmethod
-    def __get_search_by(config: SEARCH_CONFIG_PARENT):
-        search_config = config.get(SearchBy.SHADOW_ATTRIBUTE.value)
-        return SearchBy.XPATH if search_config is None else SearchBy.SHADOW_ATTRIBUTE
+        return SearchConfig(search_by, queries)
 
     def __init__(self,
-                 search_from: str,
-                 search_for: Union[str, list[str]],
-                 search_by: SearchBy = SearchBy.XPATH):
-        self.__search_from = search_from
-        self.__search_for = [search_for] if isinstance(search_for, str) else search_for
+                 search_by: SearchBy,
+                 queries: Union[str, list[str]]):
         self.__search_by = search_by
-        self.__successful_query_index = -1
+        self.__queries = [queries] if isinstance(queries, str) else queries
+        self.__updated: bool = False
 
-    def get_search_from(self) -> str:
-        return self.__search_from
-
-    def get_search_for(self) -> [str]:
-        return self.__search_for
+    def get_queries(self) -> [str]:
+        return self.__queries
 
     def get_search_by(self) -> SearchBy:
         return self.__search_by
 
-    def search_for_needs_reordering(self) -> bool:
-        return self.__successful_query_index > 0
+    def is_updated(self) -> bool:
+        return self.__updated
 
-    def reorder_search_for(self) -> [str]:
-        result = [e for e in self.__search_for]
-        if self.__successful_query_index < 1:
-            return result
-        result.insert(0, result.pop(self.__successful_query_index))
-        return result
+    def reorder_queries(self, preferred_query_index: int) -> bool:
+        if preferred_query_index < 1:
+            return False
+        result = [e for e in self.__queries]
+        preferred_query: str = result.pop(preferred_query_index)
+        logger.info(f"{'X=' * 64}\nPreferred query: {preferred_query}\n{'X=' * 64}")
+        result.insert(0, preferred_query)
+        self.__queries = result
+        self.__updated = True
+        return True
 
-    def set_successful_query_index(self, index: int):
-        self.__successful_query_index = index
+
+class SearchConfigs:
+    @staticmethod
+    def of(config: SEARCH_CONFIG_PARENT) -> 'SearchConfigs':
+        search_from = SearchConfig.of(config, 'search-from')
+        search_for = SearchConfig.of(config, 'search-for')
+        return SearchConfigs(search_from, search_for)
+
+    def __init__(self, search_from: Union[SearchConfig, None], search_for: SearchConfig):
+        self.__search_from = search_from
+        self.__search_for = search_for
+
+    def search_from(self) -> Union[SearchConfig, None]:
+        return self.__search_from
+
+    def search_for(self) -> SearchConfig:
+        return self.__search_for
 
 
 STAGES_KEY: str = "stages"

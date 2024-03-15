@@ -4,36 +4,36 @@ stages:
     stage-items:
       fill-email:
         when:
-          search-x-paths: $self.stages.login.stage-items.fill-email.search-x-paths
+          search-for: $self.stages.login.stage-items.fill-email.search-for
           actions: is_displayed
-        search-x-paths: //*[@id="identifierId"]
+        search-for: //*[@id="identifierId"]
         actions: enter_text $youtube.user.email
       select-account:
         when:
-          search-x-paths: $self.stages.login.stage-items.select-account.search-x-paths
+          search-for: $self.stages.login.stage-items.select-account.search-for
           actions: is_displayed
         events:
           onerror: continue
-        search-x-paths:
+        search-for:
           - //*[@id="view_container"]//ul/li[contains(text(), "${youtube.user.email}")]
           - //*[@id="view_container"]//ul/li//div[contains(text(), "${youtube.user.email}")]
           - //*[@id="view_container"]/div/div/div[2]/div/div[1]/div/form/span/section/div/div/div/div/ul/li[contains(text(), "${youtube.user.email}")]
           - //*[@id="view_container"]/div/div/div[2]/div/div[1]/div/form/span/section/div/div/div/div/ul/li//div[contains(text(), "${youtube.user.email}")]
           - //*[@id="view_container"]/div/div/div[2]/div/div[1]/div/form/span/section/div/div/div/div/ul/li[1]/div/div[1]/div/div[2]/div[2]
       submit-email:
-        search-x-paths:
+        search-for:
           - //*[@id="identifierNext"]/div/button
           - //*[@id="identifierNext"]//button[contains(text(), "Next")]
         actions:
           - click
           - wait 2
       fill-password:
-        search-x-paths:
+        search-for:
           - //*[@id="password"]/div[1]/div/div[1]/input
           - //*[@id="password"]//input[@type="password"]
         actions: enter_text $youtube.user.pass
       submit-password:
-        search-x-paths:
+        search-for:
           - //*[@id="passwordNext"]/div/button
           - //*[@id="passwordNext"]//button[contains(text(), "Next")]
         actions:
@@ -45,7 +45,7 @@ stages:
       onerror: continue
     stage-items:
       dismiss-account-update-option:
-        search-x-paths:
+        search-for:
           - //*[@id="yDmH0d"]/c-wiz[2]/div/div/div/div[2]/div[4]/div[1]/button
           - //*[@id="yDmH0d"]//button[contains(text(), "Not now")]
   add-video-details:
@@ -53,7 +53,7 @@ stages:
     stage-items:
       add-video:
         wait-timeout-seconds: 0  # Signal not to use webdriver wait and its conditions
-        search-x-paths:
+        search-for:
           - //input[@type="file"]
           - //*[@id="content"]/input[@type="file"]
         actions:
@@ -62,7 +62,7 @@ stages:
           - enter_text $results.me[0]
           - wait 5
       enter-video-title:
-        search-x-paths:
+        search-for:
           - //*[@id="title-wrapper"]//*[@id="textbox"]
           #- //*[@id="title-wrapper"]//*[@id="input"]
         actions:
@@ -70,7 +70,7 @@ stages:
           # We append a prefix here, because the guessed title was not cleared
           - enter_text " " $video.title "#shorts"
       enter-video-description:
-        search-x-paths:
+        search-for:
           - //*[@id="description-wrapper"]//*[@id="textbox"]
           - //*[@id="description-wrapper"]//*[@id="description-textarea"]
           #- //*[@id="description-wrapper"]//*[@id="input"]
@@ -80,14 +80,14 @@ stages:
       onerror: continue
     stage-items:
       expand-play-list-options:
-        search-x-paths:
+        search-for:
           - //*[@id="basics"]//ytcp-video-metadata-playlists
           - //*[@id="basics"]//ytcp-video-metadata-playlists/ytcp-text-dropdown-trigger
           - //*[@id="basics"]//ytcp-video-metadata-playlists/ytcp-text-dropdown-trigger/ytcp-dropdown-trigger
           - //*[@id="basics"]//ytcp-video-metadata-playlists/ytcp-text-dropdown-trigger/ytcp-dropdown-trigger/div
           - //*[@id="basics"]//ytcp-video-metadata-playlists/ytcp-text-dropdown-trigger/ytcp-dropdown-trigger//span[contains(text(), "Select")]
       select-play-list:
-        search-x-paths:
+        search-for:
           - //*[@id="items"]//span[contains(text(), "${youtube.playlist.name}")]
           - //*[@id="items"]/ytcp-ve[1]/li
 #          - //*[@id="items"]/ytcp-ve[1]/li//span[contains(text(), "${youtube.playlist.name}")]
@@ -96,14 +96,14 @@ stages:
         expected: not is_displayed
         events:
           onerror: retry 1
-        search-x-paths:
+        search-for:
           - //*[@id="dialog"]/div[2]/ytcp-button[2]/div
           - //*[@id="dialog"]//div[contains(text(), "Done")]
   audience:
     stage-items:
       # Without this an error will be displayed when we try to move to the next stage
       specify-age-restrictions:
-        search-x-paths:
+        search-for:
           - //*[@id="audience"]//*[contains(text(), "not made for kids")]
           - //*[@id="audience"]/ytkc-made-for-kids-select//*[@id="radioLabel"]/*[contains(text(), "not made for kids")]
           - //*[@id="audience"]/ytkc-made-for-kids-select//tp-yt-paper-radio-group/tp-yt-paper-radio-button//*[contains(text(), "not made for kids")]
@@ -113,7 +113,7 @@ stages:
   proceed:
     stage-items:
       click-next-button:
-        search-x-paths:
+        search-for:
           - //*[@id="next-button"]
           - //*[@id="next-button"]/div
           - //*[@id="next-button"]//*[contains(text(), "Next")]
@@ -126,11 +126,11 @@ stages:
       onsuccess: run_stages proceed
     stage-items:
       expand-options:
-        search-x-paths:
+        search-for:
           - //*[@id="shorts-content-links-add-button"]
           - //*[@id="shorts-content-links-add-button"]/div[contains(text(), "Add")]
       select-related-video:
-        search-x-paths:
+        search-for:
           # We select the first video in the list. If we want to select a specific video:
           # //*[@id="dialog"]/div[2]/div/ytcp-video-pick-dialog-contents/div/div/div/ytcp-entity-card//span[starts-with(text(), "${youtube.video.related.title}")]
           - //*[@id="dialog"]//ytcp-video-pick-dialog-contents//ytcp-entity-card[1]
@@ -146,7 +146,7 @@ stages:
   visibility:
     stage-items:
       select-visibility:
-        search-x-paths:
+        search-for:
           - //*[@id="radioLabel"]/tp-yt-paper-radio-button[contains(text(), "Public")]
           - //*[@id="privacy-radios"]/tp-yt-paper-radio-button[contains(text(), "Public")]
           - //*[@id="radioLabel"]/*[contains(text(), "Public")]
@@ -157,7 +157,7 @@ stages:
   publish-video:
     stage-items:
       click-publish-button:
-        search-x-paths:
+        search-for:
           - //*[@id="done-button"]
           - //*[@id="done-button"]/div
   wait-for-video-link:
@@ -166,7 +166,7 @@ stages:
     stage-items:
       save-video-link:
         wait-timeout-seconds: 60
-        search-x-paths: //*[@id="share-url"]
+        search-for: //*[@id="share-url"]
         actions:
           - get_text
           - save_to_file $results.me[0]

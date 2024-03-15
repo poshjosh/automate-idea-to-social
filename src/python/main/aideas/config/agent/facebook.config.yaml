@@ -7,24 +7,24 @@ stages:
       decline-optional-cookies:
         events:
           onerror: continue
-        search-x-paths:
+        search-for:
           - //*[starts-with(@id, "u_0_j_")]
           - //*[@id="facebook"]/body/div[3]/div[2]/div/div/div/div/div[4]/button[contains(text(), "cookies")]
       fill-username:
-        search-x-paths: //*[@id="email"]
+        search-for: //*[@id="email"]
         actions: enter_text $facebook.user.name
       fill-password:
-        search-x-paths: //*[@id="pass"]
+        search-for: //*[@id="pass"]
         actions: enter_text $facebook.user.pass
       click-login:
-        search-x-paths:
+        search-for:
           - //*[starts-with(@id, "u_0_2_")]/div[2]/button[contains(text(), "Log")]
           - //*[starts-with(@id, "u_0_2_")]//button[contains(text(), "Log")]
           - //*[starts-with(@id, "u_0_5_")]
       wait-till-logged-in:
         events:
           onerror: continue
-        search-x-paths:
+        search-for:
           - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[2]/div[1]/a
           - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[2]/div[1]/a/*[name()="svg"]
         actions: none
@@ -32,7 +32,7 @@ stages:
     url: https://www.facebook.com/me/ # Takes us to the current logged-in user profile
     stage-items:
       click-post-textarea:
-        search-x-paths:
+        search-for:
           - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[4]/div[2]/div/div[2]/div[1]/div/div/div/div/div[1]/div
           - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[4]/div[2]/div/div[2]/div[1]/div/div/div/div/div[1]/div/div[1]
           - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[4]/div[2]/div/div[2]/div[1]/div/div/div/div/div[1]/div/div[1]/span
@@ -40,12 +40,12 @@ stages:
           - move_to_element
           - enter
       display-add-photo-or-video-options: # same input accepts either photo or video
-        search-x-paths:
+        search-for:
           - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[4]/div/div/div[1]/div/div[2]/div/div/div/form/div/div[1]/div/div/div/div[3]/div[1]/div[2]/div/div[1]/div/span
           - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[4]/div/div/div[1]/div/div[2]/div/div/div/form/div/div[1]/div/div/div/div[3]/div[1]/div[2]/div/div[1]/div/span/div
           - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[4]/div/div/div[1]/div/div[2]/div/div/div/form/div/div[1]/div/div/div/div[3]/div[1]/div[2]/div/div[1]/div/span/div/div
       add-video-or-cover-photo:
-        search-x-paths:
+        search-for:
           - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[4]/div/div/div[1]/div/div[2]/div/div/div/form/div/div[1]/div/div/div/div[2]/div[1]/div[2]/div/div[1]/div/div/input[@type="file"]
           - //*[starts-with(@id, "mount_0_0_")]//input[@type="file"]
         actions:
@@ -55,14 +55,14 @@ stages:
           - enter_text $results.me[0]
           - wait 5
       enter-post-text:
-        search-x-paths:
+        search-for:
           - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[4]/div/div/div[1]/div/div[2]/div/div/div/form/div/div[1]/div/div/div/div[2]/div[1]/div[1]/div[1]/div/div/div[1]
           - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[4]/div/div/div[1]/div/div[2]/div/div/div/form/div/div[1]/div/div/div/div[2]/div[1]/div[1]/div[1]/div/div/div[1]/p
         actions:
           - enter_text $video.description
           - wait 2
       submit-post:
-        search-x-paths:
+        search-for:
           - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[4]/div/div/div[1]/div/div[2]/div/div/div/form/div/div[1]/div/div/div/div[3]/div[2]
           - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[4]/div/div/div[1]/div/div[2]/div/div/div/form/div/div[1]/div/div/div/div[3]/div[2]/div
           - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[4]/div/div/div[1]/div/div[2]/div/div/div/form/div/div[1]/div/div/div/div[3]/div[2]/div/div

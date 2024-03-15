@@ -10,7 +10,7 @@ from ..action.action_result import ActionResult
 from ..action.action_signatures import action_signatures, element_action_signatures
 from ..action.element_action_handler import ElementActionHandler
 from ..agent.agent_name import AgentName
-from ..config import AgentConfig, ConfigPath, Name, SearchConfig, TIMEOUT_KEY, WHEN_KEY
+from ..config import AgentConfig, ConfigPath, Name, SearchConfigs, TIMEOUT_KEY, WHEN_KEY
 from ..result.result_set import ElementResultSet
 from ..event.event_handler import EventHandler, ON_START
 from ..run_context import RunContext
@@ -135,7 +135,7 @@ class BrowserAutomator:
         def do_run_stages(_, __):
             raise ValueError(f'Event: run_stages is not supported for {config_path}')
 
-        search_config = SearchConfig.of(target_config)
+        search_configs: SearchConfigs = SearchConfigs.of(target_config)
 
         exception = None
         try:
@@ -148,16 +148,10 @@ class BrowserAutomator:
                 else target_config.get(TIMEOUT_KEY, self.__wait_timeout_seconds)
 
             selector = self.__element_selector.with_timeout(timeout)
-            element: WebElement = None if not search_config \
-                else selector.select_element(search_config)
+            element: WebElement = None if not search_configs or not search_configs.search_for() \
+                else selector.select_element(search_configs)
 
             run_context.set_current_element(element)
-
-            if search_config and search_config.search_for_needs_reordering():
-                before = search_config.get_search_for()
-                after = search_config.reorder_search_for()
-                logger.debug(f"For {config_path} "
-                             f"search-for re-ordered\nFrom: {before}\n  To:\n{after}")
 
             if element_actions:
                 result: ElementResultSet = self.__execute_all_actions(

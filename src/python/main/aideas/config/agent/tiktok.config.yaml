@@ -5,15 +5,15 @@ stages:
     url: https://www.tiktok.com/login/phone-or-email/email
     stage-items:
       enter-username:
-        search-x-paths: //*[@id="loginContainer"]/div[1]/form/div[1]/input
+        search-for: //*[@id="loginContainer"]/div[1]/form/div[1]/input
         actions:
           - enter_text $tiktok.user.name
       enter-password:
-        search-x-paths: //*[@id="loginContainer"]/div[1]/form/div[2]/div/input
+        search-for: //*[@id="loginContainer"]/div[1]/form/div[2]/div/input
         actions:
           - enter_text $tiktok.user.pass
       submit-login:
-#        search-x-paths: //*[@id="loginContainer"]/div[1]/form/button[contains(text(), "Log")] # Log in|Login
+#        search-for: //*[@id="loginContainer"]/div[1]/form/button[contains(text(), "Log")] # Log in|Login
         actions:
 #          - click
           - wait 30 # !!! USER ASSISTANCE IS REQUIRED TO SOLVE CHALLENGE !!!
@@ -24,9 +24,9 @@ stages:
 #        wait-timeout-seconds: 15
 #        events:
 #          onerror: continue
-#        search-x-paths: //*[@id="root"]/div/div/div/div/div/div/div
+#        search-for: //*[@id="root"]/div/div/div/div/div/div/div
       add-upload-file:
-        search-x-paths: //*[@id="root"]/div/div/div/div/div/div/div/input[@type="file"]
+        search-for: //*[@id="root"]/div/div/div/div/div/div/div/input[@type="file"]
         actions:
           # Use the first result from the specified pictory download stage
           #- enter_text $results.pictory.download-video-layout-2.get-file[0]
@@ -34,12 +34,12 @@ stages:
           - enter_text $results.me[0]
       click-upload-button:
         wait-timeout-seconds: 5
-        search-x-paths: //*[@id="root"]/div/div/div/div/div/div/div/div[1]/div/div/div[3]/div/button[2]
+        search-for: //*[@id="root"]/div/div/div/div/div/div/div/div[1]/div/div/div[3]/div/button[2]
       enter-video-caption:
         when:
-          search-x-paths: //*[@id="root"]/div/div/div/div[1]/div[1]/div[2]/button[contains(text(), "Edit")]
+          search-for: //*[@id="root"]/div/div/div/div[1]/div[1]/div[2]/button[contains(text(), "Edit")]
           actions: is_displayed
-        search-x-paths: //*[@id="root"]/div/div/div/div[2]/div[2]/div[2]/div[1]/div/div[1]/div[2]/div/div/div/div/div/div/div/div/div/span/span
+        search-for: //*[@id="root"]/div/div/div/div[2]/div[2]/div[2]/div[1]/div/div[1]/div[2]/div/div/div/div/div/div/div/div/div/span/span
         actions:
           - enter_text $video.description
 # For tiktok, it is better to use the default cover (i.e. first scene), than to upload one
@@ -49,19 +49,19 @@ stages:
 #      onerror: continue
 #    stage-items:
 #      proceed-to-edit-video-cover:
-#        search-x-paths: //*[@id="root"]/div/div/div/div[2]/div[2]/div[2]/div[2]/div/div/*[name()="svg"]
+#        search-for: //*[@id="root"]/div/div/div/div[2]/div[2]/div[2]/div[2]/div/div/*[name()="svg"]
 #      select-to-upload-video-cover:
-#        search-x-paths: //*[@id="portal-container"]/div/div/div[1]/div/div[1]/div[contains(text(), "Upload")]
+#        search-for: //*[@id="portal-container"]/div/div/div[1]/div/div[1]/div[contains(text(), "Upload")]
 #      send-video-cover-image:
-#        search-x-paths: //*[@id="uploadTrigger"]
+#        search-for: //*[@id="uploadTrigger"]
 #        actions:
 #          - enter_text $video.cover.image.square
 #      submit-video-cover-image:
-#        search-x-paths: //*[@id="portal-container"]/div/div/div[1]/div/div[2]/div[4]/button[contains(text(), "Confirm")]
+#        search-for: //*[@id="portal-container"]/div/div/div[1]/div/div[2]/div[4]/button[contains(text(), "Confirm")]
 #        actions:
 #          - click
 #          - wait 5 # The time it takes for the cover image to be uploaded
   submit-video:
     stage-items:
       click-submit-video:
-        search-x-paths: //*[@id="root"]/div/div/div/div[2]/div[2]/div[2]/div[6]/div[2]/button
+        search-for: //*[@id="root"]/div/div/div/div[2]/div[2]/div[2]/div[6]/div[2]/button
