@@ -19,13 +19,19 @@ stages:
           - /html/body/div[4]/div[1]/div/div[2]/div/div/div/div/div[2]/div/button[contains(text(), 'cookies')]
           - /html/body/div[4]/div[1]/div/div[2]/div/div/div/div/div[2]/div/button[2]
       username:
-        search-for: //*[@id="loginForm"]/div/div[1]/div/label/input
+        search-for:
+          - //*[@id="loginForm"]/div/div[1]/div/label/input
+          - //*[@id="loginForm"]//input[@name="username"]
         actions: enter_text $instagram.user.name
       password:
-        search-for: //*[@id="loginForm"]/div/div[2]/div/label/input
+        search-for:
+          - //*[@id="loginForm"]/div/div[2]/div/label/input
+          - //*[@id="loginForm"]//input[@name="password"]
         actions: enter_text $instagram.user.pass
       submit:
-        search-for: //*[@id="loginForm"]/div/div[3]/button
+        search-for:
+          - //*[@id="loginForm"]/div/div[3]/button
+          - //*[@id="loginForm"]//button[@type="submit"]
         actions:
           - click
           - wait 7
@@ -52,6 +58,9 @@ stages:
         - wait 2
         - retry 1
     stage-items:
+      # After successful login via facebook, we are redirected to instagram
+      # where we often have to click login via facebook once-again before we
+      # are navigated to the dashboard
       proceed-to-facebook-login:
         search-for:
           - //*[@id="loginForm"]/div/div[5]/button[contains(text(), "Facebook")]
@@ -60,20 +69,6 @@ stages:
         actions:
           - click
           - wait 7
-#      facebook-reject-optional-cookies:
-#        search-for:
-#          - //*[starts-with(@id, "u_0_g_")]
-#      facebook-username:
-#        search-for: //*[@id="email"]
-#        actions: enter_text $facebook.user.name
-#      facebook-password:
-#        search-for: //*[@id="pass"]
-#        actions: enter_text $facebook.user.pass
-#      facebook-login:
-#        search-for: //*[@id="loginbutton"]
-#        actions:
-#          - click
-#          - wait 10 # Some time before we are redirected to instagram
   dismiss-notifications-alert:
     # We need this url here because we are redirected to fb
     # and if the first attempt fails we retry
@@ -82,17 +77,22 @@ stages:
       onerror: continue
     stage-items:
       dismiss-notifications:
-        search-for: /html/body/div[3]/div[1]/div/div[2]/div/div/div/div/div[2]/div/div/div[3]/button[2]
+        search-for:
+          - /html/body//div[@role="dialog"]//button[contains(text(), 'Not Now')]
+          - /html/body//button[contains(text(), 'Not Now')]
+          - /html/body//div[@role="dialog"]//button[2]
   proceed-to-post:
     stage-items:
       click-create:
         search-for:
+          - //*[starts-with(@id,"mount_0_0_")]//a[//*[contains(text(), "Create")]]
           - //*[starts-with(@id,"mount_0_0_")]/div/div/div[2]/div/div/div[1]/div[1]/div[1]/div/div/div/div/div[2]/div[7]/div/span/div/a
           - //*[starts-with(@id,"mount_0_0_")]/div/div/div[2]/div/div/div[1]/div[1]/div[1]/div/div/div/div/div[2]/div[7]/div/span/div/a/div
       add-video:
         search-for:
+          - //form[@enctype="multipart/form-data"]/input[@type="file"]
           - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[2]/div[1]/form/input
-          - //form[@enctype="multipart/form-data" and @role="presentation"]/input
+          - /html/body//form/input[@type="file"]
         actions:
           # Use the first result from the specified agent.stage.stage-item
           #- enter_text $results.pictory.download-video-layout-3.save-file[0]
@@ -102,30 +102,44 @@ stages:
       dismiss-alert:
         events:
           onerror: continue
-        search-for: /html/body/div[6]/div[2]/div/div/div[1]/div/div[2]/div/div/div/div/div[2]/div/div/div[3]/div/div[4]/button
+        search-for:
+          - /html/body//div[@role="dialog"]//button[contains(text(), 'OK')]
+          - /html/body//div[@role="dialog"]//button
+          - /html/body/div[6]/div[2]/div/div/div[1]/div/div[2]/div/div/div/div/div[2]/div/div/div[3]/div/div[4]/button
       proceed-to-edit:
         search-for:
+          - /html/body//div[@role="dialog"]//div[contains(text(), "Next")]
+          - /html/body//div[@role="dialog"]//*[contains(text(), "Next")]
           - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[1]/div/div/div/div[3]/div
           - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[1]/div/div/div/div[3]/div/div
       add-cover-photo:
         events:
           onerror: continue
-        search-for: /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[2]/div[2]/div/div/div/div/div[1]/div[1]/div/div/form/input
+        search-for:
+          - //div[@role="dialog"]//form[@enctype="multipart/form-data"]/input[@type="file"]
+          - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[2]/div[2]/div/div/div/div/div[1]/div[1]/div/div/form/input
+          - //div[@role="dialog"]//form/input[@type="file"]
         actions:
           - enter_text $video.cover.image.square
           - wait 5
       proceed-to-content:
         search-for:
+          - /html/body//div[@role="dialog"]//div[contains(text(), "Next")]
+          - //div[@role="dialog"]//*[contains(text(), "Next")]
           - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[1]/div/div/div/div[3]
           - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[1]/div/div/div/div[3]/div
           - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[1]/div/div/div/div[3]/div/div
       enter-content:
         search-for:
+          - /html/body//div[@role="dialog"]//div[@role="textbox"]
+          - //div[@role="dialog"]//*[@role="textbox"]
           - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[2]/div[2]/div/div/div/div[1]/div[2]/div/div[1]/div[1]
           - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[2]/div[2]/div/div/div/div[1]/div[2]/div/div[1]/div[1]/p
         actions: enter_text $video.description
       submit:
         search-for:
+          - /html/body//div[@role="dialog"]//div[contains(text(), "Share")]
+          - /html/body//div[@role="dialog"]//*[contains(text(), "Share")]
           - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[1]/div/div/div/div[3]
           - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[1]/div/div/div/div[3]/div
           - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[1]/div/div/div/div[3]/div/div
@@ -134,9 +148,8 @@ stages:
         events:
           onerror: continue
         search-for:
-          # /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[1]/div/div/div/div[1]/h1/div
-          - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[2]/div[1]/div/div[2]/div//span[contains(text(), 'shared')]
-          - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[2]/div[1]/div/div[2]//span[contains(text(), 'shared')]
-          - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[1]/div/div/div/div[1]/h1//div[contains(text(), 'shared')]
-          - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[1]/div/div/div/div[1]/h1//span[contains(text(), 'shared')]
+          - /html/body//div[@role="dialog"]//h1/div[contains(text(), "Reel shared")]
+          - /html/body//div[@role="dialog"]//h1/*[contains(text(), "shared")]
+          - /html/body//div[@role="dialog"]//span[contains(text(), 'shared')]
+          - /html/body//div[@role="dialog"]//*[contains(text(), 'shared')]
         actions: none
