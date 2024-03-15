@@ -40,8 +40,7 @@ stages:
           - click
           - wait 8
   dismiss-alerts:
-    # TODO Variables in yaml. Then r/live_above_3d should be a variable
-    url: https://www.reddit.com/r/live_above_3d/submit
+    url: https://www.reddit.com/r/${reddit.community.name}/submit
     stage-items:
       dismiss-cookies-alert:
         events:
@@ -60,8 +59,7 @@ stages:
           onerror: continue
         search-for: //*[@id="SHORTCUT_FOCUSABLE_DIV"]/div[4]/div/div/div/footer/div/button[1]
   title:
-    # TODO Variables in yaml. Then r/live_above_3d should be a variable
-    url: https://www.reddit.com/r/live_above_3d/submit
+    url: https://www.reddit.com/r/${reddit.community.name}/submit
     stage-items:
       enter-title:
         search-for: //*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[2]/div[3]/div[2]/div[1]/div/textarea

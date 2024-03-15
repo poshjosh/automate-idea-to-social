@@ -28,6 +28,9 @@ class Env(Enum):
 
     PICTORY_USER_NAME = f'{_pictory}.user.name'
     PICTORY_USER_PASS = f'{_pictory}.user.pass'
+    PICTORY_BRAND_NAME = f'{_pictory}.brand.name'
+    PICTORY_BG_MUSIC_NAME = f'{_pictory}.bg-music.name'
+    PICTORY_VOICE_NAME = f'{_pictory}.voice.name'
 
     TRANSLATION_OUTPUT_LANGUAGES = f'{_translation}.output.languages'
     TRANSLATION_FILE_EXTENSION = f'{_translation}.file.extension'
@@ -45,6 +48,7 @@ class Env(Enum):
 
     REDDIT_USER_NAME = f'{_reddit}.user.name'
     REDDIT_USER_PASS = f'{_reddit}.user.pass'
+    REDDIT_COMMUNITY_NAME = f'{_reddit}.community.name'
 
     FACEBOOK_USER_NAME = f'{_facebook}.user.name'
     FACEBOOK_USER_PASS = f'{_facebook}.user.pass'

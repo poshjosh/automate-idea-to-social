@@ -119,23 +119,20 @@ stages:
         search-for: //*[@id="step-3-fixed-height"]/div[1]/div/div[6]/div/div[1]/div[1]/div/div/div
       select-brand:
         # We first identify the brand by its name, then we work upwards to the selectable element
-        # TODO Variables in yaml. Then LiveAbove3D should be a variable
         search-for:
-          - //*[@id="menu-"]/div[3]/ul/li[2]/div/div/div[2]/span[contains(text(), "LiveAbove3D")]//..//..//..//..
-          - //*[@id="menu-"]//ul/li//span[contains(text(), "LiveAbove3D")]//..//..//..//..
+          - //*[@id="menu-"]/div[3]/ul/li[2]/div/div/div[2]/span[contains(text(), "${pictory.brand.name}")]//..//..//..//..
+          - //*[@id="menu-"]//ul/li//span[contains(text(), "${pictory.brand.name}")]//..//..//..//..
       accept-brand-changes-prompt:
         events:
           onerror: continue
         search-for: /html/body//*[@role="dialog"]//button[contains(text(), "Continue")]
       select-brand-background-music:
-        # TODO - Use variable for Savage Grace
-        search-for: //*[@id="step-3-fixed-height"]//span[contains(text(), "Savage Grace")]//..
+        search-for: //*[@id="step-3-fixed-height"]//span[contains(text(), "${pictory.bg-music.name}")]//..
         actions:
           - click
           - wait 3
       select-brand-voice:
-        # TODO - Use variable for Daniel
-        search-for: //*[@id="step-3-fixed-height"]//span[contains(text(), "Daniel")]//..
+        search-for: //*[@id="step-3-fixed-height"]//span[contains(text(), "${pictory.voice.name}")]//..
         actions:
           - move_to_center_offset 18 18
           - click_and_hold_current_position

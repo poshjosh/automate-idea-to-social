@@ -1,14 +1,5 @@
 ## TODO
 
-Find out why we have 3 landscape videos in pictory results dirs.
-
-Find out what is causing IndexError in final stage of youtube.
-  Try to get better logs for the above
-  We need video link to be saved
-
-Resolve variables related TODOs in yaml files
-page body vs webdriver for finding elements
-
 Allow nested variables in env and configs
 
 When we successfully find an element. We should update
