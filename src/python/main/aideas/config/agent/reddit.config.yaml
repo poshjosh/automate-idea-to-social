@@ -1,30 +1,10 @@
 stages:
   login:
-    url: https://www.reddit.com
+    url: https://www.reddit.com/login/
     stage-items:
-# TODO - Try and accept cookies
-#      accept-cookies:
-#        events:
-#          onerror: continue
-#        search-for:      
-#          shadow-attributes: id=reject-nonessential-cookies-button
-#          x-paths:
-#            - //*[@id="reject-nonessential-cookies-button"]
-#            - //*[@id="reject-nonessential-cookies-button"]/button
-#            - //*[@id="reject-nonessential-cookies-button"]/button/span
-#            - //*[@id="reject-nonessential-cookies-button"]/button/span/span
-#        actions:
-#          - click
-#          - wait 2
-      proceed-to-login:
-        search-for: //*[@id="login-button"]
-        actions:
-          - click
-          - wait 2
       enter-user-name:
         search-for: //*[@id="login-username"]
-        actions:
-          - enter_text $reddit.user.name
+        actions: enter_text $reddit.user.name
       enter-password:
         search-for: //*[@id="login-password"]
         actions:
@@ -38,23 +18,39 @@ stages:
           shadow-attributes: slot=primaryButton
         actions:
           - click
-          - wait 8
+          - wait 8 # Login takes a while
+  cookies:
+    stage-items:
+      reject-non-essential-cookies:
+        events:
+          onerror: continue
+        search-from:
+          shadow-attributes: id=reject-nonessential-cookies-button
+        search-for: /button[contains(text(), "Reject")]
+        actions:
+          - click
+          - wait 2
   dismiss-alerts:
     url: https://www.reddit.com/r/${reddit.community.name}/submit
     stage-items:
       dismiss-cookies-alert:
+        wait-timeout-seconds: 10
         events:
           onerror: continue
         search-for:
           - //*[@id="SHORTCUT_FOCUSABLE_DIV"]/div[3]/div/section/div/section[2]/section[2]/form/button
+          - //*[@id="SHORTCUT_FOCUSABLE_DIV"]//form/button[contains(text(), "Reject")]
           - //button[contains(text(), "Reject non-essential")]
       dismiss-collection-alert-by-clicking-x:
+        wait-timeout-seconds: 10
         events:
           onerror: continue
         search-for:
           - //*[@id="SHORTCUT_FOCUSABLE_DIV"]/div[4]/div/div/div/div[1]/*[name()="svg"]
           - //*[@id="SHORTCUT_FOCUSABLE_DIV"]/div[4]/div/div/div/div[1]
+          - //*[@id="SHORTCUT_FOCUSABLE_DIV"]//*[name()="svg"]
       dismiss-collection-alert-by-clicking-cancel:
+        wait-timeout-seconds: 5
         events:
           onerror: continue
         search-for: //*[@id="SHORTCUT_FOCUSABLE_DIV"]/div[4]/div/div/div/footer/div/button[1]
@@ -62,21 +58,28 @@ stages:
     url: https://www.reddit.com/r/${reddit.community.name}/submit
     stage-items:
       enter-title:
-        search-for: //*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[2]/div[3]/div[2]/div[1]/div/textarea
-        actions:
-          - enter_text $video.title
+        search-for:
+          - //*[@id="AppRouter-main-content"]//textarea[@placeholder="Title"]
+          - //*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[2]/div[3]/div[2]/div[1]/div/textarea
+          - //*[@id="AppRouter-main-content"]//textarea[@rows="1"]
+        actions: enter_text $video.title
   cover-image:
     events:
       onerror: continue
     stage-items:
       add-cover-image:
-        search-for: //*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[2]/div[3]/div[2]/div[2]/div/div/div[1]/div[1]/div/span[16]/button/input[@type="file"]
+        search-for:
+          - //*[@id="AppRouter-main-content"]//button[contains(@aria-label, "image")]/input[@type="file"]
+          - //*[@id="AppRouter-main-content"]//button/input[@type="file"]
+          - //*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[2]/div[3]/div[2]/div[2]/div/div/div[1]/div[1]/div/span[16]/button/input[@type="file"]
         actions:
           - enter_text $video.cover.image
           - wait 5
       enter-cover-image-caption:
         search-for:
           # //*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[2]/div[3]/div[2]/div[2]/div/div/div[3]/div/div[1]/div/div/div/div/div[2]/div/div/span
+          - //*[@id="AppRouter-main-content"]//div[contains(@style, "Add caption")]
+          - //*[@id="AppRouter-main-content"]//*[contains(@style, "Add caption")]
           - //*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[2]/div[3]/div[2]/div[2]/div/div/div[3]/div/div[1]/div/div/div/div/div[2]
           - //*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[2]/div[3]/div[2]/div[2]/div/div/div[3]/div/div[1]/div/div/div/div/div[2]/div
           - //*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[2]/div[3]/div[2]/div[2]/div/div/div[3]/div/div[1]/div/div/div/div/div[2]/div/div
@@ -88,9 +91,11 @@ stages:
       enter-content:
         search-for:
           # //*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[2]/div[3]/div[2]/div[2]/div/div/div[3]/div/div[1]/div/div/div/div/div/div[1]/div
+          - //*[@id="AppRouter-main-content"]//div[@class="DraftEditor-root"]//div[@role="textbox"]
           - //*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[2]/div[3]/div[2]/div[2]/div/div/div[3]/div/div[1]/div/div/div/div
           - //*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[2]/div[3]/div[2]/div[2]/div/div/div[3]/div/div[1]/div/div/div/div/div
           - //*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[2]/div[3]/div[2]/div[2]/div/div/div[3]/div/div[1]/div/div/div/div/div/div[1]
+          - //*[@id="AppRouter-main-content"]//div[@role="textbox"]
         actions:
           - move_to_element
           - enter
@@ -99,7 +104,9 @@ stages:
   post:
     stage-items:
       post-content:
-        search-for: //*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[2]/div[3]/div[3]/div[2]/div/div/div[1]/button[1]
+        search-for:
+          - //*[@id="AppRouter-main-content"]//button[contains(text(), "Post")]
+          - //*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[2]/div[3]/div[3]/div[2]/div/div/div[1]/button[1]
         actions:
           - click
           - wait 5
