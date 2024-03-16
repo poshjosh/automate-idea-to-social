@@ -1,5 +1,5 @@
 import os
-from enum import Enum
+from enum import Enum, unique
 
 _video = 'video'
 _pictory = 'pictory'
@@ -15,6 +15,7 @@ _blog = 'blog'
 _browser_chrome = 'browser.chrome'
 
 
+@unique
 class Env(Enum):
     AGENTS_DIR = 'agents.dir'
 

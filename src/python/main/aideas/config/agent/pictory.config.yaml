@@ -195,7 +195,7 @@ stages:
         actions:
           - wait 10 # Wait to make sure the file is downloaded
           - get_newest_file_in_dir $video.output.dir $video.output.type 120
-          - save_file $results.me[0]
+          - save_file $results.me[1]
   download-video-layout-2:
     events:
       onsuccess: run_stages download-video save-downloaded-video

@@ -1,4 +1,5 @@
 import logging
+from enum import unique
 from typing import TypeVar, Union
 
 from selenium import webdriver
@@ -9,7 +10,7 @@ from selenium.webdriver.support import expected_conditions as WaitCondition
 from selenium.webdriver.support.wait import WebDriverWait
 
 from ..action.action import Action
-from ..action.action_handler import ActionHandler, execute_for_result
+from ..action.action_handler import ActionHandler, execute_for_result, BaseActionId
 from ..action.action_result import ActionResult
 
 logger = logging.getLogger(__name__)
@@ -18,7 +19,23 @@ WEB_DRIVER = TypeVar("WEB_DRIVER", bound=Union[webdriver.Chrome, webdriver.Remot
 ALERT_ACTION = TypeVar("ALERT_ACTION", bound=Union['accept', 'dismiss'])
 
 
+@unique
+class BrowserActionId(BaseActionId):
+    ACCEPT_ALERT = ('accept_alert', False)
+    DISMISS_ALERT = ('dismiss_alert', False)
+    EXECUTE_SCRIPT = 'execute_script'
+    EXECUTE_SCRIPT_ON = 'execute_script_on'
+    REFRESH = ('refresh', False)
+
+
 class BrowserActionHandler(ActionHandler):
+    @staticmethod
+    def to_action_id(action: str) -> BaseActionId:
+        try:
+            return ActionHandler.to_action_id(action)
+        except Exception:
+            return BrowserActionId(action)
+
     def __init__(self,
                  web_driver: WEB_DRIVER,
                  wait_timeout_seconds: float):
@@ -31,13 +48,13 @@ class BrowserActionHandler(ActionHandler):
         return BrowserActionHandler(self.__web_driver, timeout)
 
     def _execute(self, key: str, action: Action) -> ActionResult:
-        if key.endswith("alert"):  # accept_alert|dismiss_alert
+        if key.endswith('alert'):  # accept_alert|dismiss_alert
             result = self.__handle_alert(action)
-        elif key == "execute_script":
+        elif key == BrowserActionId.EXECUTE_SCRIPT.value:
             result = self.__execute_script(action)
-        elif key == "execute_script_on":
+        elif key == BrowserActionId.EXECUTE_SCRIPT_ON.value:
             result = self.__execute_script_on(action)
-        elif key == "refresh":
+        elif key == BrowserActionId.REFRESH.value:
             result = self.__refresh(action)
         else:
             return super()._execute(key, action)

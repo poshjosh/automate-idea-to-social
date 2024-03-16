@@ -3,7 +3,7 @@ import unittest
 
 from .test_browser_agent import TestBrowserAgent
 from ..test_functions import init_logging, get_config_loader
-from ....main.aideas.action.action_handler import ActionHandler
+from ....main.aideas.action.action_handler import ActionId
 from ....main.aideas.agent.agent_name import AgentName
 from ....main.aideas.action.action import Action
 from ....main.aideas.action.action_result import ActionResult
@@ -40,7 +40,7 @@ class BrowserAgentTest(unittest.TestCase):
         stage_id = stage.SAVE_DOWNLOADED_VIDEO
         target_id = stage.Action.GET_FILE
         action = Action(agent_name, stage_id, target_id,
-                        ActionHandler.ACTION_GET_NEWEST_FILE,
+                        ActionId.GET_NEWEST_FILE.value,
                         ['/videos/dir', 'mp4', '120'])
         action_result = ActionResult(action, True, 'test-downloaded-video.mp4')
         run_context.add_action_result(

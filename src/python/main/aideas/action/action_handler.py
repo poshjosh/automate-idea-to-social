@@ -2,6 +2,7 @@ import logging
 import os
 import shutil
 import time
+from enum import Enum, unique
 from typing import Callable, Union
 
 from .action import Action
@@ -28,21 +29,40 @@ def execute_for_result(func: Callable[[any], any],
         return ActionResult(action, True, result)
 
 
+class BaseActionId(str, Enum):
+    def __new__(cls, value, result_producing: bool = True):
+        obj = str.__new__(cls, [value])
+        obj._value_ = value
+        obj.__result_producing = result_producing
+        return obj
+
+    def is_result_producing(self) -> bool:
+        return self.__result_producing
+
+
+@unique
+class ActionId(BaseActionId):
+    GET_FILE_CONTENT = 'get_file_content'
+    GET_FILES = 'get_files'
+    GET_FIRST_FILE = 'get_first_file'
+    GET_NEWEST_FILE = 'get_newest_file_in_dir'
+    LOG = 'log'
+    SAVE_FILE = 'save_file'
+    SAVE_TO_FILE = 'save_to_file'
+    STARTS_WITH = 'starts_with'
+    WAIT = ('wait', False)
+
+
 class ActionHandler:
     __ALL_FILE_TYPES = '*'
-    ACTION_GET_FILE_CONTENT = 'get_file_content'
-    ACTION_GET_FILES = 'get_files'
-    ACTION_GET_FIRST_FILE = 'get_first_file'
-    ACTION_GET_NEWEST_FILE = 'get_newest_file_in_dir'
-    ACTION_LOG = 'log'
-    ACTION_SAVE_FILE = 'save_file'
-    ACTION_SAVE_TO_FILE = 'save_to_file'
-    ACTION_STARTS_WITH = 'starts_with'
-    ACTION_WAIT = 'wait'
 
     @staticmethod
     def noop() -> 'ActionHandler':
         return NOOP
+
+    @staticmethod
+    def to_action_id(action: str) -> BaseActionId:
+        return ActionId(action)
 
     def execute(self, action: Action) -> ActionResult:
         key = action.get_name_without_negation() if action.is_negation() else action.get_name()
@@ -54,23 +74,23 @@ class ActionHandler:
     def _execute(self, key: str, action: Action) -> ActionResult:
         if action == Action.none():
             result = ActionResult.none()
-        elif key == ActionHandler.ACTION_GET_FILE_CONTENT:
+        elif key == ActionId.GET_FILE_CONTENT.value:
             result: ActionResult = self.get_file_content(action)
-        elif key == ActionHandler.ACTION_GET_FILES:
+        elif key == ActionId.GET_FILES.value:
             result: ActionResult = self.get_files(action)
-        elif key == ActionHandler.ACTION_GET_FIRST_FILE:
+        elif key == ActionId.GET_FIRST_FILE.value:
             result: ActionResult = self.get_first_file(action)
-        elif key == ActionHandler.ACTION_GET_NEWEST_FILE:
+        elif key == ActionId.GET_NEWEST_FILE.value:
             result: ActionResult = self.get_newest_file_in_dir(action)
-        elif key == ActionHandler.ACTION_LOG:
+        elif key == ActionId.LOG.value:
             result: ActionResult = self.log(action)
-        elif key == ActionHandler.ACTION_SAVE_FILE:
+        elif key == ActionId.SAVE_FILE.value:
             result: ActionResult = self.save_file(action)
-        elif key == ActionHandler.ACTION_SAVE_TO_FILE:
+        elif key == ActionId.SAVE_TO_FILE.value:
             result: ActionResult = self.save_to_file(action)
-        elif key == ActionHandler.ACTION_STARTS_WITH:
+        elif key == ActionId.STARTS_WITH.value:
             result: ActionResult = self.starts_with(action)
-        elif key == ActionHandler.ACTION_WAIT:
+        elif key == ActionId.WAIT.value:
             result: ActionResult = self.wait(action)
         else:
             raise ValueError(f'Unsupported: {action}')

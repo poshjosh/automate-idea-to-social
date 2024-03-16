@@ -4,6 +4,7 @@ from selenium.webdriver.remote.webelement import WebElement
 
 from ....main.aideas.action.action import Action
 from ....main.aideas.action.action_result import ActionResult
+from ....main.aideas.action.action_handler import ActionId, BaseActionId
 from ....main.aideas.action.element_action_handler import ElementActionHandler
 from ....main.aideas.env import Env
 
@@ -23,7 +24,13 @@ class TestElementActionHandler(ElementActionHandler):
         return result
 
     def _execute(self, key: str, action: Action) -> ActionResult:
-        if key == TestElementActionHandler.ACTION_GET_NEWEST_FILE:
+        if action == Action.none():
+            return ActionResult.none()
+        action_id: BaseActionId = ElementActionHandler.to_action_id(action.get_name_without_negation())
+        result_producing: bool = action_id.is_result_producing()
+        if key == ActionId.GET_NEWEST_FILE.value:
             file_type = os.environ[Env.VIDEO_OUTPUT_TYPE.value]
-            return ActionResult(action, True, f'test-downloaded-video.{file_type}')
-        return ActionResult(action, True, 'test-result')
+            return ActionResult(action, True,
+                                f'test-downloaded-video.{file_type}' if result_producing else None)
+        return ActionResult(action, True,
+                            'test-result' if result_producing else None)

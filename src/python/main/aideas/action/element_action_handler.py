@@ -1,12 +1,13 @@
 import logging
 import time
+from enum import unique
 from typing import Tuple
 
 from selenium.common import StaleElementReferenceException
 from selenium.webdriver import ActionChains, Keys
 from selenium.webdriver.remote.webelement import WebElement
 
-from .action_handler import execute_for_result
+from .action_handler import execute_for_result, BaseActionId
 from .browser_action_handler import BrowserActionHandler, WEB_DRIVER
 from ..action.action import Action
 from ..action.action_result import ActionResult
@@ -15,7 +16,31 @@ from ..web.reloadable_web_element import ReloadableWebElement
 logger = logging.getLogger(__name__)
 
 
+@unique
+class ElementActionId(BaseActionId):
+    CLEAR_TEXT = ('clear_text', False)
+    CLICK = ('click', False)
+    CLICK_AND_HOLD = ('click_and_hold', False)
+    CLICK_AND_HOLD_CURRENT_POSITION = ('click_and_hold_current_position', False)
+    ENTER = ('enter', False)
+    ENTER_TEXT = ('enter_text', False)
+    GET_ATTRIBUTE = 'get_attribute'
+    GET_TEXT = 'get_text'
+    IS_DISPLAYED = 'is_displayed'
+    MOVE_TO_CENTER_OFFSET = ('move_to_center_offset', False)
+    MOVE_TO_ELEMENT = ('move_to_element', False)
+    RELEASE = ('release', False)
+    SEND_KEYS = ('send_keys', False)
+
+
 class ElementActionHandler(BrowserActionHandler):
+    @staticmethod
+    def to_action_id(action: str) -> BaseActionId:
+        try:
+            return BrowserActionHandler.to_action_id(action)
+        except Exception:
+            return ElementActionId(action)
+
     def __init__(self,
                  web_driver: WEB_DRIVER,
                  wait_timeout_seconds: float):
@@ -52,7 +77,8 @@ class ElementActionHandler(BrowserActionHandler):
 
     def _execute_on(self, key: str, action: Action, element: WebElement) -> ActionResult:
         driver = self.get_web_driver()
-        if key == 'clear_text':
+        # TODO - Use ElementActionId instead of str literals
+        if key == ElementActionId.CLEAR_TEXT.value:
             def clear_text(tgt: WebElement):
                 tgt.send_keys(Keys.CONTROL, 'a')
                 tgt.send_keys(Keys.DELETE)
