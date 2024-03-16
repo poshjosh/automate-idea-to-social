@@ -1,8 +1,12 @@
 ### Tips & Tricks
 
 - Disable 2-factor authentication on your accounts.
+- Use chrome Profile
 
 ### Requirements
+
+- Add `.env` file to your path.
+- No need to add `blog.env` file to your path
 
 #### python requirements:
 
