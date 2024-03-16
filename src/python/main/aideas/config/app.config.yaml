@@ -3,7 +3,7 @@ app:
 browser:
   chrome:
     #executable-path: /Users/chinomso/dev_chinomso/automate-idea-to-social/src/python/main/resources/chrome/version-121/chromedriver-mac-x64/chromedriver
-    wait-timeout-seconds: 15
+    wait-timeout-seconds: 20
     prefs:
       profile.managed_default_content_settings.popups : 2
       profile.default_content_setting_values.notifications: 2
@@ -27,9 +27,9 @@ browser:
         - start-maximized
         - disable-infobars
         - disable-extensions
-        - disable-web-security
-        - allow-running-insecure-content
-        - remote-allow-origins=*
+        #- disable-web-security
+        #- allow-running-insecure-content
+        #- remote-allow-origins=*
 
 agents:
   - pictory

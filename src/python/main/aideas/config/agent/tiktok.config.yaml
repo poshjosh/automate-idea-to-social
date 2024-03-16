@@ -1,21 +1,36 @@
 interval-seconds: 1
+browser:
+  chrome:
+    undetected: true
 stages:
   # TODO - Requires user input, implement notifying the user
+  pre-login:
+    url: https://www.tiktok.com/login/phone-or-email/email
+    events:
+      onerror: continue
+    stage-items:
+      accept-cookies:
+        search-from:
+          shadow-attributes: class=cookie-content
+        # /html/body/tiktok-cookie-banner//button[contains(text(), "Accept")]
+        search-for: //*[contains(text(), "Accept")]
   login:
     url: https://www.tiktok.com/login/phone-or-email/email
     stage-items:
       enter-username:
-        search-for: //*[@id="loginContainer"]/div[1]/form/div[1]/input
+        search-for: //*[@id="loginContainer"]//form//input[@name="username"]
         actions:
-          - enter_text $tiktok.user.name
+          - send_keys $tiktok.user.name
+          - wait 2
       enter-password:
-        search-for: //*[@id="loginContainer"]/div[1]/form/div[2]/div/input
+        search-for: //*[@id="loginContainer"]//form//input[@type="password" and @placeholder="Password"]
         actions:
-          - enter_text $tiktok.user.pass
+          - send_keys $tiktok.user.pass
+          - wait 2
       submit-login:
-#        search-for: //*[@id="loginContainer"]/div[1]/form/button[contains(text(), "Log")] # Log in|Login
+        search-for: //*[@id="loginContainer"]//form/button[contains(text(), "Log")]
         actions:
-#          - click
+          - click
           - wait 30 # !!! USER ASSISTANCE IS REQUIRED TO SOLVE CHALLENGE !!!
   enter-upload-video-details:
     url: https://www.tiktok.com/creator-center/upload?from=upload&lang=en

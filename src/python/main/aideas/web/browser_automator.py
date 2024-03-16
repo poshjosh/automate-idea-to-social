@@ -9,7 +9,6 @@ from ..action.action import Action
 from ..action.action_result import ActionResult
 from ..action.action_signatures import action_signatures, element_action_signatures
 from ..action.element_action_handler import ElementActionHandler
-from ..agent.agent_name import AgentName
 from ..config import AgentConfig, ConfigPath, Name, SearchConfigs, TIMEOUT_KEY, WHEN_KEY
 from ..result.result_set import ElementResultSet
 from ..event.event_handler import EventHandler, ON_START
@@ -23,8 +22,9 @@ class BrowserAutomator:
     def of(app_config: dict[str, any],
            agent_name: str,
            agent_config: dict[str, any] = None) -> 'BrowserAutomator':
-        web_driver = WebDriverCreator.create(app_config, AgentName.YOUTUBE == agent_name)
-        wait_timeout_seconds = app_config['browser']['chrome'][TIMEOUT_KEY]
+        app_config['browser'].update(agent_config.get('browser', {}))
+        web_driver = WebDriverCreator.create(app_config)
+        wait_timeout_seconds = app_config['browser']['chrome'].get(TIMEOUT_KEY, 20)
         action_handler = ElementActionHandler(web_driver, wait_timeout_seconds)
         event_handler = EventHandler(action_handler)
         element_selector = ElementSelector.of(web_driver, agent_name, wait_timeout_seconds)

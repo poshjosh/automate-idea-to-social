@@ -107,7 +107,7 @@ class ElementActionHandler(BrowserActionHandler):
             def send_keys(txt: str):
                 for char in txt:
                     element.send_keys(char)
-                    time.sleep(float(0.5))
+                    time.sleep(0.5)
                 return txt
 
             result = execute_for_result(send_keys, ' '.join(action.get_args()), action)

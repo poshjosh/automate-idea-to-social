@@ -15,7 +15,7 @@ WEB_DRIVER = TypeVar("WEB_DRIVER", bound=Union[webdriver.Chrome, webdriver.Remot
 
 class WebDriverCreator:
     @staticmethod
-    def create(config: dict[str, any], undetected: bool = False) -> WEB_DRIVER:
+    def create(config: dict[str, any]) -> WEB_DRIVER:
         chrome_config = config['browser']['chrome']
         executable_path: str = chrome_config.get('executable-path')
         option_args: list[str] = chrome_config['options']['args']
@@ -23,6 +23,7 @@ class WebDriverCreator:
         preferences.update(chrome_config.get('prefs', {}))
         output_dir = os.path.join(os.getcwd(), os.environ[Env.VIDEO_OUTPUT_DIR.value])
         preferences.update({'download.default_directory': output_dir})
+        undetected: bool = chrome_config.get('undetected', False)
         remote_dvr_location: str = config['selenium.webdriver.url'] \
             if 'selenium.webdriver.url' in config else None
         return WebDriverCreator.__create(
