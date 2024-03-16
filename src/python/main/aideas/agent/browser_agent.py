@@ -3,12 +3,13 @@ import logging
 import time
 from typing import Union
 
-from .agent import Agent
-from ..config import AgentConfig, ConfigPath, Name
-from ..event.event_handler import ON_START
+from .agent import Agent, AgentError
+from ..config import AgentConfig, ConfigPath, Name, ON_START
+from ..action.action_handler import ActionError
 from ..result.result_set import ElementResultSet
 from ..run_context import RunContext
 from ..web.browser_automator import BrowserAutomator
+from ..web.element_selector import ElementNotFoundError
 
 logger = logging.getLogger(__name__)
 
@@ -105,7 +106,7 @@ class BrowserAgent(Agent):
             result: ElementResultSet = self.__browser_automator.act_on_elements(
                 config, stage, run_context)
 
-        except Exception as ex:
+        except (ElementNotFoundError, ActionError, AgentError) as ex:
             exception = ex
 
         result = self.__event_handler.handle_result_event(

@@ -1,17 +1,9 @@
 import unittest
 
-from ....main.aideas.action.action_signatures import event_action_signatures, parse_agent_to_stages
-from ....main.aideas.event.event_handler import ON_SUCCESS
+from ....main.aideas.action.action_signatures import parse_agent_to_stages
 
 
 class ActionSignaturesTest(unittest.TestCase):
-    def test_event_action_signatures(self):
-        actions: list[str] = ["test-action-a test-arg0 test-arg1", "test-action-b"]
-        events = {ON_SUCCESS: actions}
-        config = {'events': events}
-        action_signatures = event_action_signatures(config, ON_SUCCESS)
-        self.assertEqual(actions, action_signatures)
-
     def test_parse_agent_to_stages_given_only_stages_specified(self):
         expected_action = "action"
         calling_agent = "agent"

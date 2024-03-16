@@ -17,7 +17,10 @@ class TestElementActionHandler(ElementActionHandler):
 
     def execute_on(self, action: Action, element: WebElement) -> ActionResult:
         # For tests, we don't implement element based actions.
-        return self.execute(action)
+        result = self.execute(action)
+        if action.is_negation():
+            result = result.flip()
+        return result
 
     def _execute(self, key: str, action: Action) -> ActionResult:
         if key == TestElementActionHandler.ACTION_GET_NEWEST_FILE:

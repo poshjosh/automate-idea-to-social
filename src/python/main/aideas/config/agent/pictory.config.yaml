@@ -145,8 +145,8 @@ stages:
         events:
           onerror: continue
         # There will be some default waiting for this element to appear
-        wait-timeout-seconds: 120
-        search-for: //div[contains(text(), "applied")]
+        wait-timeout-seconds: 90 # TODO CHANGE TO 120
+        search-for: //*[contains(text(), "Voiceover applied")]
   download-video:
     stage-items:
       expand-download-options:

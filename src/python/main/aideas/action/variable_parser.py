@@ -145,7 +145,8 @@ def __get_run_arg_value(curr_path: [str],
                         result_if_none: Union[str, None] = None) -> Union[str, None]:
     replacement = None if run_context is None else run_context.get_arg(name)
     if replacement is None:
-        replacement = __get_scoped_value_for_name_having_prefix(curr_path, name, CONTEXT_KEY, run_context)
+        replacement = __get_scoped_value_for_name_having_prefix(
+            curr_path, name, CONTEXT_KEY, run_context)
         if replacement is None:
             replacement = __get_results_value(curr_path, name, run_context)
     return result_if_none if replacement is None else str(replacement)
@@ -220,15 +221,13 @@ def __expand_me(curr_path: [str], parts: [str]) -> [str]:
     return updated_parts
 
 
-"""
-..highlight:: python
-.. code-block:: python
- Input: 'a.b.c[23]'
-Output: ([a, b, c], 23)
-"""
-
-
 def __parse_index_part(value: str) -> tuple[[str], int]:
+    """
+    highlight:: python
+    code-block:: python
+     Input: 'a.b.c[23]'
+    Output: ([a, b, c], 23)
+    """
     parts: [str] = value.split('.')
     last = parts[len(parts) - 1] if '.' in value else value
     if not last.endswith(']'):
@@ -243,18 +242,17 @@ def __parse_index_part(value: str) -> tuple[[str], int]:
         raise ValueError(f'Invalid variable: {value}') from ex
 
 
-"""
-..highlight:: python
-.. code-block:: python
- Input: '${var} ${abc}'
-Output: ('var', 0, 6)
-"""
-
-
 def __extract_first_variable(
         text: str,
         offset: int = 0,
         result_if_none: Union[Tuple[str, int, int], None] = None) -> Tuple[str, int, int]:
+    """
+    highlight:: python
+    code-block:: python
+     Input: '${var} ${abc}'
+    Output: ('var', 0, 6)
+    """
+
     prefix = VARIABLE_ANCHOR
 
     try:

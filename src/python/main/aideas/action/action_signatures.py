@@ -40,18 +40,6 @@ def __element_action_signatures(config: dict[str, any],
     return action_signatures(default_actions)
 
 
-def event_action_signatures(config: dict[str, any], event_name: str) -> list[str]:
-    event_config = __get_event_config(config, event_name)
-    return action_signatures(event_config)
-
-
-def __get_event_config(config: dict[str, any], event_name: str) -> Union[str, list]:
-    default_action: str = 'fail' if event_name == 'onerror' else 'continue'
-    events_config = None if not config else config.get('events')
-    return default_action if events_config is None \
-        else events_config.get(event_name, default_action)
-
-
 def parse_agent_to_stages(action_signature: [str],
                           calling_agent: str,
                           calling_stage: Union[str, Name]) \

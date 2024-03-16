@@ -63,7 +63,7 @@ class BrowserActionHandler(ActionHandler):
             elif how == 'dismiss':
                 alert.dismiss()
             else:
-                return ActionResult(action, False, f"Unsupported: {action}")
+                raise ValueError(f"Unsupported: {action}")
         except TimeoutException:
             logger.debug(f"Timed out waiting for alert. {action}")
 

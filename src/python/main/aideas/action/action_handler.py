@@ -13,15 +13,17 @@ logger = logging.getLogger(__name__)
 DEFAULT_FILE_NAME = "result.txt"
 
 
+class ActionError(Exception):
+    pass
+
+
 def execute_for_result(func: Callable[[any], any],
                        arg: any,
                        action: Action) -> ActionResult:
     try:
         result = func(arg)
     except Exception as ex:
-        logger.warning(f'Error while executing {action} {type(ex)}')
-        logger.exception(ex)
-        return ActionResult(action, False, type(ex))
+        raise ActionError(f'Error while executing {action}') from ex
     else:
         return ActionResult(action, True, result)
 
@@ -77,9 +79,7 @@ class ActionHandler:
 
     @staticmethod
     def wait(action: Action) -> ActionResult:
-        arg: str = action.get_first_arg()
-        if not arg:
-            return ActionResult(action, False, f'No argument provided for: {action}')
+        arg: str = action.require_first_arg()
         timeout: int = int(arg)
         if timeout < 1:
             return ActionResult(action, True)
@@ -90,10 +90,8 @@ class ActionHandler:
     @staticmethod
     def get_newest_file_in_dir(action: Action) -> ActionResult:
         args: [str] = action.get_args()
-        dir_path: str = args[0]
+        dir_path: str = action.require_first_arg()
         file_type: str = args[1]
-        if not dir_path:
-            return ActionResult(action, False, f'No argument[0] provided for: {action}')
         timeout: int = 30 if len(args) < 3 else int(args[2])
         start_time = time.time()
         while (time.time() - start_time) < timeout:
@@ -111,9 +109,7 @@ class ActionHandler:
 
     @staticmethod
     def save_file(action: Action) -> ActionResult:
-        src = action.get_first_arg()
-        if not src:
-            return ActionResult(action, False, f'No argument provided for: {action}')
+        src = action.require_first_arg()
         tgt_dir = ActionHandler.__make_target_dirs_if_need(action)
         tgt = os.path.join(tgt_dir, os.path.basename(src))
         logger.debug(f'Copying {src} to {tgt}')
@@ -121,9 +117,7 @@ class ActionHandler:
 
     @staticmethod
     def save_to_file(action: Action) -> ActionResult:
-        args: [str] = action.get_args()
-        if not args[0]:
-            return ActionResult(action, False, f'No argument[0] provided for: {action}')
+        args: [str] = action.require_first_arg()
 
         def save_content(content: str):
             tgt_dir = ActionHandler.__make_target_dirs_if_need(action)

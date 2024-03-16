@@ -8,10 +8,11 @@ from .webdriver_creator import WEB_DRIVER, WebDriverCreator
 from ..action.action import Action
 from ..action.action_result import ActionResult
 from ..action.action_signatures import action_signatures, element_action_signatures
+from ..action.action_handler import ActionError
 from ..action.element_action_handler import ElementActionHandler
-from ..config import AgentConfig, ConfigPath, Name, SearchConfigs, TIMEOUT_KEY, WHEN_KEY
+from ..config import AgentConfig, ConfigPath, Name, SearchConfigs, TIMEOUT_KEY, WHEN_KEY, ON_START
 from ..result.result_set import ElementResultSet
-from ..event.event_handler import EventHandler, ON_START
+from ..event.event_handler import EventHandler
 from ..run_context import RunContext
 
 logger = logging.getLogger(__name__)
@@ -95,7 +96,7 @@ class BrowserAutomator:
                       config_path: ConfigPath,
                       run_context: RunContext) -> bool:
 
-        config_path = config_path.with_appended(WHEN_KEY)
+        config_path = config_path.join(WHEN_KEY)
 
         condition = config.get(config_path)
 
@@ -105,7 +106,7 @@ class BrowserAutomator:
         try:
             success = self.without_events().__act_on_element(
                 config, config_path, run_context).is_successful()
-        except ElementNotFoundError as ex:
+        except (ElementNotFoundError, ActionError) as ex:
             logger.debug(f'Error checking condition for {config_path}, \nCause: {ex}')
             success = False
 
@@ -161,9 +162,9 @@ class BrowserAutomator:
                 # Handle expectations if present
                 self.__check_expectations(config, config_path, run_context, element, timeout)
 
-        except ElementNotFoundError as ex:
+        except (ElementNotFoundError, ActionError) as ex:
             logger.debug(f"Error acting on {config_path} {type(ex)}")
-            raise ex
+            exception = ex
 
         result = self.__event_handler.handle_result_event(
             self.get_agent_name(), config, config_path, run_context,

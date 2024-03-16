@@ -87,6 +87,12 @@ class Action:
         name: str = self.get_name()
         return name.split(' ')[1] if self.is_negation() else name
 
+    def require_first_arg(self) -> str:
+        arg: str = self.get_first_arg()
+        if not arg:
+            raise ValueError(f'No argument provided for: {self}')
+        return arg
+
     def get_first_arg(self, result_if_none: any = None) -> any:
         return len(self.__args) > 0 and self.__args[0] or result_if_none
 

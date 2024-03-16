@@ -52,8 +52,14 @@ class ConfigPath(tuple[Name]):
         path.append(Name.of(stage_item))
         return ConfigPath(path)
 
-    def with_appended(self, name: Union[str, Name]) -> 'ConfigPath':
+    def join(self, name: Union[str, Name]) -> 'ConfigPath':
         return ConfigPath([e for e in self] + [Name.of(name)])
+
+    def is_stage(self) -> bool:
+        return len(self) == 2
+
+    def is_stage_item(self) -> bool:
+        return len(self) == 4
 
     def stage(self) -> Name:
         return self[1]
@@ -130,7 +136,7 @@ class SearchConfig:
             return False
         result = [e for e in self.__queries]
         preferred_query: str = result.pop(preferred_query_index)
-        logger.info(f"{'X=' * 64}\nPreferred query: {preferred_query}\n{'X=' * 64}")
+        logger.info(f"\n{'X=' * 32}\nPreferred query: {preferred_query}\n{'X=' * 32}")
         result.insert(0, preferred_query)
         self.__queries = result
         self.__updated = True
@@ -160,6 +166,10 @@ STAGE_ITEMS_KEY: str = "stage-items"
 WHEN_KEY: str = 'when'
 DEFAULT_ACTIONS_KEY: str = 'default-actions'
 TIMEOUT_KEY: str = 'wait-timeout-seconds'
+EVENTS = 'events'
+ON_START = 'onstart'
+ON_ERROR = 'onerror'
+ON_SUCCESS = 'onsuccess'
 
 VALUE = TypeVar("VALUE", bound=Union[any, None])
 
@@ -222,6 +232,16 @@ class AgentConfig:
             if search_config is not None:
                 return search_config
         return None
+
+    def events(self, config_path: ConfigPath, default: dict = None) -> dict[str, any]:
+        return self.get(config_path, {}).get(EVENTS, default)
+
+    def get_event_actions(self, config_path: ConfigPath, event_name: str) -> Union[str, list]:
+        default_action: str = 'fail' if event_name == ON_ERROR else 'continue'
+        return self.events(config_path, {}).get(event_name, default_action)
+
+    def is_continue_on_event(self, config_path: ConfigPath, event_name: str) -> bool:
+        return self.get_event_actions(config_path, event_name) == 'continue'
 
     def get_url(
             self, stage: Union[str, Name], result_if_none: Union[str, None]) -> Union[str, None]:
