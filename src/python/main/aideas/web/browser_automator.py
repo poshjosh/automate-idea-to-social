@@ -22,7 +22,9 @@ class BrowserAutomator:
     def of(app_config: dict[str, any],
            agent_name: str,
            agent_config: dict[str, any] = None) -> 'BrowserAutomator':
-        app_config['browser'].update(agent_config.get('browser', {}))
+        # app_config['browser'].update(agent_config.get('browser', {}))
+        BrowserAutomator._update(agent_config.get('browser', {}), app_config['browser'])
+
         web_driver = WebDriverCreator.create(app_config)
         wait_timeout_seconds = app_config['browser']['chrome'].get(TIMEOUT_KEY, 20)
         action_handler = ElementActionHandler(web_driver, wait_timeout_seconds)
@@ -225,3 +227,11 @@ class BrowserAutomator:
 
     def get_action_handler(self) -> ElementActionHandler:
         return self.__action_handler
+
+    @staticmethod
+    def _update(src: dict[str, any], tgt: dict[str, any]):
+        for k, v in src.items():
+            if isinstance(v, dict):
+                v = BrowserAutomator._update(v, tgt.get(k, {}))
+            tgt[k] = v
+        return tgt
