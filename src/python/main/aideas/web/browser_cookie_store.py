@@ -27,6 +27,8 @@ class BrowserCookieStore:
             pickle.dump(cookies, file)
 
     def load(self):
+        if not os.path.exists(self.__cookie_path):
+            return
         cookies: list[dict] = []
         try:
             with open(self.__cookie_path, 'rb') as file:
