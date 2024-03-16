@@ -12,6 +12,7 @@ _facebook = 'facebook'
 _instagram = 'instagram'
 _github = 'github'
 _blog = 'blog'
+_browser_chrome = 'browser.chrome'
 
 
 class Env(Enum):
@@ -24,7 +25,6 @@ class Env(Enum):
     VIDEO_OUTPUT_TYPE = f'{_video}.output.type'
     VIDEO_COVER_IMAGE = f'{_video}.cover.image'
     VIDEO_COVER_IMAGE_SQUARE = f'{_video}.cover.image.square'
-    VIDEO_LINK = f'{_video}.link'
 
     PICTORY_USER_NAME = f'{_pictory}.user.name'
     PICTORY_USER_PASS = f'{_pictory}.user.pass'
@@ -61,12 +61,55 @@ class Env(Enum):
 
     BLOG_ENV_FILE = f'{_blog}.env.file'
 
+    BROWSER_CHROME_EXECUTABLE_PATH = f'{_browser_chrome}.executable-path'
+    BROWSER_CHROME_OPTIONS_ARGS_USER_DATA_DIR = f'{_browser_chrome}.options.args.user-data-dir'
+    BROWSER_CHROME_OPTIONS_ARGS_PROFILE_DIRECTORY = \
+        f'{_browser_chrome}.options.args.profile-directory'
+
+    @staticmethod
+    def paths() -> list['Env']:
+        return [
+            Env.AGENTS_DIR,
+            Env.VIDEO_INPUT_FILE,
+            Env.VIDEO_OUTPUT_DIR,
+            Env.VIDEO_COVER_IMAGE,
+            Env.VIDEO_COVER_IMAGE_SQUARE,
+            Env.BLOG_ENV_FILE,
+            Env.BROWSER_CHROME_EXECUTABLE_PATH,
+            Env.BROWSER_CHROME_OPTIONS_ARGS_USER_DATA_DIR
+        ]
+
     @staticmethod
     def collect(add_to: dict[str, any] = None) -> dict[str, any]:
-        env_names: [str] = [e.value for e in Env]
+        all_env_names: [str] = [e.value for e in Env]
+        path_env_names: [str] = [e.value for e in Env.paths()]
         if add_to is None:
             add_to = {}
         for k, v in os.environ.items():
-            if k in env_names:
+            if k in path_env_names:
+                add_to[k] = Env.__require_path(k)
+            elif k in all_env_names:
                 add_to[k] = v
+
         return add_to
+
+    @staticmethod
+    def get_value(env: 'Env', default: any = None) -> any:
+        return os.environ.get(env.value, default)
+
+    @staticmethod
+    def get_path(env: 'Env', default: any = None) -> any:
+        path = Env.get_value(env)
+        return default if not path else os.path.join(os.getcwd(), path)
+
+    @staticmethod
+    def require_path(env: 'Env'):
+        return Env.__require_path(env.value)
+
+    @staticmethod
+    def __require_path(env_key: str):
+        path = os.environ[env_key]
+        path = os.path.join(os.getcwd(), path)
+        if not path:
+            raise ValueError(f'Not found: {path}')
+        return path

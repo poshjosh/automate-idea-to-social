@@ -1,6 +1,9 @@
 import logging
+import os.path
+import shutil
 from collections import OrderedDict
 
+from ..action.action import get_results_dir
 from ..config import AgentConfig, Name
 from ..result.result_set import ElementResultSet, StageResultSet
 from ..run_context import RunContext
@@ -32,6 +35,12 @@ class Agent:
     def run(self, run_context: RunContext) -> StageResultSet:
         """Run all the stages of the agent and return True if successful, False otherwise."""
         try:
+
+            results_dir = get_results_dir(self.get_name())
+            if os.path.exists(results_dir):
+                shutil.rmtree(results_dir)
+                logger.debug(f"Successfully removed dir tree: {results_dir}")
+
             self.__config = AgentConfig(
                 run_context.replace_variables(self.__name, self.__config.root()))
 

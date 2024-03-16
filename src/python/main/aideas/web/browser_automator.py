@@ -24,7 +24,6 @@ class BrowserAutomator:
            agent_config: dict[str, any] = None) -> 'BrowserAutomator':
         # app_config['browser'].update(agent_config.get('browser', {}))
         BrowserAutomator._update(agent_config.get('browser', {}), app_config['browser'])
-
         web_driver = WebDriverCreator.create(app_config)
         wait_timeout_seconds = app_config['browser']['chrome'].get(TIMEOUT_KEY, 20)
         action_handler = ElementActionHandler(web_driver, wait_timeout_seconds)
@@ -233,5 +232,13 @@ class BrowserAutomator:
         for k, v in src.items():
             if isinstance(v, dict):
                 v = BrowserAutomator._update(v, tgt.get(k, {}))
+            if isinstance(v, list):
+                # We save our yaml comments
+                # These config dicts come from yaml files.
+                # This section of code will lead to loss of comments.
+                # TODO - Implement preservation of comments
+                existing_v = set(tgt.get(k, []))
+                existing_v.update(v)
+                v = list(existing_v)
             tgt[k] = v
         return tgt

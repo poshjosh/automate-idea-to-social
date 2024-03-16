@@ -1,6 +1,6 @@
 import logging
 from time import sleep
-from typing import List, Callable, TypeVar
+from typing import List, Callable
 
 from selenium.common import NoSuchWindowException, StaleElementReferenceException, TimeoutException
 from selenium.webdriver.chrome.webdriver import WebDriver
@@ -241,21 +241,3 @@ class ElementSelector:
             return self.__webdriver.current_url
         except NoSuchWindowException:
             return result_if_none
-
-    T = TypeVar('T')
-
-    @staticmethod
-    def run_till_success(func: Callable[[int], T], timeout: float = 60, interval: int = 1) -> T:
-        from time import sleep
-        from datetime import datetime, timedelta
-        start = datetime.now()
-        max_time = timedelta(seconds=timeout)
-        trials = -1
-        while True:
-            try:
-                trials += 1
-                return func(trials)
-            except Exception as ex:
-                if datetime.now() - start > max_time:
-                    raise ex
-                sleep(interval)

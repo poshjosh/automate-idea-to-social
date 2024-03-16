@@ -12,6 +12,12 @@ logger = logging.getLogger(__name__)
 NOT = 'not'
 
 
+def get_results_dir(agent_name: str) -> str:
+    if not agent_name:
+        raise ValueError('agent name required')
+    return os.path.join(Env.get_value(Env.AGENTS_DIR), agent_name, RESULTS_KEY)
+
+
 class Action:
     @staticmethod
     def none() -> 'Action':
@@ -44,9 +50,7 @@ class Action:
             args[i] = parse_run_arg(
                 [agent_name, stage_id, target_id], args[i], run_context)
 
-        action = Action(agent_name, stage_id, target_id, name, args)
-        action.__agents_dir = None if run_context is None else run_context.get_env(Env.AGENTS_DIR)
-        return action
+        return Action(agent_name, stage_id, target_id, name, args)
 
     def __init__(self,
                  agent_name: str,
@@ -54,19 +58,15 @@ class Action:
                  target_id: str,
                  name: str,
                  args: Union[list, None] = None):
-        self.__agents_dir = None
         self.__agent_name = agent_name
         self.__stage_id = stage_id
         self.__target_id = target_id
         self.__name = name
         self.__args = [] if args is None else list(args)
 
-    def get_results_dir(self, agents_dir: Union[str, None] = None) -> str:
-        agents_dir = self.__agents_dir if not agents_dir else agents_dir
-        if not agents_dir:
-            raise ValueError('agents dir required')
-        return os.path.join(agents_dir, self.get_agent_name(), RESULTS_KEY,
-                            self.get_stage_id(), self.get_target_id())
+    def get_results_dir(self) -> str:
+        results_dir = get_results_dir(self.__agent_name)
+        return os.path.join(results_dir, self.get_stage_id(), self.get_target_id())
 
     def get_agent_name(self) -> str:
         return self.__agent_name

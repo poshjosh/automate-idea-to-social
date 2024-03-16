@@ -16,7 +16,7 @@ from ..env import Env
 from ..io.shell import (grant_execute_permission_if_need, run_command,
                         run_commands_from_dir, run_script)
 from ..io.net import download_file
-from ..io.file import extract_zip_file, visit_dir, prepend_line
+from ..io.file import extract_zip_file, visit_dirs, prepend_line
 from ..result.result_set import ElementResultSet
 from ..run_context import RunContext
 
@@ -116,7 +116,7 @@ class BlogAgent(Agent):
         def may_move(_, dst: str) -> bool:
             return False if os.path.exists(dst) else True
 
-        visit_dir(blog_src_dir, blog_base_dir, move, may_move)
+        visit_dirs(move, blog_src_dir, blog_base_dir, may_move)
 
         if len(moved) == 0:  # Nothing to update
             return ActionResult(action, True)

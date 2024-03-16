@@ -2,9 +2,12 @@ app:
   name: aideas
 browser:
   chrome:
-    #executable-path: /Users/chinomso/dev_chinomso/automate-idea-to-social/src/python/main/resources/chrome/version-121/chromedriver-mac-x64/chromedriver
     wait-timeout-seconds: 20
     prefs:
+      # prevent credentials based popups (e.g. save password popups)
+      credentials_enable_service: false
+      profile.password_manager_enabled: false
+      # prevent general popups
       profile.managed_default_content_settings.popups : 2
       profile.default_content_setting_values.notifications: 2
       download.prompt_for_download: false
@@ -16,10 +19,6 @@ browser:
         - disable-dev-shm-usage  # We have shm_size: 2g, specified in docker-compose.yml
         # TODO - Test headless mode
         #- headless
-        # Location where chrome stores profiles
-        #- user-data-dir=/Users/chinomso/Library/Application Support/Google/Chrome
-        # Location relative to user-data-dir where chrome profile to be used is stored
-        #- profile-directory=Default
         #- disable-popup-blocking
         - disable-notifications
         - enable-javascript
@@ -30,6 +29,7 @@ browser:
         #- disable-web-security
         #- allow-running-insecure-content
         #- remote-allow-origins=*
+        #- incognito
 
 agents:
   - pictory

@@ -1,6 +1,10 @@
+# For TikTok, it is better to use the default cover (i.e. first scene), than to upload one
+# Our videos are generated with the first scene having the cover image.
 interval-seconds: 1
 browser:
   chrome:
+    # Without this TikTok asked us to solve some anti-bot challenge
+    # We also had to use a chrome profile to prevent the challenge
     undetected: true
 stages:
   # TODO - Requires user input, implement notifying the user
@@ -10,10 +14,10 @@ stages:
       onerror: continue
     stage-items:
       accept-cookies:
-        search-from:
+        search-from: # /html/body/tiktok-cookie-banner//button[contains(text(), "Accept")]
           shadow-attributes: class=cookie-content
-        # /html/body/tiktok-cookie-banner//button[contains(text(), "Accept")]
-        search-for: //*[contains(text(), "Accept")]
+        search-for: # //*[contains(text(), "Accept")]
+          shadow-attributes: type=button
   login:
     url: https://www.tiktok.com/login/phone-or-email/email
     stage-items:
@@ -31,52 +35,43 @@ stages:
         search-for: //*[@id="loginContainer"]//form/button[contains(text(), "Log")]
         actions:
           - click
-          - wait 30 # !!! USER ASSISTANCE IS REQUIRED TO SOLVE CHALLENGE !!!
+          - wait 10 # Took a while to log in and arrive at target page
   enter-upload-video-details:
     url: https://www.tiktok.com/creator-center/upload?from=upload&lang=en
     stage-items:
-#      click-to-open-upload-dialog:
-#        wait-timeout-seconds: 15
-#        events:
-#          onerror: continue
-#        search-for: //*[@id="root"]/div/div/div/div/div/div/div
       add-upload-file:
-        search-for: //*[@id="root"]/div/div/div/div/div/div/div/input[@type="file"]
+        # <input type="file" accept="video/*" multiple="" class="jsx-3397029100" style="display: none;">
+        search-for: # //*[@id="root"]/div/div/div/div[1]/div/div/div/input
+          - //*[@id="root"]//*[contains(@class, "upload-container")]//input[@type="file"]
+          - //*[@id="root"]//input[@type="file"]
+          - //*[@type="file"]
         actions:
           # Use the first result from the specified pictory download stage
           #- enter_text $results.pictory.download-video-layout-2.save-file[0]
           - get_first_file ${agents.dir}/pictory/results/download-video-layout-2/save-file $video.output.type
           - enter_text $results.me[0]
+          - wait 5 # It takes a while but the default wait will cover the rest
       click-upload-button:
         wait-timeout-seconds: 5
-        search-for: //*[@id="root"]/div/div/div/div/div/div/div/div[1]/div/div/div[3]/div/button[2]
+        search-for:
+#          - //*[@id="root"]/div/div/div/div/div/div/div/div[1]/div/div/div[3]/div/button[2]
+          - //*[@id="root"]//*[@data-tt="Sidebar_index_UploadButtonContainer"]//button[contains(text(), "Upload")]
+          - //*[@id="root"]//button[contains(text(), "Upload")]
       enter-video-caption:
         when:
-          search-for: //*[@id="root"]/div/div/div/div[1]/div[1]/div[2]/button[contains(text(), "Edit")]
+          search-for:
+            - //*[@id="root"]//div[contains(@class, "edit-card")]//button[contains(text(), "Edit video")]
+            - //*[@id="root"]//button[contains(text(), "Edit video")]
           actions: is_displayed
-        search-for: //*[@id="root"]/div/div/div/div[2]/div[2]/div[2]/div[1]/div/div[1]/div[2]/div/div/div/div/div/div/div/div/div/span/span
-        actions:
-          - enter_text $video.description
-# For tiktok, it is better to use the default cover (i.e. first scene), than to upload one
-# Our videos are generated with the first scene having the cover image.
-#  enter-video-cover-image-details:
-#    events:
-#      onerror: continue
-#    stage-items:
-#      proceed-to-edit-video-cover:
-#        search-for: //*[@id="root"]/div/div/div/div[2]/div[2]/div[2]/div[2]/div/div/*[name()="svg"]
-#      select-to-upload-video-cover:
-#        search-for: //*[@id="portal-container"]/div/div/div[1]/div/div[1]/div[contains(text(), "Upload")]
-#      send-video-cover-image:
-#        search-for: //*[@id="uploadTrigger"]
-#        actions:
-#          - enter_text $video.cover.image.square
-#      submit-video-cover-image:
-#        search-for: //*[@id="portal-container"]/div/div/div[1]/div/div[2]/div[4]/button[contains(text(), "Confirm")]
-#        actions:
-#          - click
-#          - wait 5 # The time it takes for the cover image to be uploaded
+        search-for:
+          - //*[@id="root"]//*[starts-with(@class, "DraftEditor-root")]//*[@data-contents="true"]//span[@data-text="true"]
+          - //*[@id="root"]//*[@data-contents="true"]//span[@data-text="true"]
+          - //*[@id="root"]//*[@data-text="true"]
+        actions: enter_text $video.description
   submit-video:
     stage-items:
       click-submit-video:
-        search-for: //*[@id="root"]/div/div/div/div[2]/div[2]/div[2]/div[6]/div[2]/button
+        search-for:
+          - //*[@id="root"]//div[contains(@class, "btn-post")]/button
+          - //*[@id="root"]//*[text()="Post"]//..//..//../button
+          - //*[@id="root"]//*[text()="Post"]

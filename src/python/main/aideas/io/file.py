@@ -70,28 +70,27 @@ def find_parent_dir(path: str,
     return result_if_none
 
 
-def visit_dir(root_src_dir: str,
-              root_dst_dir: str,
-              action: Callable[[str, str], None],
-              test: Union[Callable[[str, str], bool], None] = None):
+def visit_dirs(action: Callable[[str, str], None],
+               root_src_dir: str,
+               root_dst_dir: str = None,
+               test: Union[Callable[[str, str], bool], None] = None):
     """
+    Visits recursively the source directory and performs the action on each file.
+
+    The below code moves all the dir and files from the current directory to the directory ./abc
     highlight:: python
     code-block:: python
-    visit_dir('.', './abc', lambda src, dst: shutil.move(src, dst))
-
-    Moves all the content of the current directory into directory 'abc'
+    visit_dir(lambda src, dst: shutil.move(src, dst), '.', './abc')
     """
-    if root_dst_dir is None or root_src_dir == '':
+    if not root_src_dir:
         raise ValueError("Source directory cannot be none or empty")
-    if root_dst_dir is None or root_dst_dir == '':
-        raise ValueError("Destination directory cannot be none or empty")
     for src_dir, dirs, files in os.walk(root_src_dir):
-        dst_dir = src_dir.replace(root_src_dir, root_dst_dir, 1)
-        if not os.path.exists(dst_dir):
+        dst_dir = None if not root_dst_dir else src_dir.replace(root_src_dir, root_dst_dir, 1)
+        if dst_dir and not os.path.exists(dst_dir):
             os.makedirs(dst_dir)
         for file_ in files:
             src_file = os.path.join(src_dir, file_)
-            dst_file = os.path.join(dst_dir, file_)
+            dst_file = None if not dst_dir else os.path.join(dst_dir, file_)
             if test is None or test(src_file, dst_file):
                 action(src_file, dst_dir)
 

@@ -17,15 +17,32 @@ class WebDriverCreator:
     @staticmethod
     def create(config: dict[str, any]) -> WEB_DRIVER:
         chrome_config = config['browser']['chrome']
-        executable_path: str = chrome_config.get('executable-path')
-        option_args: list[str] = chrome_config['options']['args']
+
+        executable_path: str = Env.get_path(Env.BROWSER_CHROME_EXECUTABLE_PATH)
+
+        option_args: list[str] = chrome_config.get('options', {}).get('args', [])
+        env_opt_args: list[str] = [
+            Env.get_value(Env.BROWSER_CHROME_OPTIONS_ARGS_USER_DATA_DIR),
+            Env.get_value(Env.BROWSER_CHROME_OPTIONS_ARGS_PROFILE_DIRECTORY)
+        ]
+        for env_opt_arg in env_opt_args:
+            if not env_opt_arg:
+                continue
+            if env_opt_arg in option_args:
+                option_args[option_args.index(env_opt_arg)] = env_opt_arg
+            else:
+                option_args.append(env_opt_arg)
+
         preferences = {}
         preferences.update(chrome_config.get('prefs', {}))
-        output_dir = os.path.join(os.getcwd(), os.environ[Env.VIDEO_OUTPUT_DIR.value])
+        output_dir = Env.require_path(Env.VIDEO_OUTPUT_DIR)
         preferences.update({'download.default_directory': output_dir})
+
         undetected: bool = chrome_config.get('undetected', False)
+
         remote_dvr_location: str = config['selenium.webdriver.url'] \
             if 'selenium.webdriver.url' in config else None
+
         return WebDriverCreator.__create(
             executable_path, option_args, preferences, undetected, remote_dvr_location)
 
@@ -53,7 +70,7 @@ class WebDriverCreator:
             if undetected:
                 logger.debug("Undetected ChromeDriver will be used")
                 # See https://github.com/ultrafunkamsterdam/undetected-chromedriver
-                return uc.Chrome(use_subprocess=False)
+                return uc.Chrome(options=options, use_subprocess=False)
 
             logger.debug("ChromeDriver will be used")
             service = webdriver.ChromeService(executable_path=executable_path)
