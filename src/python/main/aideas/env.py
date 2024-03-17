@@ -61,6 +61,7 @@ class Env(Enum):
     GITHUB_TOKEN = f'{_github}.token'
 
     BLOG_ENV_FILE = f'{_blog}.env.file'
+    BLOG_APP_DIR = f'{_blog}.app.dir'
 
     BROWSER_CHROME_EXECUTABLE_PATH = f'{_browser_chrome}.executable-path'
     BROWSER_CHROME_OPTIONS_ARGS_USER_DATA_DIR = f'{_browser_chrome}.options.args.user-data-dir'
@@ -76,6 +77,7 @@ class Env(Enum):
             Env.VIDEO_COVER_IMAGE,
             Env.VIDEO_COVER_IMAGE_SQUARE,
             Env.BLOG_ENV_FILE,
+            Env.BLOG_APP_DIR,
             Env.BROWSER_CHROME_EXECUTABLE_PATH,
             Env.BROWSER_CHROME_OPTIONS_ARGS_USER_DATA_DIR
         ]

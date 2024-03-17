@@ -1,4 +1,3 @@
-dir: /Users/chinomso/dev_chinomso/automate-idea-to-social/src/downloads
 app:
   name: automate-jamstack
   version: 0.0.7
@@ -7,23 +6,23 @@ app:
   source:
     url: https://github.com/poshjosh/${self.app.name}/archive/refs/tags/v${self.app.version}.zip
   target:
-    dir: ${self.dir}/app
+    dir: ${blog.app.dir}/app
   base:
     # Downloading and extracting app.source.url will create this directory
-    dir: ${self.dir}/app/${self.app.name}-${self.app.version}
+    dir: ${blog.app.dir}/app/${self.app.name}-${self.app.version}
   script:
-    convert-to-markdown: ${self.dir}/app/${self.app.name}-${self.app.version}/scripts/convert-to-markdown.sh
-    update-blog: ${self.dir}/app/${self.app.name}-${self.app.version}/scripts/docker-run-app.sh
-    docker-entrypoint: ${self.dir}/app/${self.app.name}-${self.app.version}/app/config/setup-scripts/docker-entrypoint.sh
+    convert-to-markdown: ${blog.app.dir}/app/${self.app.name}-${self.app.version}/scripts/convert-to-markdown.sh
+    update-blog: ${blog.app.dir}/app/${self.app.name}-${self.app.version}/scripts/docker-run-app.sh
+    docker-entrypoint: ${blog.app.dir}/app/${self.app.name}-${self.app.version}/app/config/setup-scripts/docker-entrypoint.sh
 blog:
   name: liveabove3d.com
   source:
     url: https://github.com/poshjosh/${self.blog.name}.git
   target:
-    dir: ${self.dir}/blog
+    dir: ${blog.app.dir}/blog
   base:
     # git clone blog.src.url will create this directory
-    dir: ${self.dir}/blog/${self.blog.name}
+    dir: ${blog.app.dir}/blog/${self.blog.name}
 stages:
   download-app:
   clone-blog:
