@@ -116,7 +116,7 @@ class BrowserAgent(Agent):
         return ElementResultSet.none() if result is None else result
 
     def __sleep(self):
-        if self.__interval_seconds < 1:
+        if self.__interval_seconds <= 0:
             return
         time.sleep(self.__interval_seconds)
 
