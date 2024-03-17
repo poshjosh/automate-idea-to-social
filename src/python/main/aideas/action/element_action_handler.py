@@ -27,8 +27,8 @@ class ElementActionId(BaseActionId):
     GET_ATTRIBUTE = 'get_attribute'
     GET_TEXT = 'get_text'
     IS_DISPLAYED = 'is_displayed'
-    MOVE_TO_CENTER_OFFSET = ('move_to_center_offset', False)
     MOVE_TO_ELEMENT = ('move_to_element', False)
+    MOVE_TO_OFFSET = ('move_to_offset', False)
     RELEASE = ('release', False)
     SEND_KEYS = ('send_keys', False)
 
@@ -111,19 +111,28 @@ class ElementActionHandler(BrowserActionHandler):
         elif key == 'is_displayed':
             success = element.is_displayed()
             result = ActionResult(action, success, success)
-        elif key == 'move_to_center_offset':
-            offset: Tuple[int, int] = self.__get_offset(action.get_args())
-
-            def move_to_center_offset(tgt: WebElement):
-                ActionChains(driver).move_to_element_with_offset(
-                    tgt, offset[0], offset[1]).perform()
-
-            result = execute_for_result(move_to_center_offset, element, action)
         elif key == 'move_to_element':
             def move_to_element(tgt: WebElement):
                 ActionChains(driver).move_to_element(tgt).perform()
 
             result = execute_for_result(move_to_element, element, action)
+        elif key == 'move_to_offset':
+            start: str = action.get_first_arg()
+            if not start:
+                raise ValueError("No start point provided for move_to_offset")
+
+            offset_from_center: Tuple[int, int] = (0, 0) if start == 'center' \
+                else self.__compute_offset_relative_to_center(element, start)
+
+            additional_offset: Tuple[int, int] = self.__get_offset(action.get_args()[1:])
+            logger.debug(f"Will first move from center of element by: {offset_from_center}, "
+                         f"then move additionally by: {additional_offset}")
+
+            # We add the offset provided by the user
+            x = offset_from_center[0] + additional_offset[0]
+            y = offset_from_center[1] + additional_offset[1]
+
+            result = self.move_to_center_offset(element, (x, y), action)
         elif key == 'release':
             def release(tgt: WebElement):
                 ActionChains(driver).release(tgt).perform()
@@ -142,6 +151,38 @@ class ElementActionHandler(BrowserActionHandler):
         logger.debug(f'{result}')
         return result
 
+    def move_to_center_offset(self, element: WebElement, offset: Tuple[int, int], action: Action):
+        def move_to_element_with_offset(tgt: WebElement):
+            logger.debug(f"Moving to center offset by: {offset} of element: {element}")
+            ActionChains(self.get_web_driver()).move_to_element_with_offset(
+                tgt, offset[0], offset[1]).perform()
+        return execute_for_result(move_to_element_with_offset, element, action)
+
+    @staticmethod
+    def __compute_offset_relative_to_center(element: WebElement, start: str) -> Tuple[int, int]:
+        size = element.size
+        width = size['width']
+        height = size['height']
+
+        half_w = width/2
+        half_h = height/2
+
+        # We calculate how much to move from the center of the element to these positions
+        if start == "top-left":
+            point = -half_w, half_h
+        elif start == "top-right":
+            point = half_w, half_h
+        elif start == "bottom-left":
+            point = -half_w, -half_h
+        elif start == "bottom-right":
+            point = half_w, -half_h
+        else:
+            raise ValueError(f"Invalid start point: {start}")
+
+        return int(point[0]), int(point[1])
+
     @staticmethod
     def __get_offset(args: list[str]) -> Tuple[int, int]:
-        return int(args[0]), int(args[1])
+        x = 0 if not args else int(args[0])
+        y = 0 if len(args) < 2 else int(args[1])
+        return x, y

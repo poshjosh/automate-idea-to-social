@@ -100,10 +100,12 @@ class ActionHandler:
     @staticmethod
     def wait(action: Action) -> ActionResult:
         arg: str = action.require_first_arg()
-        timeout: int = int(arg)
-        if timeout <= 0:
+        timeout: float = float(arg)
+        if timeout < 0:
             raise ValueError(f'Invalid wait timeout: {timeout}')
         logger.debug(f'Waiting for {timeout} seconds')
+        if timeout == 0:
+            return ActionResult(action, True)
         time.sleep(timeout)
         return ActionResult(action, True)
 

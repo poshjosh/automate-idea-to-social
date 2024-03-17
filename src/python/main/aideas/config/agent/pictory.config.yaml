@@ -134,9 +134,10 @@ stages:
       select-brand-voice:
         search-for: //*[@id="step-3-fixed-height"]//span[contains(text(), "${pictory.voice.name}")]//..
         actions:
-          - move_to_center_offset 18 18
+          - move_to_offset bottom-right -5 6
+          - wait 10
           - click_and_hold_current_position
-          - wait 1
+          - wait 0.5
           - release
           # After clicking an alert is displayed for a few seconds informing us of changes
           # After the first alert another is displayed when the changes have been applied
@@ -145,7 +146,7 @@ stages:
         events:
           onerror: continue
         # There will be some default waiting for this element to appear
-        wait-timeout-seconds: 90 # TODO CHANGE TO 120
+        wait-timeout-seconds: 60 # TODO CHANGE TO 90
         search-for: //*[contains(text(), "Voiceover applied")]
   download-video:
     stage-items:
