@@ -43,13 +43,9 @@ class App:
 
         for agent_name in run_context.get_agent_names():
             agent = self.__agent_factory.get_agent(agent_name)
-            logger.debug(f"Starting agent: {agent_name}")
 
             stage_result_set = agent.run(run_context)
             self.__save_agent_results(agent_name, stage_result_set)
-
-            logger.debug(f"Agent: {agent_name}, "
-                         f"result:\n{run_context.get_stage_results(agent_name)}")
 
         return run_context.get_result_set().close()
 

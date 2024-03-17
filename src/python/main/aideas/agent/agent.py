@@ -35,6 +35,7 @@ class Agent:
 
     def run(self, run_context: RunContext) -> StageResultSet:
         """Run all the stages of the agent and return True if successful, False otherwise."""
+        logger.debug(f"Starting agent: {self.get_name()}")
         try:
 
             self.__clear_dirs()
@@ -51,6 +52,8 @@ class Agent:
                 self.close()
             except Exception as ex:
                 logger.warning(f"Error closing agent: {self.__name}. {ex}")
+            logger.debug(f"Agent: {self.get_name()}, "
+                         f"results:\n{run_context.get_stage_results(self.get_name())}")
 
     def close(self):
         """Subclasses should implement this method as needed"""
@@ -117,5 +120,6 @@ class Agent:
             if os.path.exists(dir_to_clear):
                 shutil.rmtree(dir_to_clear)
                 logger.debug(f"Successfully removed dir: {dir_to_clear}")
+            if not os.path.exists(dir_to_clear):
                 os.makedirs(dir_to_clear)
                 logger.debug(f"Successfully created  dir: {dir_to_clear}")
