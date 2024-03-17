@@ -109,12 +109,35 @@ stages:
           - //*[@id="tbinner-3"]//div[@role="rowgroup"]/div[2]/div/div[1]/a
           - //*[@id="tbinner-3"]//div[@role="rowgroup"]/div[2]/div/div[1]/a/div
           - //*[@id="tbinner-3"]//div[@role="rowgroup"]/div[2]/div/div[1]/a/div/img
+  audio:
+    event:
+      onerror: continue
+    stage-items:
+      select-audio-tab:
+        search-for:
+          - //*[@id="side-navbar"]/ul/li/a/*[contains(text(), "Audio")]//..
+          - //*[@id="side-navbar"]//*[contains(text(), "Audio")]//..
+      select-volume:
+        search-for:
+          - //*[@id="step-3-fixed-height"]//div[@role="tablist"]/button[contains(text(), "Volume")]
+          - //*[@id="step-3-fixed-height"]//*[contains(text(), "Volume")]
+      move-volume-slider:
+        search-for:
+          - //*[@id="bgMusicVolPercent"]
+          - //*[@id="voice-tabpanel-settings"]//div[contains(@class, "volume-slider")]
+        actions:
+          - move_to_offset bottom-left 10% 20%
+          - wait 2
+          - click_and_hold_current_position
+          - wait 1
+          - release
   branding:
     stage-items:
       branding-tab:
-        search-for: //*[@id="templates-tab"]
-        actions:
-          - click
+        search-for:
+          - //*[@id="templates-tab"]
+          - //*[@id="side-navbar"]/ul/li/a/*[contains(text(), "Branding")]//..
+          - //*[@id="side-navbar"]//*[contains(text(), "Branding")]//..
       expand-brand-options:
         search-for: //*[@id="step-3-fixed-height"]/div[1]/div/div[6]/div/div[1]/div[1]/div/div/div
       select-brand:
@@ -135,7 +158,7 @@ stages:
         search-for: //*[@id="step-3-fixed-height"]//span[contains(text(), "${pictory.voice.name}")]//..
         actions:
           - move_to_offset bottom-right -5 6
-          - wait 10
+          - wait 1
           - click_and_hold_current_position
           - wait 0.5
           - release
@@ -146,8 +169,9 @@ stages:
         events:
           onerror: continue
         # There will be some default waiting for this element to appear
-        wait-timeout-seconds: 60 # TODO CHANGE TO 90
+        wait-timeout-seconds: 120
         search-for: //*[contains(text(), "Voiceover applied")]
+        actions: wait 2
   download-video:
     stage-items:
       expand-download-options:
@@ -195,7 +219,7 @@ stages:
         # E.g. main/resources/agent/pictory/results/save-downloaded-video/save-file/original.mp4
         actions:
           - wait 10 # Wait to make sure the file is downloaded
-          - get_newest_file_in_dir $video.output.dir $video.output.type 120
+          - get_newest_file_in_dir ${video.output.dir}/pictory $video.output.type 120
           - save_file $results.me[1]
   download-video-layout-2:
     events:

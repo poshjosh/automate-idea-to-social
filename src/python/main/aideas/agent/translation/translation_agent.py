@@ -1,5 +1,7 @@
 import glob
 import logging
+import os.path
+import shutil
 
 import webvtt
 
@@ -34,15 +36,22 @@ class TranslationAgent(Agent):
                   run_context: RunContext,
                   stage: Name) -> ElementResultSet:
         file_type = run_context.get_env(Env.TRANSLATION_FILE_EXTENSION)
-        dir_path: str = run_context.get_env(Env.VIDEO_OUTPUT_DIR)
+        pictory_output_dir: str = self.get_output_dir(AgentName.PICTORY)
+        src_files = [f for f in glob.glob(f'{pictory_output_dir}/*.{file_type}')]
+
         target_languages_str: str = run_context.get_env(Env.TRANSLATION_OUTPUT_LANGUAGES)
         target_language_codes: [str] = target_languages_str.split(',')
-        filepaths = [f for f in glob.glob(f'{dir_path}/*.{file_type}')]
         logger.debug(f'Output languages: {target_language_codes}, '
-                     f'dir: {dir_path}, files: {filepaths}')
-        for filepath in filepaths:
+                     f'files: {len(src_files)}, dir: {pictory_output_dir}')
+
+        results_dir: str = self.get_results_dir()
+        for src_file in src_files:
+            tgt_file = os.path.join(results_dir, os.path.basename(src_file))
+            shutil.copy2(src_file, tgt_file)
+            logger.debug(f"Copied to: {tgt_file} from: {src_file}")
             self.__translate_all(
-                stage.get_id(), filepath, target_language_codes, run_context)
+                stage.get_id(), tgt_file, target_language_codes, run_context)
+
         return run_context.get_element_results(self.get_name(), stage.get_id())
 
     def __translate_all(self,
@@ -81,7 +90,7 @@ class TranslationAgent(Agent):
         subtitles_list = subtitle_read(filename_in)
         grouped_list = grouping_subtitle(subtitles_list)
 
-        self.__print_subtitles(grouped_list)
+        self.__print_subtitles_if_verbose(grouped_list)
 
         q = (c.text for c in grouped_list)
 
@@ -90,10 +99,9 @@ class TranslationAgent(Agent):
         for group_capt, translated_row in zip(grouped_list, translated_result):
             group_capt.text = translated_row
 
-        # Will be printed only if debug is true
-        self.__print_subtitles(grouped_list)
+        self.__print_subtitles_if_verbose(grouped_list)
 
-        self.__save_subtitles(filename_out, grouped_list)
+        subtitle_save(filename_out, grouped_list)
 
         logger.debug(f'{to_lang} translated to: {filename_out}, from: {filename_in}')
 
@@ -101,14 +109,10 @@ class TranslationAgent(Agent):
                         subtitles_list_1: list[webvtt.Caption],
                         subtitles_list_2: list[webvtt.Caption]) -> list[webvtt.Caption]:
         dual_lang_subtitles = mix_subtitles(subtitles_list_1, subtitles_list_2)
-        self.__print_subtitles(dual_lang_subtitles)
+        self.__print_subtitles_if_verbose(dual_lang_subtitles)
         return dual_lang_subtitles
 
-    def __save_subtitles(self, filename: str, subtitles_list: list[webvtt.Caption]):
-        subtitle_save(filename, subtitles_list)
-        logger.debug("Saved subtitles to: " + filename)
-
-    def __print_subtitles(self, subtitles_list: list[webvtt.Caption], title: str = ""):
+    def __print_subtitles_if_verbose(self, subtitles_list: list[webvtt.Caption], title: str = ""):
         if self.__verbose is not True:
             return
         print(title)

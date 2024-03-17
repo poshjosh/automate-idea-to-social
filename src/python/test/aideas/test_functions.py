@@ -29,10 +29,12 @@ def __get_logging_config() -> dict[str, any]:
     }
 
 
-def create_webdriver(config: Union[dict, None] = None) -> webdriver:
+def create_webdriver(config: Union[dict, None] = None, agent_name: str = None) -> webdriver:
     if config is None:
         config = get_config_loader().load_app_config()
-    return WebDriverCreator.create(config)
+    if not agent_name:
+        agent_name = "text-agent"
+    return WebDriverCreator.create(config, agent_name)
 
 
 def get_agent_resource(agent_name: str, file_name: str) -> str:

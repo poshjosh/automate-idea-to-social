@@ -5,6 +5,7 @@ from collections import OrderedDict
 
 from ..action.action import get_results_dir
 from ..config import AgentConfig, Name
+from ..env import Env
 from ..result.result_set import ElementResultSet, StageResultSet
 from ..run_context import RunContext
 
@@ -36,10 +37,7 @@ class Agent:
         """Run all the stages of the agent and return True if successful, False otherwise."""
         try:
 
-            results_dir = get_results_dir(self.get_name())
-            if os.path.exists(results_dir):
-                shutil.rmtree(results_dir)
-                logger.debug(f"Successfully removed dir tree: {results_dir}")
+            self.__clear_dirs()
 
             self.__config = AgentConfig(
                 run_context.replace_variables(self.__name, self.__config.root()))
@@ -102,3 +100,22 @@ class Agent:
 
     def get_dependency(self, agent_name: str) -> 'Agent':
         return self.__dependencies[agent_name]
+
+    def get_results_dir(self, agent_name: str = None):
+        if not agent_name:
+            agent_name = self.get_name()
+        return get_results_dir(agent_name)
+
+    def get_output_dir(self, agent_name: str = None):
+        if not agent_name:
+            agent_name = self.get_name()
+        return os.path.join(Env.require_path(Env.VIDEO_OUTPUT_DIR), agent_name)
+
+    def __clear_dirs(self):
+        dirs_to_clear = [self.get_results_dir(), self.get_output_dir()]
+        for dir_to_clear in dirs_to_clear:
+            if os.path.exists(dir_to_clear):
+                shutil.rmtree(dir_to_clear)
+                logger.debug(f"Successfully removed dir: {dir_to_clear}")
+                os.makedirs(dir_to_clear)
+                logger.debug(f"Successfully created  dir: {dir_to_clear}")

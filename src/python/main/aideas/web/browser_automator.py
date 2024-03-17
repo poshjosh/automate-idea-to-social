@@ -25,7 +25,7 @@ class BrowserAutomator:
            agent_config: dict[str, any] = None) -> 'BrowserAutomator':
         # app_config['browser'].update(agent_config.get('browser', {}))
         BrowserAutomator._update(agent_config.get('browser', {}), app_config['browser'])
-        web_driver = WebDriverCreator.create(app_config)
+        web_driver = WebDriverCreator.create(app_config, agent_name)
         wait_timeout_seconds = app_config['browser']['chrome'].get(TIMEOUT_KEY, 20)
         action_handler = ElementActionHandler(web_driver, wait_timeout_seconds)
         event_handler = EventHandler(action_handler)

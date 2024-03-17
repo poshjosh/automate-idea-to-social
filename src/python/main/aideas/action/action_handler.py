@@ -45,7 +45,7 @@ class ActionId(BaseActionId):
     GET_FILE_CONTENT = 'get_file_content'
     GET_FILES = 'get_files'
     GET_FIRST_FILE = 'get_first_file'
-    GET_NEWEST_FILE = 'get_newest_file_in_dir'
+    GET_NEWEST_FILE_IN_DIR = 'get_newest_file_in_dir'
     LOG = 'log'
     SAVE_FILE = 'save_file'
     SAVE_TO_FILE = 'save_to_file'
@@ -80,7 +80,7 @@ class ActionHandler:
             result: ActionResult = self.get_files(action)
         elif key == ActionId.GET_FIRST_FILE.value:
             result: ActionResult = self.get_first_file(action)
-        elif key == ActionId.GET_NEWEST_FILE.value:
+        elif key == ActionId.GET_NEWEST_FILE_IN_DIR.value:
             result: ActionResult = self.get_newest_file_in_dir(action)
         elif key == ActionId.LOG.value:
             result: ActionResult = self.log(action)

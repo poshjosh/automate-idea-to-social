@@ -99,9 +99,12 @@ class Env(Enum):
         return os.environ.get(env.value, default)
 
     @staticmethod
-    def get_path(env: 'Env', default: any = None) -> any:
+    def get_path(env: 'Env', extra: str = None, default: any = None) -> any:
         path = Env.get_value(env)
-        return default if not path else os.path.join(os.getcwd(), path)
+        if not path:
+            return default
+        return os.path.join(os.getcwd(), path) if not extra \
+            else os.path.join(os.getcwd(), path, extra)
 
     @staticmethod
     def require_path(env: 'Env'):

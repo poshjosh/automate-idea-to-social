@@ -124,7 +124,8 @@ class ElementActionHandler(BrowserActionHandler):
             offset_from_center: Tuple[int, int] = (0, 0) if start == 'center' \
                 else self.__compute_offset_relative_to_center(element, start)
 
-            additional_offset: Tuple[int, int] = self.__get_offset(action.get_args()[1:])
+            additional_offset: Tuple[int, int] = (
+                self.__compute_additional_offset(element, action.get_args()[1:]))
             logger.debug(f"Will first move from center of element by: {offset_from_center}, "
                          f"then move additionally by: {additional_offset}")
 
@@ -182,7 +183,37 @@ class ElementActionHandler(BrowserActionHandler):
         return int(point[0]), int(point[1])
 
     @staticmethod
-    def __get_offset(args: list[str]) -> Tuple[int, int]:
-        x = 0 if not args else int(args[0])
-        y = 0 if len(args) < 2 else int(args[1])
+    def __compute_additional_offset(element: WebElement, args: list[str]) -> Tuple[int, int]:
+        x: Tuple[int, str] = (
+            ElementActionHandler.__split_to_value_and_units(args[0] if args else None))
+        y: Tuple[int, str] = (
+            ElementActionHandler.__split_to_value_and_units(args[1] if len(args) > 1 else None))
+        return ElementActionHandler.__compute_offset(element, x, y)
+
+    @staticmethod
+    def __compute_offset(element: WebElement, x: Tuple[int, str], y: Tuple[int, str]) -> Tuple[int, int]:
+        if x[1] == 'px':
+            x = x[0]
+        elif x[1] == '%':
+            width = element.size['width']
+            x = int(width * x[0] / 100)
+        else:
+            raise ValueError(f"Invalid unit: {x[0]}{x[1]}")
+        if y[1] == 'px':
+            y = y[0]
+        elif y[1] == '%':
+            height = element.size['height']
+            y = int(height * y[0] / 100)
+        else:
+            raise ValueError(f"Invalid unit: {y[0]}{y[1]}")
         return x, y
+
+    @staticmethod
+    def __split_to_value_and_units(text: str) -> Tuple[int, str]:
+        if text and text.endswith('px'):
+            return int(text[:-2]), 'px'
+        if text and text.endswith('%'):
+            return int(text[:-1]), '%'
+        if text:
+            return int(text), 'px'
+        return 0, 'px'

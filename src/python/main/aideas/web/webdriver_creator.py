@@ -15,14 +15,14 @@ WEB_DRIVER = TypeVar("WEB_DRIVER", bound=Union[webdriver.Chrome, webdriver.Remot
 
 class WebDriverCreator:
     @staticmethod
-    def create(config: dict[str, any]) -> WEB_DRIVER:
+    def create(config: dict[str, any], agent_name: str) -> WEB_DRIVER:
         chrome_config = config['browser']['chrome']
 
         executable_path: str = Env.get_path(Env.BROWSER_CHROME_EXECUTABLE_PATH)
 
         option_args: list[str] = chrome_config.get('options', {}).get('args', [])
         env_opt_args: list[str] = [
-            Env.get_value(Env.BROWSER_CHROME_OPTIONS_ARGS_USER_DATA_DIR),
+            Env.get_path(Env.BROWSER_CHROME_OPTIONS_ARGS_USER_DATA_DIR),
             Env.get_value(Env.BROWSER_CHROME_OPTIONS_ARGS_PROFILE_DIRECTORY)
         ]
         for env_opt_arg in env_opt_args:
@@ -35,7 +35,10 @@ class WebDriverCreator:
 
         preferences = {}
         preferences.update(chrome_config.get('prefs', {}))
-        output_dir = Env.require_path(Env.VIDEO_OUTPUT_DIR)
+        output_dir = os.path.join(Env.require_path(Env.VIDEO_OUTPUT_DIR), agent_name)
+        if os.path.exists(output_dir) is False:
+            os.makedirs(output_dir)
+            logger.debug(f"Created dirs: {output_dir}")
         preferences.update({'download.default_directory': output_dir})
 
         undetected: bool = chrome_config.get('undetected', False)
@@ -63,8 +66,6 @@ class WebDriverCreator:
         if prefs is not None and undetected is False:
             options.add_experimental_option("prefs", prefs)
 
-        # options.add_experimental_option("excludeSwitches", ["enable-automation"])
-        # options.add_experimental_option('useAutomationExtension', False)
         if remote_browser_location is None or remote_browser_location == '':
 
             if undetected:
