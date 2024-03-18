@@ -3,11 +3,10 @@
 interval-seconds: 1
 browser:
   chrome:
-    # Without this TikTok asked us to solve some anti-bot challenge
-    # We also had to use a chrome profile to prevent the challenge
+    # Without these 2, TikTok asked us to solve some anti-bot challenge
     undetected: true
+    use-profile: true
 stages:
-  # TODO - Requires user input, implement notifying the user
   pre-login:
     url: https://www.tiktok.com/login/phone-or-email/email
     events:

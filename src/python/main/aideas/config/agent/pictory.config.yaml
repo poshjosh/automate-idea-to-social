@@ -41,7 +41,7 @@ stages:
           - //*[@id="root"]/div[1]/div[3]/div/main/div/div/div[5]
           - //*[@id="root"]/div[1]/div[4]/div/main/div/div/div[5]
         actions:
-          - enter_text $video.description
+          - enter_text $video.input.text
           # Without this we got redirected back probably because
           # submit button is only enabled a short while after entering text
           - wait 5
@@ -83,9 +83,8 @@ stages:
           - //*[@role="tablist"]//button[contains(text(), "uploads")]
       enter-cover-image:
         search-for:
-          - //form[starts-wth(@class, "upload-")]//*[@id="file"]
           - //*[@id="file"]
-          - //*[@id="tbinner-3"]/div/div[2]/div/div[1]/div/div/div[1]/form/div/input[@type="file"]
+          - //*[@id="tbinner-3"]//form/div/input[@type="file"]
         actions:
           - enter_text $video.cover.image
           - wait 2
@@ -130,7 +129,7 @@ stages:
           - wait 2
           - click_and_hold_current_position
           - wait 1
-          - release
+          - release false
   branding:
     stage-items:
       branding-tab:
@@ -161,7 +160,7 @@ stages:
           - wait 1
           - click_and_hold_current_position
           - wait 0.5
-          - release
+          - release false
           # After clicking an alert is displayed for a few seconds informing us of changes
           # After the first alert another is displayed when the changes have been applied
           # The second alert is handled by the next target

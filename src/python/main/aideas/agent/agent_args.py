@@ -1,6 +1,6 @@
 import os
 
-from ..env import Env
+from ..env import Env, get_video_file, require_path
 
 
 class AgentArgs:
@@ -23,12 +23,20 @@ class AgentArgs:
 
         result.update(Env.collect())
 
-        video_input_file = Env.require_path(Env.VIDEO_INPUT_FILE)
+        if not result.get(Env.VIDEO_INPUT_TEXT.value):
+            result[Env.VIDEO_INPUT_TEXT.value] = self.read_file(require_path(Env.VIDEO_INPUT_FILE))
+
+        video_content_file = get_video_file()
+        result[Env.VIDEO_CONTENT_FILE.value] = video_content_file
+
         if not result.get(Env.VIDEO_TILE.value):
-            result[Env.VIDEO_TILE.value] = os.path.basename(video_input_file).split('.')[0]
+            result[Env.VIDEO_TILE.value] = os.path.basename(video_content_file).split('.')[0]
+
         if not result.get(Env.VIDEO_DESCRIPTION.value):
-            file_content = self.read_file(video_input_file)
-            result[Env.VIDEO_DESCRIPTION.value] = file_content
+            result[Env.VIDEO_DESCRIPTION.value] = self.read_file(video_content_file)
+
+        if not result.get(Env.VIDEO_COVER_IMAGE_SQUARE.value):
+            result[Env.VIDEO_COVER_IMAGE_SQUARE.value] = result.get(Env.VIDEO_COVER_IMAGE.value)
 
         return result
 

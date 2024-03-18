@@ -1,4 +1,5 @@
 import logging
+import os.path
 from enum import unique
 from typing import TypeVar, Union
 
@@ -12,6 +13,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 from ..action.action import Action
 from ..action.action_handler import ActionHandler, execute_for_result, BaseActionId
 from ..action.action_result import ActionResult
+from ..env import get_cookies_file_path
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +24,7 @@ ALERT_ACTION = TypeVar("ALERT_ACTION", bound=Union['accept', 'dismiss'])
 @unique
 class BrowserActionId(BaseActionId):
     ACCEPT_ALERT = ('accept_alert', False)
+    DELETE_COOKIES = ('delete_cookies', False)
     DISMISS_ALERT = ('dismiss_alert', False)
     EXECUTE_SCRIPT = 'execute_script'
     EXECUTE_SCRIPT_ON = 'execute_script_on'
@@ -50,6 +53,8 @@ class BrowserActionHandler(ActionHandler):
     def _execute(self, key: str, action: Action) -> ActionResult:
         if key.endswith('alert'):  # accept_alert|dismiss_alert
             result = self.__handle_alert(action)
+        elif key == BrowserActionId.DELETE_COOKIES.value:
+            result = self.__delete_cookies(action)
         elif key == BrowserActionId.EXECUTE_SCRIPT.value:
             result = self.__execute_script(action)
         elif key == BrowserActionId.EXECUTE_SCRIPT_ON.value:
@@ -60,12 +65,6 @@ class BrowserActionHandler(ActionHandler):
             return super()._execute(key, action)
         logger.debug(f'{result}')
         return result
-
-    def get_web_driver(self) -> WEB_DRIVER:
-        return self.__web_driver
-
-    def get_wait_timeout_seconds(self) -> float:
-        return self.__wait_timeout_seconds
 
     def __handle_alert(self, action: Action) -> ActionResult:
         how: str = action.get_name().split("_")[0]  # accept|dismiss
@@ -86,6 +85,15 @@ class BrowserActionHandler(ActionHandler):
 
         return ActionResult(action, True)
 
+    def __delete_cookies(self, action: Action) -> ActionResult:
+        def delete_all_cookies(file):
+            self.__web_driver.delete_all_cookies()
+            if os.path.exists(file):
+                os.remove(file)
+                logger.debug(f"Deleted cookies file: {file}")
+        cookies_file = get_cookies_file_path(action.get_agent_name())
+        return execute_for_result(delete_all_cookies, cookies_file, action)
+
     def __execute_script(self, action: Action) -> ActionResult:
         def execute(script: str):
             return self.__web_driver.execute_script(script)
@@ -104,3 +112,9 @@ class BrowserActionHandler(ActionHandler):
     def __refresh(self, action: Action) -> ActionResult:
         self.__web_driver.refresh()
         return ActionResult(action, True)
+
+    def get_web_driver(self) -> WEB_DRIVER:
+        return self.__web_driver
+
+    def get_wait_timeout_seconds(self) -> float:
+        return self.__wait_timeout_seconds

@@ -85,47 +85,49 @@ class ElementActionHandler(BrowserActionHandler):
                 tgt.clear()  # May not work under certain conditions, so we try the following
 
             result = execute_for_result(clear_text, element, action)
-        elif key == 'click':
+        elif key == ElementActionId.CLICK.value:
             result = execute_for_result(lambda arg: arg.click(), element, action)
-        elif key == 'click_and_hold':
+        elif key == ElementActionId.CLICK_AND_HOLD.value:
             def click_and_hold(tgt: WebElement):
                 ActionChains(driver).click_and_hold(tgt).perform()
 
             result = execute_for_result(click_and_hold, element, action)
-        elif key == 'click_and_hold_current_position':
+        elif key == ElementActionId.CLICK_AND_HOLD_CURRENT_POSITION.value:
             def click_and_hold_current_position(_: WebElement):
                 ActionChains(driver).click_and_hold(None).perform()
 
             result = execute_for_result(click_and_hold_current_position, element, action)
-        elif key == 'enter':
+        elif key == ElementActionId.ENTER.value:
             result = execute_for_result(lambda arg: arg.send_keys(Keys.ENTER), element, action)
-        elif key == 'enter_text':
+        elif key == ElementActionId.ENTER_TEXT.value:
             text: str = ' '.join(action.get_args())
             result = execute_for_result(lambda arg: arg.send_keys(text), element, action)
-        elif key == 'get_attribute':
+        elif key == ElementActionId.GET_ATTRIBUTE.value:
             attr_name = action.get_first_arg()
             result = execute_for_result(lambda arg: element.get_attribute(arg), attr_name, action)
-        elif key == 'get_text':
+        elif key == ElementActionId.GET_TEXT.value:
             text = element.text
             result = ActionResult(action, True, text if not text else text.strip())
-        elif key == 'is_displayed':
+        elif key == ElementActionId.IS_DISPLAYED.value:
             success = element.is_displayed()
             result = ActionResult(action, success, success)
-        elif key == 'move_to_element':
+        elif key == ElementActionId.MOVE_TO_ELEMENT.value:
             def move_to_element(tgt: WebElement):
                 ActionChains(driver).move_to_element(tgt).perform()
 
             result = execute_for_result(move_to_element, element, action)
-        elif key == 'move_to_offset':
+        elif key == ElementActionId.MOVE_TO_OFFSET.value:
             start: str = action.get_first_arg()
             if not start:
                 raise ValueError("No start point provided for move_to_offset")
 
+            element_size: dict = element.size
+
             offset_from_center: Tuple[int, int] = (0, 0) if start == 'center' \
-                else self.__compute_offset_relative_to_center(element, start)
+                else self.__compute_offset_relative_to_center(element_size, start)
 
             additional_offset: Tuple[int, int] = (
-                self.__compute_additional_offset(element, action.get_args()[1:]))
+                self.__compute_additional_offset(element_size, action.get_args()[1:]))
             logger.debug(f"Will first move from center of element by: {offset_from_center}, "
                          f"then move additionally by: {additional_offset}")
 
@@ -134,12 +136,14 @@ class ElementActionHandler(BrowserActionHandler):
             y = offset_from_center[1] + additional_offset[1]
 
             result = self.move_to_center_offset(element, (x, y), action)
-        elif key == 'release':
-            def release(tgt: WebElement):
-                ActionChains(driver).release(tgt).perform()
+        elif key == ElementActionId.RELEASE.value:
+            def release(on_element: bool):
+                ActionChains(driver).release(element if on_element is True else None).perform()
 
-            result = execute_for_result(release, element, action)
-        elif key == 'send_keys':
+            sval: str = action.get_first_arg()
+            release_on_element = False if not sval else bool(sval)
+            result = execute_for_result(release, release_on_element, action)
+        elif key == ElementActionId.SEND_KEYS.value:
             def send_keys(txt: str):
                 for char in txt:
                     element.send_keys(char)
@@ -160,8 +164,7 @@ class ElementActionHandler(BrowserActionHandler):
         return execute_for_result(move_to_element_with_offset, element, action)
 
     @staticmethod
-    def __compute_offset_relative_to_center(element: WebElement, start: str) -> Tuple[int, int]:
-        size = element.size
+    def __compute_offset_relative_to_center(size: dict, start: str) -> Tuple[int, int]:
         width = size['width']
         height = size['height']
 
@@ -183,26 +186,27 @@ class ElementActionHandler(BrowserActionHandler):
         return int(point[0]), int(point[1])
 
     @staticmethod
-    def __compute_additional_offset(element: WebElement, args: list[str]) -> Tuple[int, int]:
+    def __compute_additional_offset(size: dict, args: list[str]) -> Tuple[int, int]:
         x: Tuple[int, str] = (
             ElementActionHandler.__split_to_value_and_units(args[0] if args else None))
         y: Tuple[int, str] = (
             ElementActionHandler.__split_to_value_and_units(args[1] if len(args) > 1 else None))
-        return ElementActionHandler.__compute_offset(element, x, y)
+        return ElementActionHandler.__compute_offset(size, x, y)
 
     @staticmethod
-    def __compute_offset(element: WebElement, x: Tuple[int, str], y: Tuple[int, str]) -> Tuple[int, int]:
+    def __compute_offset(size: dict, x: Tuple[int, str], y: Tuple[int, str]) -> Tuple[int, int]:
+
         if x[1] == 'px':
             x = x[0]
         elif x[1] == '%':
-            width = element.size['width']
+            width = size['width']
             x = int(width * x[0] / 100)
         else:
             raise ValueError(f"Invalid unit: {x[0]}{x[1]}")
         if y[1] == 'px':
             y = y[0]
         elif y[1] == '%':
-            height = element.size['height']
+            height = size['height']
             y = int(height * y[0] / 100)
         else:
             raise ValueError(f"Invalid unit: {y[0]}{y[1]}")

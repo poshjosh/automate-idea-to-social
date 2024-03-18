@@ -5,7 +5,7 @@ from collections import OrderedDict
 
 from ..action.action import get_results_dir
 from ..config import AgentConfig, Name
-from ..env import Env
+from ..env import Env, require_path
 from ..result.result_set import ElementResultSet, StageResultSet
 from ..run_context import RunContext
 
@@ -112,7 +112,7 @@ class Agent:
     def get_output_dir(self, agent_name: str = None):
         if not agent_name:
             agent_name = self.get_name()
-        return os.path.join(Env.require_path(Env.VIDEO_OUTPUT_DIR), agent_name)
+        return os.path.join(require_path(Env.VIDEO_OUTPUT_DIR), agent_name)
 
     def __clear_dirs(self):
         dirs_to_clear = [self.get_results_dir(), self.get_output_dir()]

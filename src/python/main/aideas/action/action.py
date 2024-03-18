@@ -5,7 +5,7 @@ from typing import Union
 
 from .variable_parser import parse_run_arg, RESULTS_KEY
 from ..config import tokenize
-from ..env import Env
+from ..env import Env, get_value
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +15,7 @@ NOT = 'not'
 def get_results_dir(agent_name: str) -> str:
     if not agent_name:
         raise ValueError('agent name required')
-    return os.path.join(Env.get_value(Env.AGENTS_DIR), agent_name, RESULTS_KEY)
+    return os.path.join(get_value(Env.AGENTS_DIR), agent_name, RESULTS_KEY)
 
 
 class Action:

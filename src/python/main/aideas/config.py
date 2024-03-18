@@ -146,11 +146,10 @@ class SearchConfig:
 class SearchConfigs:
     @staticmethod
     def of(config: SEARCH_CONFIG_PARENT) -> 'SearchConfigs':
-        search_from = SearchConfig.of(config, 'search-from')
-        search_for = SearchConfig.of(config, 'search-for')
-        return SearchConfigs(search_from, search_for)
+        return SearchConfigs(SearchConfig.of(config, 'search-for'),
+                             SearchConfig.of(config, 'search-from'))
 
-    def __init__(self, search_from: Union[SearchConfig, None], search_for: SearchConfig):
+    def __init__(self, search_for: SearchConfig, search_from: Union[SearchConfig, None] = None):
         self.__search_from = search_from
         self.__search_for = search_for
 

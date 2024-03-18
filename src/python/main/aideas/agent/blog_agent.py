@@ -88,7 +88,7 @@ class BlogAgent(Agent):
 
     def convert_to_markdown(self, action: Action, run_context: RunContext) -> ActionResult:
         script_path: str = self.get_convert_to_markdown_script()
-        input_file: str = run_context.get_env(Env.VIDEO_INPUT_FILE)
+        input_file: str = self.__get_video_source(run_context)
 
         output_file: str = self.__convert_to_markdown(script_path, input_file, None)
 
@@ -129,8 +129,12 @@ class BlogAgent(Agent):
 
     @staticmethod
     def get_blog_input_dir(run_context: RunContext) -> str:
-        video_input_file = run_context.get_env(Env.VIDEO_INPUT_FILE)
+        video_input_file = BlogAgent.__get_video_source(run_context)
         return os.path.join(os.path.dirname(video_input_file), 'blog')
+
+    @staticmethod
+    def __get_video_source(run_context: RunContext):
+        return run_context.get_env(Env.VIDEO_CONTENT_FILE)
 
     def update_blog(self, action: Action, run_context: RunContext) -> ActionResult:
 
@@ -199,7 +203,7 @@ class BlogAgent(Agent):
             raise ValueError("Input file cannot be none or empty")
 
         if not src_file.endswith(".txt"):
-            raise ValueError("Input file must end with .txt")
+            raise ValueError(f"Input file must end with .txt, file: {src_file}")
 
         src_dir = os.path.dirname(src_file)
 

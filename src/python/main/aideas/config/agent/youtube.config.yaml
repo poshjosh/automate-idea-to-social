@@ -1,16 +1,30 @@
 browser:
   chrome:
     undetected: true
+    use-profile: false
 stages:
   login:
-    url: https://accounts.google.com/ServiceLogin?service=youtube&passive=true&continue=https%3A%2F%2Fwww.youtube.com%2Fsignin%3Faction_handle_signin%3Dtrue%26app%3Ddesktop%26hl%3Den-GB%26next%3Dhttps%253A%252F%252Fwww.youtube.com%252F&hl=en-GB
+    url: https://www.youtube.com/
     stage-items:
+      website-cookies:
+        search-for:
+          - //*[@id="content"]//ytd-button-renderer/yt-button-shape/button/div/span[starts-with(text(), "Accept")]//..//..
+          - //*[@id="content"]//ytd-button-renderer//button/div/*[starts-with(text(), "Accept")]//..//..
+      proceed-to-login-page:
+        events:
+          onerror:
+            - wait 5
+            - retry 1
+        search-for:
+          - //*[@id="sign-in-button"]//a
+          - //*[@id="sign-in-button"]
+          - //*[@aria-label="Sign in"]
       fill-email:
         when:
           search-for: $self.stages.login.stage-items.fill-email.search-for
           actions: is_displayed
         search-for: //*[@id="identifierId"]
-        actions: enter_text $youtube.user.email
+        actions: send_keys $youtube.user.email
       select-account:
         when:
           search-for: $self.stages.login.stage-items.select-account.search-for

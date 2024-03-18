@@ -1,7 +1,15 @@
 ### Tips & Tricks
 
 - Disable 2-factor authentication on your accounts.
+
 - Use chrome Profile
+
+- Use `send_keys` (which sends the chars one by one) rather than `enter_text`
+Do this for websites which go the extra mile to detect bots and automated software
+
+- Use undetected Chrome browser by adding `browser.chrome.undetected: true` 
+to your agent's configuration.
+
 
 ### Requirements
 

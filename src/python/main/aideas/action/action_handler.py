@@ -139,7 +139,7 @@ class ActionHandler:
 
     @staticmethod
     def save_to_file(action: Action) -> ActionResult:
-        args: [str] = action.require_first_arg()
+        args: [str] = action.get_args()
 
         def save_content(content: str):
             tgt_dir = ActionHandler.__make_target_dirs_if_need(action)

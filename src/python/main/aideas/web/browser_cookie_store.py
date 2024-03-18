@@ -9,18 +9,18 @@ logger = logging.getLogger(__name__)
 
 
 class BrowserCookieStore:
-    def __init__(self, webdriver, domain: str):
+    def __init__(self, webdriver, file):
         if webdriver is None:
             raise ValueError("webdriver cannot be None")
-        dir_path = os.path.join(os.getcwd(), 'resources', 'agent', domain)
+        dir_path = os.path.dirname(file)
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
         self.__webdriver = webdriver
-        self.__cookie_path = os.path.join(dir_path, "cookies.pkl")
+        self.__cookie_path = file
 
     def save(self):
         cookies: list[dict] = self.__webdriver.get_cookies()
-        logger.debug(f"Saving {0 if not cookies else len(cookies)} cookies")
+        logger.debug(f"Saving {0 if not cookies else len(cookies)} cookies to {self.__cookie_path}")
         if len(cookies) == 0:
             return
         with open(self.__cookie_path, 'wb') as file:
@@ -33,12 +33,15 @@ class BrowserCookieStore:
         try:
             with open(self.__cookie_path, 'rb') as file:
                 cookies = pickle.load(file)
-                logger.debug(f'Loaded {0 if not cookies else len(cookies)} cookies')
+                logger.debug(f'Read {0 if not cookies else len(cookies)} '
+                             f'cookies from {self.__cookie_path}')
         except EOFError:
-            logger.debug("No cookies to load")
+            logger.debug(f"No cookies in file: {self.__cookie_path}")
         try:
             for cookie in cookies:
                 self.__webdriver.add_cookie(cookie)
+            logger.debug(f'Added {0 if not cookies else len(cookies)} '
+                         f'cookies for {self.current_url()}')
         except InvalidCookieDomainException:
             logger.warning(f'Cookies do not match domain: {self.current_url()}')
         except UnableToSetCookieException:

@@ -12,6 +12,7 @@ from selenium.webdriver.support.wait import WebDriverWait, D
 from .browser_cookie_store import BrowserCookieStore
 from .reloadable_web_element import ReloadableWebElement
 from ..config import parse_attributes, SearchBy, SearchConfig, SearchConfigs
+from ..env import get_cookies_file_path
 
 logger = logging.getLogger(__name__)
 
@@ -25,8 +26,9 @@ class ElementNotFoundError(Exception):
 class ElementSelector:
     @staticmethod
     def of(webdriver, domain: str, wait_timeout_seconds: float = 20) -> 'ElementSelector':
+        cookie_store = BrowserCookieStore(webdriver, get_cookies_file_path(domain))
         return ElementSelector(
-            webdriver, wait_timeout_seconds, BrowserCookieStore(webdriver, domain))
+            webdriver, wait_timeout_seconds, cookie_store)
 
     def __init__(self,
                  webdriver: WebDriver,

@@ -8,11 +8,13 @@ from ....main.aideas.web.webdriver_creator import WebDriverCreator
 
 class TestBrowserAutomator(BrowserAutomator):
     @staticmethod
-    def of(config: dict[str, any],
+    def of(app_config: dict[str, any],
            agent_name: str,
            agent_config: dict[str, any] = None) -> 'BrowserAutomator':
-        web_driver = WebDriverCreator.create(config)
-        wait_timeout_seconds = config['browser']['chrome'][TIMEOUT_KEY]
+        # app_config['browser'].update(agent_config.get('browser', {}))
+        BrowserAutomator._update(agent_config.get('browser', {}), app_config['browser'])
+        web_driver = WebDriverCreator.create(app_config, agent_name)
+        wait_timeout_seconds = app_config['browser']['chrome'][TIMEOUT_KEY]
         action_handler = TestElementActionHandler(web_driver, wait_timeout_seconds)
         event_handler = EventHandler(action_handler)
         element_selector = TestElementSelector.of(web_driver, agent_name, wait_timeout_seconds)
