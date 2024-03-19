@@ -6,7 +6,6 @@ from typing import TypeVar, Union
 from selenium import webdriver
 from selenium.common import TimeoutException
 from selenium.webdriver.common.alert import Alert
-from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as WaitCondition
 from selenium.webdriver.support.wait import WebDriverWait
 
@@ -27,7 +26,6 @@ class BrowserActionId(BaseActionId):
     DELETE_COOKIES = ('delete_cookies', False)
     DISMISS_ALERT = ('dismiss_alert', False)
     EXECUTE_SCRIPT = 'execute_script'
-    EXECUTE_SCRIPT_ON = 'execute_script_on'
     REFRESH = ('refresh', False)
 
 
@@ -36,7 +34,7 @@ class BrowserActionHandler(ActionHandler):
     def to_action_id(action: str) -> BaseActionId:
         try:
             return ActionHandler.to_action_id(action)
-        except Exception:
+        except ValueError:
             return BrowserActionId(action)
 
     def __init__(self,
@@ -57,8 +55,6 @@ class BrowserActionHandler(ActionHandler):
             result = self.__delete_cookies(action)
         elif key == BrowserActionId.EXECUTE_SCRIPT.value:
             result = self.__execute_script(action)
-        elif key == BrowserActionId.EXECUTE_SCRIPT_ON.value:
-            result = self.__execute_script_on(action)
         elif key == BrowserActionId.REFRESH.value:
             result = self.__refresh(action)
         else:
@@ -99,15 +95,6 @@ class BrowserActionHandler(ActionHandler):
             return self.__web_driver.execute_script(script)
 
         return execute_for_result(execute, ' '.join(action.get_args()), action)
-
-    def __execute_script_on(self, action: Action) -> ActionResult:
-
-        args: list = action.get_args()
-
-        def execute_on(target: WebElement):
-            return self.__web_driver.execute_script(args[0], target)
-
-        return execute_for_result(execute_on, args[1], action)
 
     def __refresh(self, action: Action) -> ActionResult:
         self.__web_driver.refresh()

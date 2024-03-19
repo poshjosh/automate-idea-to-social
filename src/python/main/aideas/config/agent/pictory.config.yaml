@@ -91,7 +91,8 @@ stages:
   save-cover-image:
     stage-items:
       click-save:
-        expected: not is_displayed
+        expected:
+          actions: not is_displayed
         events:
           onerror: retry 1
         search-for:

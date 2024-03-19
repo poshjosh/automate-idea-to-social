@@ -1,5 +1,6 @@
 # Facebook ids (starting with 'u_' or 'mount_') are dynamic,
 # so we use starts-with to match the first part of the id
+post-dialog: //*[starts-with(@id, "mount_0_0_")]//*[@role="dialog"]
 stages:
   login:
     url: https://www.facebook.com/
@@ -39,35 +40,37 @@ stages:
           - //*[starts-with(@id, "mount_0_0_")]//*[contains(text(), "on your mind")]
         actions:
           - move_to_element
-          - enter
+          - wait 3
+          - click
       display-add-photo-or-video-options: # same input accepts either photo or video
         search-for:
           - //*[starts-with(@id, "mount_0_0_")]//form//*[@aria-label="Photo/video"]
           - //*[starts-with(@id, "mount_0_0_")]//*[@aria-label="Photo/video"]
       add-video-or-cover-photo:
+        expected:
+          search-for: ${self.post-dialog}
+          actions: not is_displayed
         search-for:
-          - //*[starts-with(@id, "mount_0_0_")]//form//input[@type="file"]
-          - //*[starts-with(@id, "mount_0_0_")]//input[@type="file"]
+          - ${self.post-dialog}//form//input[@type="file"]
+          - ${self.post-dialog}//input[@type="file"]
         actions:
           # Use the first result from the specified pictory download stage
           #- enter_text $results.pictory.save-downloaded-video.save-file[0]
           - get_first_file ${agents.dir}/pictory/results/save-downloaded-video/save-file $video.output.type
           - enter_text $results.me[0]
-          - wait 5
+          - wait 10
       enter-post-text:
         search-for:
-          - //*[starts-with(@id, "mount_0_0_")]//form//div[@role="textbox"]
-          - //*[starts-with(@id, "mount_0_0_")]//*[@role="textbox"]
-          - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[4]/div/div/div[1]/div/div[2]/div/div/div/form/div/div[1]/div/div/div/div[2]/div[1]/div[1]/div[1]/div/div/div[1]
-          - //*[starts-with(@id, "mount_0_0_")]/div/div[1]/div/div[4]/div/div/div[1]/div/div[2]/div/div/div/form/div/div[1]/div/div/div/div[2]/div[1]/div[1]/div[1]/div/div/div[1]/p
+          - ${self.post-dialog}//form//div[@role="textbox"]
+          - ${self.post-dialog}//*[@role="textbox"]
         actions:
           - enter_text $video.description
-          - wait 2
+          - wait 10 # Long posts take a while
       submit-post:
         search-for:
-          - //*[starts-with(@id, "mount_0_0_")]//form//div[@aria-label="Post"]
-          - //*[starts-with(@id, "mount_0_0_")]//*[@aria-label="Post"]
-          - //*[starts-with(@id, "mount_0_0_")]//*[contains(text(), "Post")]
+          - ${self.post-dialog}//form//div[@aria-label="Post"]
+          - ${self.post-dialog}//*[@aria-label="Post"]
+          - ${self.post-dialog}//*[contains(text(), "Post")]
         actions:
           - click
           - wait 10

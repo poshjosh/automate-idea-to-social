@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 from time import sleep
 from typing import List, Callable
 
@@ -101,12 +102,17 @@ class ElementSelector:
         queries = search_config.get_queries()
         exception: Exception | None = None
         index: int = -1
+        start_time = datetime.now()
         for query in queries:
             index += 1
-            timeout: float = self.__wait_timeout_seconds if index == 0 else INTERVAL
             try:
+                time_spent: float = (datetime.now() - start_time).total_seconds()
+                time_left: float = self.__wait_timeout_seconds - time_spent
 
-                selected = self.__select_element(root, search_by, query, timeout)
+                if time_left < 0:
+                    time_left = 0
+
+                selected = self.__select_element(root, search_by, query, time_left)
 
                 if selected is not None:
                     search_config.reorder_queries(index)
@@ -215,7 +221,8 @@ class ElementSelector:
                     return WebDriverWait(root, timeout_seconds).until(
                         WaitCondition.element_to_be_clickable((search_by, xpath)))
                 except TimeoutException:
-                    logger.debug(f"Selecting element directly, despite timeout using: {xpath}")
+                    logger.debug(f"Selecting element directly, "
+                                 f"despite timeout: {timeout_seconds} using: {xpath}")
                     return root.find_element(search_by, xpath)
                 except StaleElementReferenceException:
                     logger.debug(f"Selecting element directly, despite staleness using: {xpath}")

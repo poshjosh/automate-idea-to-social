@@ -82,6 +82,10 @@ class BrowserAgent(Agent):
 
         logger.debug(f"Executing stage {config_path}")
 
+        if config.get_actions(config_path):
+            raise ValueError(f"actions are not supported at stage level. "
+                             f"Current stage: {config_path}")
+
         def do_retry(_trials: int) -> ElementResultSet:
             return self.__run_stage(run_context, stage, _trials)
 
@@ -96,7 +100,7 @@ class BrowserAgent(Agent):
 
             to_proceed = self.__browser_automator.stage_may_proceed(config, stage, run_context)
 
-            if not to_proceed:
+            if to_proceed is False:
                 return result
 
             self.__event_handler.handle_event(

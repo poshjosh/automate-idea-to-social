@@ -1,9 +1,9 @@
 from ..action.test_element_action_handler import TestElementActionHandler
 from ..web.test_element_selector import TestElementSelector
+from ..test_functions import create_webdriver
 from ....main.aideas.config import TIMEOUT_KEY
 from ....main.aideas.event.event_handler import EventHandler
 from ....main.aideas.web.browser_automator import BrowserAutomator
-from ....main.aideas.web.webdriver_creator import WebDriverCreator
 
 
 class TestBrowserAutomator(BrowserAutomator):
@@ -13,7 +13,7 @@ class TestBrowserAutomator(BrowserAutomator):
            agent_config: dict[str, any] = None) -> 'BrowserAutomator':
         # app_config['browser'].update(agent_config.get('browser', {}))
         BrowserAutomator._update(agent_config.get('browser', {}), app_config['browser'])
-        web_driver = WebDriverCreator.create(app_config, agent_name)
+        web_driver = create_webdriver(app_config, agent_name)
         wait_timeout_seconds = app_config['browser']['chrome'][TIMEOUT_KEY]
         action_handler = TestElementActionHandler(web_driver, wait_timeout_seconds)
         event_handler = EventHandler(action_handler)

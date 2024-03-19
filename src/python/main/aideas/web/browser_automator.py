@@ -7,7 +7,7 @@ from .element_selector import ElementSelector, ElementNotFoundError
 from .webdriver_creator import WEB_DRIVER, WebDriverCreator
 from ..action.action import Action
 from ..action.action_result import ActionResult
-from ..action.action_signatures import action_signatures, element_action_signatures
+from ..action.action_signatures import element_action_signatures
 from ..action.action_handler import ActionError
 from ..action.element_action_handler import ElementActionHandler
 from ..config import AgentConfig, ConfigPath, Name, SearchConfigs, TIMEOUT_KEY, WHEN_KEY, ON_START
@@ -69,7 +69,7 @@ class BrowserAutomator:
 
             to_proceed = self.__may_proceed(config, config_path, run_context)
 
-            if not to_proceed:
+            if to_proceed is False:
                 continue
 
             self.__act_on_element(config, config_path, run_context)
@@ -120,11 +120,9 @@ class BrowserAutomator:
                          trials: int = 1) -> ElementResultSet:
 
         target_config: dict[str, any] = config.get(config_path)
-        logger.debug(f"Acting on {config_path}, config: {target_config}")
+        logger.debug(f"Acting on {config_path}")
 
-        target_parent_config = config.get(config_path[:-1])
-        element_actions: list[str] = [] if not target_parent_config \
-            else element_action_signatures(target_parent_config, config_path.name().get_value())
+        element_actions: list[str] = self.__get_actions(config, config_path)
 
         result = ElementResultSet.none()
 
@@ -137,8 +135,6 @@ class BrowserAutomator:
         def do_run_stages(_, __):
             raise ValueError(f'Event: run_stages is not supported for {config_path}')
 
-        search_configs: SearchConfigs = SearchConfigs.of(target_config)
-
         exception = None
         try:
 
@@ -146,12 +142,9 @@ class BrowserAutomator:
                 self.get_agent_name(), config, config_path,
                 ON_START, run_context, do_run_stages)
 
-            timeout = self.__wait_timeout_seconds if not isinstance(target_config, dict) \
-                else target_config.get(TIMEOUT_KEY, self.__wait_timeout_seconds)
+            timeout: float = self.__get_timeout(target_config)
 
-            selector = self.__element_selector.with_timeout(timeout)
-            element: WebElement = None if not search_configs or not search_configs.search_for() \
-                else selector.select_element(search_configs)
+            element: WebElement = self.__select_element(target_config)
 
             run_context.set_current_element(element)
 
@@ -172,20 +165,49 @@ class BrowserAutomator:
 
         return ElementResultSet.none() if result is None else result
 
+    @staticmethod
+    def __get_actions(config: AgentConfig, config_path: ConfigPath) -> list[str]:
+        target_parent_config = config.get(config_path[:-1])
+        return [] if not target_parent_config \
+            else element_action_signatures(target_parent_config, config_path.name().get_value())
+
     def __check_expectations(self,
                              config: AgentConfig,
                              config_path: ConfigPath,
                              run_context: RunContext,
                              element: WebElement,
-                             timeout: int):
-        expected = config.get_expected(config_path, [])
-        expectation_actions: list[str] = action_signatures(expected)
+                             timeout: float):
+        expected = config.expected(config_path)
+        if not expected:
+            return
+
+        selected = self.__select_element(expected, timeout)
+        element = element if not selected else selected
+
+        expectation_actions: list[str] = config.get_expectation_actions(config_path)
         if expectation_actions:
             # Since we use the same config_path as above, the
             # results of the expectation will be added to the
-            # above results
+            # above results. This means if there is a failure
+            # of expectation, the result set will also contain
+            # the failure.
             self.__execute_all_actions(
                 config_path, element, timeout, expectation_actions, run_context)
+
+    def __select_element(self,
+                         target_config: dict[str, any],
+                         timeout: float = None) -> WebElement:
+        if not timeout:
+            timeout = self.__get_timeout(target_config)
+
+        search_configs: SearchConfigs = SearchConfigs.of(target_config)
+
+        return None if not search_configs or not search_configs.search_for() \
+            else self.__element_selector.with_timeout(timeout).select_element(search_configs)
+
+    def __get_timeout(self, target_config: dict[str, any]) -> float:
+        return self.__wait_timeout_seconds if not isinstance(target_config, dict) \
+            else target_config.get(TIMEOUT_KEY, self.__wait_timeout_seconds)
 
     def __execute_all_actions(self,
                               config_path: ConfigPath,

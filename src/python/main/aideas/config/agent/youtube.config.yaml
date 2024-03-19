@@ -110,7 +110,8 @@ stages:
 #          - //*[@id="items"]/ytcp-ve[1]/li//span[contains(text(), "${youtube.playlist.name}")]
         actions: click
       confirm-playlist:
-        expected: not is_displayed
+        expected:
+          actions: not is_displayed
         events:
           onerror: retry 1
         search-for:

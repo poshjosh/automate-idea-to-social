@@ -17,16 +17,15 @@ browser:
       args:
         - no-sandbox
         - disable-dev-shm-usage  # We have shm_size: 2g, specified in docker-compose.yml
-        # TODO - Test headless mode
-        #- headless
-        #- disable-popup-blocking
         - disable-notifications
         - enable-javascript
         - user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36
-        - start-maximized
         - disable-infobars
         - disable-extensions
-        #- disable-web-security
+        # Use either headless|kiosk|start-maximized
+        # Trying to change window size, while using kiosk, will crash the driver
+        - kiosk
+        - disable-web-security
         #- allow-running-insecure-content
         #- remote-allow-origins=*
         #- incognito
@@ -37,9 +36,9 @@ agents:
   - youtube
   - blog
   - twitter
-  - tiktok
   - reddit
   - facebook
   - instagram
+  - tiktok
 
 

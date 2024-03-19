@@ -63,8 +63,8 @@ stages:
       # are navigated to the dashboard
       proceed-to-facebook-login:
         search-for:
-          - //*[@id="loginForm"]/div/div[5]/button[contains(text(), "Facebook")]
           - //*[@id="loginForm"]/div/div[5]
+          - //*[@id="loginForm"]/div/div[5]/button[contains(text(), "Facebook")]
           - //*[@id="loginForm"]//button[contains(text(), "Facebook")]
         actions:
           - click
@@ -84,15 +84,13 @@ stages:
   proceed-to-post:
     stage-items:
       click-create:
-        search-for:
-          - //*[starts-with(@id,"mount_0_0_")]//a[//*[contains(text(), "Create")]]
-          - //*[starts-with(@id,"mount_0_0_")]/div/div/div[2]/div/div/div[1]/div[1]/div[1]/div/div/div/div/div[2]/div[7]/div/span/div/a
-          - //*[starts-with(@id,"mount_0_0_")]/div/div/div[2]/div/div/div[1]/div[1]/div[1]/div/div/div/div/div[2]/div[7]/div/span/div/a/div
+        search-for: //*[starts-with(@id,"mount_0_0_")]//*[text()="Create"]//..//..//..//..//..//..
       add-video:
         search-for:
           - //form[@enctype="multipart/form-data"]/input[@type="file"]
           - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[2]/div[1]/form/input
           - /html/body//form/input[@type="file"]
+          - //input[@type="file"]
         actions:
           # Use the first result from the specified agent.stage.stage-item
           #- enter_text $results.pictory.download-video-layout-3.save-file[0]
@@ -121,7 +119,7 @@ stages:
           - //div[@role="dialog"]//form/input[@type="file"]
         actions:
           - enter_text $video.cover.image.square
-          - wait 5
+          - wait 15
       proceed-to-content:
         search-for:
           - /html/body//div[@role="dialog"]//div[contains(text(), "Next")]

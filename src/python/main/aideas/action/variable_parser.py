@@ -118,9 +118,6 @@ def parse_run_arg(curr_path: [str], arg: str, run_context: 'RunContext' = None) 
         raise ValueError(
             f'Invalid replacement: {replacement} for: {arg} of {".".join(curr_path)}')
 
-    if arg == "$results.me[0]":
-        print(f'arg: {arg}, replacement: {replacement}')
-
     return replacement
 
 

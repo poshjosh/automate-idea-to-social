@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from typing import TypeVar, Union
 
-from ..config import AgentConfig, DEFAULT_ACTIONS_KEY, Name
+from ..config import AgentConfig, ACTIONS_KEY, DEFAULT_ACTIONS_KEY, Name
 
 STR_OR_DICT = TypeVar("STR_OR_DICT", bound=Union[str, dict])
 STR_OR_LIST = TypeVar("STR_OR_LIST", bound=Union[str, list[str]])
@@ -9,15 +9,7 @@ STR_OR_LIST = TypeVar("STR_OR_LIST", bound=Union[str, list[str]])
 DEFAULT_ACTIONS: list[str] = ['click']
 
 
-def action_signatures(source: Union[str, list]) -> list[str]:
-    if isinstance(source, str):
-        return [source]
-    elif isinstance(source, list):
-        return source
-    else:
-        raise ValueError(f'Invalid type for: {source}, expected list | str')
-
-
+# TODO - Move this function to config.py
 def element_action_signatures(config: dict[str, any], element_name: str) -> list[str]:
     if AgentConfig.is_default_actions_key(element_name):
         raise ValueError(f'The provided key (i.e {element_name}) is a reserved word.')
@@ -27,7 +19,7 @@ def element_action_signatures(config: dict[str, any], element_name: str) -> list
     if isinstance(element_config, str):
         return default_actions if len(default_actions) > 0 else DEFAULT_ACTIONS
     elif isinstance(element_config, dict):
-        return __element_action_signatures(element_config, 'actions', default_actions)
+        return __element_action_signatures(element_config, ACTIONS_KEY, default_actions)
     else:
         raise ValueError(f'Unexpected element config type: {type(element_config)}')
 
@@ -37,7 +29,16 @@ def __element_action_signatures(config: dict[str, any],
                                 result_if_none: list[str]) -> list[str]:
     default_actions: STR_OR_LIST = result_if_none if not config \
         else config.get(name, result_if_none)
-    return action_signatures(default_actions)
+    return __to_list(default_actions)
+
+
+def __to_list(source: Union[str, list]) -> list[str]:
+    if isinstance(source, str):
+        return [source]
+    elif isinstance(source, list):
+        return source
+    else:
+        raise ValueError(f'Invalid type for: {source}, expected list | str')
 
 
 def parse_agent_to_stages(action_signature: [str],

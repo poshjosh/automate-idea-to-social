@@ -4,7 +4,7 @@ from typing import Callable
 
 from ..action.action import Action
 from ..action.action_handler import ActionHandler
-from ..action.action_signatures import action_signatures, parse_agent_to_stages
+from ..action.action_signatures import parse_agent_to_stages
 from ..agent.agent import AgentError
 from ..config import AgentConfig, ConfigPath, Name, ON_ERROR, ON_SUCCESS
 from ..result.result_set import ElementResultSet
@@ -65,7 +65,7 @@ class EventHandler:
             logger.debug(f'For {config_path}, handling event: {event_name} '
                          f'with config: {config.get(config_path)}')
 
-        action_signature_list = action_signatures(config.get_event_actions(config_path, event_name))
+        action_signature_list = config.get_event_actions(config_path, event_name)
 
         stage_id = config_path.stage().get_id()
         target_id = config_path.name().get_id()

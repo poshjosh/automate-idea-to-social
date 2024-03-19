@@ -32,6 +32,13 @@ def __get_logging_config() -> dict[str, any]:
 def create_webdriver(config: Union[dict, None] = None, agent_name: str = None) -> webdriver:
     if config is None:
         config = get_config_loader().load_app_config()
+    args = config.get("browser", {}).get("chrome", {}).get("options", {}).get("args", [])
+    if "start-maximized" in args:
+        args.remove("start-maximized")
+    if "kiosk" in args:
+        args.remove("kiosk")
+    if "headless" not in args:
+        args.append("headless")
     if not agent_name:
         agent_name = "text-agent"
     return WebDriverCreator.create(config, agent_name)

@@ -30,10 +30,10 @@ stages:
         actions:
           - click
           - wait 2
-  dismiss-alerts:
+  dismiss-cookie-alert:
     url: https://www.reddit.com/r/${reddit.community.name}/submit
     stage-items:
-      dismiss-cookies-alert:
+      reject-non-essential-cookies:
         wait-timeout-seconds: 10
         events:
           onerror: continue
@@ -41,14 +41,13 @@ stages:
           - //*[@id="SHORTCUT_FOCUSABLE_DIV"]/div[3]/div/section/div/section[2]/section[2]/form/button
           - //*[@id="SHORTCUT_FOCUSABLE_DIV"]//form/button[contains(text(), "Reject")]
           - //button[contains(text(), "Reject non-essential")]
+  dismiss-collection-alert:
+    stage-items:
       dismiss-collection-alert-by-clicking-x:
         wait-timeout-seconds: 10
         events:
           onerror: continue
-        search-for:
-          - //*[@id="SHORTCUT_FOCUSABLE_DIV"]/div[4]/div/div/div/div[1]/*[name()="svg"]
-          - //*[@id="SHORTCUT_FOCUSABLE_DIV"]/div[4]/div/div/div/div[1]
-          - //*[@id="SHORTCUT_FOCUSABLE_DIV"]//*[name()="svg"]
+        search-for: //*[@id="SHORTCUT_FOCUSABLE_DIV"]//*[name()="svg"]
       dismiss-collection-alert-by-clicking-cancel:
         wait-timeout-seconds: 5
         events:
@@ -105,9 +104,16 @@ stages:
     stage-items:
       post-content:
         search-for:
-          - //*[@id="AppRouter-main-content"]//button[contains(text(), "Post")]
           - //*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[2]/div[3]/div[3]/div[2]/div/div/div[1]/button[1]
+          # This led us to another button
+          #- //*[@id="AppRouter-main-content"]//button[contains(text(), "Post")]
+          # This did not find anything
+          #- //*[@id="AppRouter-main-content"]//button[@role="button" and tabindex="0" and text()="Post"]
         actions:
+          # This is necessary, because the button is usually not visible, after pasting the content
+          # move_to_element should scroll the element into view
+          - move_to_element
+          - wait 2
           - click
-          - wait 5
+          - wait 10
 

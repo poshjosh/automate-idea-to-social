@@ -163,6 +163,7 @@ class SearchConfigs:
 STAGES_KEY: str = "stages"
 STAGE_ITEMS_KEY: str = "stage-items"
 WHEN_KEY: str = 'when'
+ACTIONS_KEY: str = 'actions'
 DEFAULT_ACTIONS_KEY: str = 'default-actions'
 TIMEOUT_KEY: str = 'wait-timeout-seconds'
 EVENTS = 'events'
@@ -237,10 +238,14 @@ class AgentConfig:
 
     def get_event_actions(self, config_path: ConfigPath, event_name: str) -> Union[str, list]:
         default_action: str = 'fail' if event_name == ON_ERROR else 'continue'
-        return self.events(config_path, {}).get(event_name, default_action)
+        str_or_list = self.events(config_path, {}).get(event_name, default_action)
+        return self.__to_list(str_or_list)
 
     def is_continue_on_event(self, config_path: ConfigPath, event_name: str) -> bool:
         return self.get_event_actions(config_path, event_name) == 'continue'
+
+    def get_actions(self, config_path: ConfigPath) -> list[str]:
+        return self.get(config_path, {}).get(ACTIONS_KEY, [])
 
     def get_url(
             self, stage: Union[str, Name], result_if_none: Union[str, None]) -> Union[str, None]:
@@ -248,6 +253,11 @@ class AgentConfig:
 
     def get_depends_on(self) -> [str]:
         return self.__config.get('depends-on', [])
+
+    def get_wait_timeout(self,
+                         path: Union[str, list[str], list[Name], tuple[Name]],
+                         default: float = None) -> float:
+        return self.get(path.join(TIMEOUT_KEY), default)
 
     def get_stage_wait_timeout(self, stage: Union[str, Name], result_if_none: int = 0) -> int:
         return self.get_stage_value(stage, TIMEOUT_KEY, result_if_none)
@@ -267,10 +277,24 @@ class AgentConfig:
                              result_if_none: VALUE = 0) -> VALUE:
         return self.stage_item(stage, item, {}).get(key, result_if_none)
 
-    def get_expected(self,
-                     path: Union[str, list[str], list[Name], tuple[Name]],
-                     result_if_none: Union[str, list, None] = None) -> Union[str, list, None]:
-        return self.get(path, {}).get('expected', result_if_none)
+    def get_expectation_actions(self,
+                                path: Union[str, list[str], list[Name], tuple[Name]]) -> list[str]:
+        str_or_list = self.expected(path, {}).get(ACTIONS_KEY, [])
+        return self.__to_list(str_or_list)
+
+    @staticmethod
+    def __to_list(source: Union[str, list]) -> list[str]:
+        if isinstance(source, str):
+            return [source]
+        elif isinstance(source, list):
+            return source
+        else:
+            raise ValueError(f'Invalid type for: {source}, expected list | str')
+
+    def expected(self,
+                 path: Union[str, list[str], list[Name], tuple[Name]],
+                 default: dict[str, any] = None) -> dict[str, any]:
+        return self.get(path, {}).get('expected', default)
 
     def get(self, path: Union[str, list[str], list[Name], tuple[Name]], result_if_none=None) -> any:
         path: [str] = self.__value_list(path)

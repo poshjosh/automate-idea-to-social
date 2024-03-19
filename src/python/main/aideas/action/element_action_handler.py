@@ -24,6 +24,7 @@ class ElementActionId(BaseActionId):
     CLICK_AND_HOLD_CURRENT_POSITION = ('click_and_hold_current_position', False)
     ENTER = ('enter', False)
     ENTER_TEXT = ('enter_text', False)
+    EXECUTE_SCRIPT_ON = ('execute_script_on', False)
     GET_ATTRIBUTE = 'get_attribute'
     GET_TEXT = 'get_text'
     IS_DISPLAYED = 'is_displayed'
@@ -38,7 +39,7 @@ class ElementActionHandler(BrowserActionHandler):
     def to_action_id(action: str) -> BaseActionId:
         try:
             return BrowserActionHandler.to_action_id(action)
-        except Exception:
+        except ValueError:
             return ElementActionId(action)
 
     def __init__(self,
@@ -71,13 +72,20 @@ class ElementActionHandler(BrowserActionHandler):
                 result = self._execute_on(key, action, element)
             else:
                 raise ex
+
         if action.is_negation():
             result = result.flip()
         return result
 
     def _execute_on(self, key: str, action: Action, element: WebElement) -> ActionResult:
+        try:
+            return self.__do_execute_on(key, action, element)
+        except Exception as ex:
+            self.__print_element_attr(element, 'outerHTML')
+            raise ex
+
+    def __do_execute_on(self, key: str, action: Action, element: WebElement) -> ActionResult:
         driver = self.get_web_driver()
-        # TODO - Use ElementActionId instead of str literals
         if key == ElementActionId.CLEAR_TEXT.value:
             def clear_text(tgt: WebElement):
                 tgt.send_keys(Keys.CONTROL, 'a')
@@ -102,6 +110,8 @@ class ElementActionHandler(BrowserActionHandler):
         elif key == ElementActionId.ENTER_TEXT.value:
             text: str = ' '.join(action.get_args())
             result = execute_for_result(lambda arg: arg.send_keys(text), element, action)
+        elif key == ElementActionId.EXECUTE_SCRIPT_ON.value:
+            result = self.__execute_script_on(self.get_web_driver(), action, element)
         elif key == ElementActionId.GET_ATTRIBUTE.value:
             attr_name = action.get_first_arg()
             result = execute_for_result(lambda arg: element.get_attribute(arg), attr_name, action)
@@ -117,25 +127,7 @@ class ElementActionHandler(BrowserActionHandler):
 
             result = execute_for_result(move_to_element, element, action)
         elif key == ElementActionId.MOVE_TO_OFFSET.value:
-            start: str = action.get_first_arg()
-            if not start:
-                raise ValueError("No start point provided for move_to_offset")
-
-            element_size: dict = element.size
-
-            offset_from_center: Tuple[int, int] = (0, 0) if start == 'center' \
-                else self.__compute_offset_relative_to_center(element_size, start)
-
-            additional_offset: Tuple[int, int] = (
-                self.__compute_additional_offset(element_size, action.get_args()[1:]))
-            logger.debug(f"Will first move from center of element by: {offset_from_center}, "
-                         f"then move additionally by: {additional_offset}")
-
-            # We add the offset provided by the user
-            x = offset_from_center[0] + additional_offset[0]
-            y = offset_from_center[1] + additional_offset[1]
-
-            result = self.move_to_center_offset(element, (x, y), action)
+            result = self.__move_to_offset(self.get_web_driver(), action, element)
         elif key == ElementActionId.RELEASE.value:
             def release(on_element: bool):
                 ActionChains(driver).release(element if on_element is True else None).perform()
@@ -156,10 +148,41 @@ class ElementActionHandler(BrowserActionHandler):
         logger.debug(f'{result}')
         return result
 
-    def move_to_center_offset(self, element: WebElement, offset: Tuple[int, int], action: Action):
+    @staticmethod
+    def __execute_script_on(webdriver, action: Action, element: WebElement) -> ActionResult:
+        def execute_on(script: str):
+            return webdriver.execute_script(script, element)
+        return execute_for_result(execute_on, ' '.join(action.get_args()), action)
+
+    @staticmethod
+    def __move_to_offset(webdriver, action: Action, element: WebElement):
+        start: str = action.get_first_arg()
+        if not start:
+            raise ValueError("No start point provided for move_to_offset")
+
+        element_size: dict = element.size
+
+        offset_from_center: Tuple[int, int] = (0, 0) if start == 'center' \
+            else ElementActionHandler.__compute_offset_relative_to_center(element_size, start)
+
+        additional_offset: Tuple[int, int] = (
+            ElementActionHandler.__compute_additional_offset(element_size, action.get_args()[1:]))
+        logger.debug(f"Will first move from center of element by: {offset_from_center}, "
+                     f"then move additionally by: {additional_offset}")
+
+        # We add the offset provided by the user
+        x = offset_from_center[0] + additional_offset[0]
+        y = offset_from_center[1] + additional_offset[1]
+
+        return ElementActionHandler.__move_to_center_offset(
+            webdriver, element, (x, y), action)
+
+    @staticmethod
+    def __move_to_center_offset(
+            webdriver, element: WebElement, offset: Tuple[int, int], action: Action):
         def move_to_element_with_offset(tgt: WebElement):
             logger.debug(f"Moving to center offset by: {offset} of element: {element}")
-            ActionChains(self.get_web_driver()).move_to_element_with_offset(
+            ActionChains(webdriver).move_to_element_with_offset(
                 tgt, offset[0], offset[1]).perform()
         return execute_for_result(move_to_element_with_offset, element, action)
 
@@ -221,3 +244,11 @@ class ElementActionHandler(BrowserActionHandler):
         if text:
             return int(text), 'px'
         return 0, 'px'
+
+    @staticmethod
+    def __print_element_attr(element: WebElement, attribute_name: str):
+        try:
+            print(f' Printing element attribute: {attribute_name}'
+                  f'\n{"="*64}\n{element.get_attribute(attribute_name)}\n{"="*64}')
+        except Exception:
+            pass
