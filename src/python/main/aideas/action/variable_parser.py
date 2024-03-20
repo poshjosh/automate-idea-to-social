@@ -2,6 +2,21 @@ import copy
 import logging
 from typing import Union, Tuple, Callable
 
+"""
+Each run may involve one or more agents. All the agents involved 
+share the same RunContext. Each agent has its own configuration.
+From the agent configuration file (e.g yaml), access is provided
+to each of the following:
+
+context: This is the run context. Variables are resolve at run time.
+Example: `${context.context-available-attribute}`
+
+results: This is the available results. Variables are resolved at run time.
+Example format: `${results.agent.stage.stage-item[ACTION_INDEX]}`
+
+self: This is the agent's configuration. Variables are resolved prior to the run.
+Example format: `${self.configuration-defined-attribute}`
+"""
 RESULTS_KEY = 'results'
 CONTEXT_KEY = 'context'
 SELF_KEY = 'self'
@@ -61,12 +76,12 @@ def __visit_all_variables(target: dict[str, any],
                           path: [str] = None):
     # TODO - Implement 'me' expansion for $self related variables, test it too
     #  To achieve the above you need to implement the correct curr_path argument
-    def iter_dict(d: dict[str, any], parent: any, curr_path: [str]):
+    def iter_dict(d: dict[str, any], _, curr_path: [str]):
         for k, v in d.items():
             d[k] = iter_value(v, d, curr_path)
         return d
 
-    def iter_list(e_list: list[any], parent: any, curr_path: [str]):
+    def iter_list(e_list: list[any], _, curr_path: [str]):
         for i, e in enumerate(e_list):
             e_list[i] = iter_value(e, e_list, curr_path)
         return e_list
