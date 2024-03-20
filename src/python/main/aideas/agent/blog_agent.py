@@ -205,9 +205,7 @@ class BlogAgent(Agent):
         if not src_file.endswith(".txt"):
             raise ValueError(f"Input file must end with .txt, file: {src_file}")
 
-        src_dir = os.path.dirname(src_file)
-
-        args = ['-d', src_dir, '-e', 'txt']
+        args = ['-f', src_file]
 
         found_text: str = ''
         completed_process = run_script(script_path, args, timeout=30, stdout=subprocess.PIPE)
