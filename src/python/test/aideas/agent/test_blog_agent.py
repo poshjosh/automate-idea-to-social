@@ -30,6 +30,14 @@ class TestBlogAgent(BlogAgent):
             print(f'{__name__} Command: {command} returned: {return_code}')
         return ActionResult(action, True, self.get_blog_tgt_dir())
 
+    def convert_to_markdown(self, action: Action, run_context: RunContext) -> ActionResult:
+        result = super().convert_to_markdown(action, run_context)
+        dir_to_create = self.get_blog_input_dir(run_context)
+        if not os.path.exists(dir_to_create):
+            os.makedirs(dir_to_create)
+            print(f'{__name__} Manually created dir: {dir_to_create}')
+        return result
+
     def _get_update_blog_content_commands(self):
         commands: list[list[str]] = super()._get_update_blog_content_commands()
         # We remove the last command which is: git push
