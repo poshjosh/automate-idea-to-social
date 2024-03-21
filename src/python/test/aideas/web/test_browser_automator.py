@@ -12,7 +12,7 @@ class TestBrowserAutomator(BrowserAutomator):
            agent_name: str,
            agent_config: dict[str, any] = None) -> 'BrowserAutomator':
         # app_config['browser'].update(agent_config.get('browser', {}))
-        BrowserAutomator._update(agent_config.get('browser', {}), app_config['browser'])
+        app_config['browser'] = BrowserAutomator._update(agent_config.get('browser', {}), app_config['browser'])
         web_driver = create_webdriver(app_config, agent_name)
         wait_timeout_seconds = app_config['browser']['chrome'][TIMEOUT_KEY]
         action_handler = TestElementActionHandler(web_driver, wait_timeout_seconds)

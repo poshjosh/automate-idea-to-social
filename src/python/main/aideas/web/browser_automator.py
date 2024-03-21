@@ -1,3 +1,4 @@
+import copy
 import logging
 from typing import Union
 
@@ -24,7 +25,7 @@ class BrowserAutomator:
            agent_name: str,
            agent_config: dict[str, any] = None) -> 'BrowserAutomator':
         # app_config['browser'].update(agent_config.get('browser', {}))
-        BrowserAutomator._update(agent_config.get('browser', {}), app_config['browser'])
+        app_config['browser'] = BrowserAutomator._update(agent_config.get('browser', {}), app_config['browser'])
         web_driver = WebDriverCreator.create(app_config, agent_name)
         wait_timeout_seconds = app_config['browser']['chrome'].get(TIMEOUT_KEY, 20)
         action_handler = ElementActionHandler(web_driver, wait_timeout_seconds)
@@ -251,7 +252,8 @@ class BrowserAutomator:
         return self.__action_handler
 
     @staticmethod
-    def _update(src: dict[str, any], tgt: dict[str, any]):
+    def _update(src: dict[str, any], tgt: dict[str, any]) -> dict[str, any]:
+        tgt = copy.deepcopy(tgt)
         for k, v in src.items():
             if isinstance(v, dict):
                 v = BrowserAutomator._update(v, tgt.get(k, {}))
