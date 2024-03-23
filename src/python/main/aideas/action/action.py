@@ -93,8 +93,9 @@ class Action:
             raise ValueError(f'No argument provided for: {self}')
         return arg
 
-    def get_first_arg(self, result_if_none: any = None) -> any:
-        return len(self.__args) > 0 and self.__args[0] or result_if_none
+    def get_first_arg(self, default: any = None) -> any:
+        arg = None if len(self.__args) == 0 else self.__args[0]
+        return default if arg is None else arg
 
     def get_args(self) -> list:
         return self.__args

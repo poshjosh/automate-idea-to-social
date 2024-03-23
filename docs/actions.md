@@ -18,13 +18,14 @@ Actions may be global, browser or element specific.
 
 ### Browser actions
 
-| Action         | Argument type(s) | Remarks                       |
-|----------------|------------------|-------------------------------|
-| accept_alert   | int (timeout)    |                               |
-| delete_cookies | none             |                               |
-| dismiss_alert  | int (timeout)    |                               |
-| execute_script | str (javascript) |                               |
-| refresh        | None             |                               |
+| Action         | Argument type(s)  | Remarks                       |
+|----------------|-------------------|-------------------------------|
+| accept_alert   | int (timeout)     |                               |
+| delete_cookies | none              |                               |
+| dismiss_alert  | int (timeout)     |                               |
+| execute_script | str (javascript)  |                               |
+| move_by_offset | int, int (px, px) |                               |
+| refresh        | None              |                               |
 
 ### Element Actions
 
@@ -41,7 +42,7 @@ Actions may be global, browser or element specific.
 | get_text                        | None                                                                      |                                           |    
 | is_displayed                    | None                                                                      |                                           |
 | move_to_element                 | None                                                                      |                                           |
-| move_to_offset                  | str [center,top-left,top-right,bottom-right,bottom-left], int, int [px,%] | Example: `move_to_offset center -8 8`     |
+| move_to_element_offset          | str [center,top-left,top-right,bottom-right,bottom-left], int, int [px,%] | Example: `move_to_offset center -8 8`     |
 | release                         | None                                                                      |                                           |
 | run_stages                      | List[str] (stage names)                                                   |                                           |
 | send_keys                       | text                                                                      |                                           |

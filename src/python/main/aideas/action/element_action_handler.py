@@ -29,7 +29,7 @@ class ElementActionId(BaseActionId):
     GET_TEXT = 'get_text'
     IS_DISPLAYED = 'is_displayed'
     MOVE_TO_ELEMENT = ('move_to_element', False)
-    MOVE_TO_OFFSET = ('move_to_offset', False)
+    MOVE_TO_ELEMENT_OFFSET = ('move_to_element_offset', False)
     RELEASE = ('release', False)
     SEND_KEYS = ('send_keys', False)
 
@@ -126,15 +126,12 @@ class ElementActionHandler(BrowserActionHandler):
                 ActionChains(driver).move_to_element(tgt).perform()
 
             result = execute_for_result(move_to_element, element, action)
-        elif key == ElementActionId.MOVE_TO_OFFSET.value:
-            result = self.__move_to_offset(self.get_web_driver(), action, element)
+        elif key == ElementActionId.MOVE_TO_ELEMENT_OFFSET.value:
+            result = self.__move_to_element_offset(self.get_web_driver(), action, element)
         elif key == ElementActionId.RELEASE.value:
             def release(on_element: bool):
                 ActionChains(driver).release(element if on_element is True else None).perform()
-
-            sval: str = action.get_first_arg()
-            release_on_element = False if not sval else bool(sval)
-            result = execute_for_result(release, release_on_element, action)
+            result = execute_for_result(release, bool(action.get_first_arg()), action)
         elif key == ElementActionId.SEND_KEYS.value:
             def send_keys(txt: str):
                 for char in txt:
@@ -155,10 +152,10 @@ class ElementActionHandler(BrowserActionHandler):
         return execute_for_result(execute_on, ' '.join(action.get_args()), action)
 
     @staticmethod
-    def __move_to_offset(webdriver, action: Action, element: WebElement):
+    def __move_to_element_offset(webdriver, action: Action, element: WebElement):
         start: str = action.get_first_arg()
         if not start:
-            raise ValueError("No start point provided for move_to_offset")
+            raise ValueError("No start point provided for move_to_element_offset")
 
         element_size: dict = element.size
 
@@ -167,8 +164,6 @@ class ElementActionHandler(BrowserActionHandler):
 
         additional_offset: Tuple[int, int] = (
             ElementActionHandler.__compute_additional_offset(element_size, action.get_args()[1:]))
-        logger.debug(f"Will first move from center of element by: {offset_from_center}, "
-                     f"then move additionally by: {additional_offset}")
 
         # We add the offset provided by the user
         x = offset_from_center[0] + additional_offset[0]
@@ -181,7 +176,6 @@ class ElementActionHandler(BrowserActionHandler):
     def __move_to_center_offset(
             webdriver, element: WebElement, offset: Tuple[int, int], action: Action):
         def move_to_element_with_offset(tgt: WebElement):
-            logger.debug(f"Moving to center offset by: {offset} of element: {element}")
             ActionChains(webdriver).move_to_element_with_offset(
                 tgt, offset[0], offset[1]).perform()
         return execute_for_result(move_to_element_with_offset, element, action)

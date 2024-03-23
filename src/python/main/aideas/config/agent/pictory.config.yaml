@@ -61,7 +61,7 @@ stages:
       close-app-cues:
         search-for:
           - /html/body/appcues/div/a
-          - /html/body/appcues//*[starts-with(@aria-label, "Close") or contains(@aria-label, "close")]
+          - /html/body/appcues//*[@aria-label="Close modal"]
   add-cover-image:
     url: https://app.pictory.ai/storyboard/scripttovideo
     events:
@@ -126,11 +126,12 @@ stages:
           - //*[@id="bgMusicVolPercent"]
           - //*[@id="voice-tabpanel-settings"]//div[contains(@class, "volume-slider")]
         actions:
-          - move_to_offset bottom-left 10% 20%
+          - move_to_element_offset bottom-left 10% 20%
           - wait 2
           - click_and_hold_current_position
           - wait 1
-          - release false
+          - move_by_offset 0 32
+          - wait 1
   branding:
     stage-items:
       branding-tab:
@@ -157,7 +158,7 @@ stages:
       select-brand-voice:
         search-for: //*[@id="step-3-fixed-height"]//span[contains(text(), "${pictory.voice.name}")]//..
         actions:
-          - move_to_offset bottom-right -5 6
+          - move_to_element_offset bottom-right -5 6
           - wait 1
           - click_and_hold_current_position
           - wait 0.5

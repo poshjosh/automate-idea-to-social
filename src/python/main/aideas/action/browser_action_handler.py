@@ -5,6 +5,7 @@ from typing import TypeVar, Union
 
 from selenium import webdriver
 from selenium.common import TimeoutException
+from selenium.webdriver import ActionChains
 from selenium.webdriver.common.alert import Alert
 from selenium.webdriver.support import expected_conditions as WaitCondition
 from selenium.webdriver.support.wait import WebDriverWait
@@ -26,6 +27,7 @@ class BrowserActionId(BaseActionId):
     DELETE_COOKIES = ('delete_cookies', False)
     DISMISS_ALERT = ('dismiss_alert', False)
     EXECUTE_SCRIPT = 'execute_script'
+    MOVE_BY_OFFSET = ('move_by_offset', False)
     REFRESH = ('refresh', False)
 
 
@@ -55,6 +57,8 @@ class BrowserActionHandler(ActionHandler):
             result = self.__delete_cookies(action)
         elif key == BrowserActionId.EXECUTE_SCRIPT.value:
             result = self.__execute_script(action)
+        elif key == BrowserActionId.MOVE_BY_OFFSET.value:
+            result = self.__move_by_offset(action)
         elif key == BrowserActionId.REFRESH.value:
             result = self.__refresh(action)
         else:
@@ -95,6 +99,14 @@ class BrowserActionHandler(ActionHandler):
             return self.__web_driver.execute_script(script)
 
         return execute_for_result(execute, ' '.join(action.get_args()), action)
+
+    def __move_by_offset(self, action: Action) -> ActionResult:
+        def move_by_offset(offset: tuple[int, int]):
+            ActionChains(self.__web_driver).move_by_offset(offset[0], offset[1]).perform()
+        args = action.get_args()
+        x: int = 0 if len(args) == 0 else int(args[0])
+        y: int = 0 if len(args) < 2 else int(args[1])
+        return execute_for_result(move_by_offset, (x, y), action)
 
     def __refresh(self, action: Action) -> ActionResult:
         self.__web_driver.refresh()
