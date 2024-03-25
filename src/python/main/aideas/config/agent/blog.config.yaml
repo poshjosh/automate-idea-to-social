@@ -1,6 +1,6 @@
 app:
   name: automate-jamstack
-  version: 0.0.8
+  version: 0.0.9
   docker:
     image: poshjosh/${self.app.name}
   source:

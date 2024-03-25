@@ -35,7 +35,7 @@ class BlogAgent(Agent):
         # Rather than git pull, we are using git clone for each run.
         # For future git clones to succeed we need to remove the existing directory.
         # TODO - Implement git pull, if the directory already exists.
-        self.__delete_cloned_blog_if_exists()
+        self.__delete_blog_related_dirs_if_exists()
 
     def run_stage(self,
                   run_context: RunContext,
@@ -155,6 +155,10 @@ class BlogAgent(Agent):
         if not success:
             return False
         return extract_zip_file(temp_file, save_to_dir, True)
+
+    def __delete_blog_related_dirs_if_exists(self):
+        if os.path.exists(self.get_blog_tgt_dir()):
+            shutil.rmtree(self.get_blog_tgt_dir())
 
     def __delete_cloned_blog_if_exists(self):
         if os.path.exists(self.get_blog_base_dir()):  # Already cloned
