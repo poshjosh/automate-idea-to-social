@@ -119,8 +119,8 @@ def get_video_file() -> str:
 
 
 def get_cookies_file_path(domain: str, file_name: str = "cookies.pkl") -> str:
-    dir_path = get_path(Env.AGENTS_DIR, domain)
-    return os.path.join(dir_path, file_name)
+    dir_path = get_path(Env.VIDEO_OUTPUT_DIR, "cookies")
+    return os.path.join(dir_path, domain, file_name)
 
 
 def get_path(env: Union[str, Env], extra: str = None, default: any = None) -> any:
