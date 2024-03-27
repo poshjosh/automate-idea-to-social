@@ -24,7 +24,7 @@ stages:
           search-for: $self.stages.login.stage-items.fill-email.search-for
           actions: is_displayed
         search-for: //*[@id="identifierId"]
-        actions: send_keys $youtube.user.email
+        actions: send_keys $YOUTUBE_USER_EMAIL
       select-account:
         when:
           search-for: $self.stages.login.stage-items.select-account.search-for
@@ -32,10 +32,10 @@ stages:
         events:
           onerror: continue
         search-for:
-          - //*[@id="view_container"]//ul/li[contains(text(), "${youtube.user.email}")]
-          - //*[@id="view_container"]//ul/li//div[contains(text(), "${youtube.user.email}")]
-          - //*[@id="view_container"]/div/div/div[2]/div/div[1]/div/form/span/section/div/div/div/div/ul/li[contains(text(), "${youtube.user.email}")]
-          - //*[@id="view_container"]/div/div/div[2]/div/div[1]/div/form/span/section/div/div/div/div/ul/li//div[contains(text(), "${youtube.user.email}")]
+          - //*[@id="view_container"]//ul/li[contains(text(), "${YOUTUBE_USER_EMAIL}")]
+          - //*[@id="view_container"]//ul/li//div[contains(text(), "${YOUTUBE_USER_EMAIL}")]
+          - //*[@id="view_container"]/div/div/div[2]/div/div[1]/div/form/span/section/div/div/div/div/ul/li[contains(text(), "${YOUTUBE_USER_EMAIL}")]
+          - //*[@id="view_container"]/div/div/div[2]/div/div[1]/div/form/span/section/div/div/div/div/ul/li//div[contains(text(), "${YOUTUBE_USER_EMAIL}")]
           - //*[@id="view_container"]/div/div/div[2]/div/div[1]/div/form/span/section/div/div/div/div/ul/li[1]/div/div[1]/div/div[2]/div[2]
       submit-email:
         search-for:
@@ -48,7 +48,7 @@ stages:
         search-for:
           - //*[@id="password"]/div[1]/div/div[1]/input
           - //*[@id="password"]//input[@type="password"]
-        actions: enter_text $youtube.user.pass
+        actions: enter_text $YOUTUBE_USER_PASS
       submit-password:
         search-for:
           - //*[@id="passwordNext"]/div/button
@@ -75,7 +75,7 @@ stages:
           - //*[@id="content"]/input[@type="file"]
         actions:
           # Use the first result from the specified pictory download stage
-          - get_first_file ${agents.dir}/pictory/results/download-video-layout-2/save-file $video.output.type
+          - get_first_file ${AGENTS_DIR}/pictory/results/download-video-layout-2/save-file $VIDEO_OUTPUT_TYPE
           - enter_text $results.me[0]
           - wait 5
       enter-video-title:
@@ -85,13 +85,13 @@ stages:
         actions:
           - clear_text  # YouTube guesses a title for us, we don't want that.
           # We append a prefix here, because the guessed title was not cleared
-          - enter_text " " $video.title "#shorts"
+          - enter_text " " $VIDEO_TITLE "#shorts"
       enter-video-description:
         search-for:
           - //*[@id="description-wrapper"]//*[@id="textbox"]
           - //*[@id="description-wrapper"]//*[@id="description-textarea"]
           #- //*[@id="description-wrapper"]//*[@id="input"]
-        actions: enter_text $video.description
+        actions: enter_text $VIDEO_DESCRIPTION
   add-video-playlist:
     events:
       onerror: continue
@@ -105,9 +105,9 @@ stages:
           - //*[@id="basics"]//ytcp-video-metadata-playlists/ytcp-text-dropdown-trigger/ytcp-dropdown-trigger//span[contains(text(), "Select")]
       select-play-list:
         search-for:
-          - //*[@id="items"]//span[contains(text(), "${youtube.playlist.name}")]
+          - //*[@id="items"]//span[contains(text(), "${YOUTUBE_PLAYLIST_NAME}")]
           - //*[@id="items"]/ytcp-ve[1]/li
-#          - //*[@id="items"]/ytcp-ve[1]/li//span[contains(text(), "${youtube.playlist.name}")]
+#          - //*[@id="items"]/ytcp-ve[1]/li//span[contains(text(), "${YOUTUBE_PLAYLIST_NAME}")]
         actions: click
       confirm-playlist:
         expected:

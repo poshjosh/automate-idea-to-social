@@ -11,7 +11,7 @@ stages:
           - //*[@id="layers"]/div[1]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div/div/div/div[5]/label/div/div[2]/div/input
           - //*[@id="layers"]/div[2]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div/div/div/div[5]/label/div/div[2]/div/input
           - //*[@id="layers"]//input[@name="text"]
-        actions: enter_text $twitter.user.email
+        actions: enter_text $TWITTER_USER_EMAIL
       submit-email:
         search-for:
           - //*[@id="layers"]//span[contains(text(), "Next")]//..//..//..
@@ -30,7 +30,7 @@ stages:
         search-for:
           - //*[@id="layers"]/div[1]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[1]/div/div[2]/label/div/div[2]/div/input
           - //*[@id="layers"]/div[2]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[1]/div/div[2]/label/div/div[2]/div/input
-        actions: enter_text $twitter.user.name
+        actions: enter_text $TWITTER_USER_NAME
       submit-username:
         search-for:
           - //*[@id="layers"]/div[1]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[2]/div/div/div/div
@@ -43,7 +43,7 @@ stages:
         search-for:
           - //*[@id="layers"]//input[@type="password" and @name="password"]
           - //*[@id="layers"]//input[@type="password"]
-        actions: enter_text $twitter.user.pass
+        actions: enter_text $TWITTER_USER_PASS
       submit-password:
         search-for:
           - //*[@id="layers"]//div[@role="button"//*[contains(text(), "Log in")]]
@@ -72,8 +72,8 @@ stages:
           - //*[@id="react-root"]//div[@role="textbox" and @aria-label="Post text"]
           - //*[@id="react-root"]/div/div/div[2]/main/div/div/div/div[1]/div/div[3]/div/div[2]/div[1]/div/div/div/div[2]/div[1]/div/div/div/div/div/div/div/div/div/div/label/div[1]/div/div/div/div/div/div[2]/div
         actions:
-          - get_file_content ${agents.dir}/youtube/results/wait-for-video-link/save-video-link/result.txt
-          - enter_text $video.title $results.me[0]
+          - get_file_content ${AGENTS_DIR}/youtube/results/wait-for-video-link/save-video-link/result.txt
+          - enter_text $VIDEO_TITLE $results.me[0]
           # When we enter a link, twitter retrieves some metadata from the link
           - wait 5
       post-tweet:

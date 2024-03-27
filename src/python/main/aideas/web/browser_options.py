@@ -25,8 +25,8 @@ def chrome_options(config: dict[str, any], agent_name: str) -> Options:
 
 def __add_options_from_env(add_to: list[str]):
     env_opt_args: list[str] = [
-        get_path(Env.BROWSER_CHROME_OPTIONS_ARGS_USER_DATA_DIR),
-        get_value(Env.BROWSER_CHROME_OPTIONS_ARGS_PROFILE_DIRECTORY)
+        get_path(Env.BROWSER_CHROME_OPTIONS_USERDATA_DIR),
+        get_value(Env.BROWSER_CHROME_OPTIONS_PROFILE_DIR)
     ]
     for env_opt_arg in env_opt_args:
         if not env_opt_arg:
@@ -38,7 +38,7 @@ def __add_options_from_env(add_to: list[str]):
 
 
 def __add_prefs_from_env(add_to: dict[str, str], agent_name: str):
-    output_dir = os.path.join(require_path(Env.VIDEO_OUTPUT_DIR), agent_name)
+    output_dir = os.path.join(require_path(Env.OUTPUT_DIR), agent_name)
     if os.path.exists(output_dir) is False:
         os.makedirs(output_dir)
         logger.debug(f"Created dirs: {output_dir}")

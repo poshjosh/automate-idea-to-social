@@ -2,18 +2,18 @@ import os
 from enum import Enum, unique
 from typing import Union
 
-_video = 'video'
-_pictory = 'pictory'
-_translation = 'translation'
-_youtube = 'youtube'
-_tiktok = 'tiktok'
-_twitter = 'twitter'
-_reddit = 'reddit'
-_facebook = 'facebook'
-_instagram = 'instagram'
-_github = 'github'
-_blog = 'blog'
-_browser_chrome = 'browser.chrome'
+_video = 'VIDEO'
+_pictory = 'PICTORY'
+_translation = 'TRANSLATION'
+_youtube = 'YOUTUBE'
+_tiktok = 'TIKTOK'
+_twitter = 'TWITTER'
+_reddit = 'REDDIT'
+_facebook = 'FACEBOOK'
+_instagram = 'INSTAGRAM'
+_github = 'GITHUB'
+_blog = 'BLOG'
+_browser_chrome = 'BROWSER_CHROME'
 
 
 @unique
@@ -35,60 +35,61 @@ class Env(str, Enum):
     def is_path(self) -> bool:
         return self.__path
 
-    AGENTS_DIR = ('agents.dir', False, True)
-    # video.content.file is used for title and description.
-    VIDEO_CONTENT_FILE = (f'{_video}.content.file', True, True)
-    # video.input.file is used to generate the video.
-    VIDEO_INPUT_FILE = (f'{_video}.input.file', False, True)
-    VIDEO_INPUT_TEXT = (f'{_video}.input.text', True)
-    VIDEO_TILE = (f'{_video}.title', True)
-    VIDEO_DESCRIPTION = (f'{_video}.description', True)
-    VIDEO_OUTPUT_DIR = (f'{_video}.output.dir', False, True)
-    VIDEO_OUTPUT_TYPE = f'{_video}.output.type'
-    VIDEO_COVER_IMAGE = (f'{_video}.cover.image', False, True)
-    VIDEO_COVER_IMAGE_SQUARE = (f'{_video}.cover.image.square', True, True)
+    AGENTS_DIR = ('AGENTS_DIR', False, True)
+    OUTPUT_DIR = ('OUTPUT_DIR', False, True)
 
-    PICTORY_USER_NAME = f'{_pictory}.user.name'
-    PICTORY_USER_PASS = f'{_pictory}.user.pass'
-    PICTORY_BRAND_NAME = f'{_pictory}.brand.name'
-    PICTORY_BG_MUSIC_NAME = f'{_pictory}.bg-music.name'
-    PICTORY_VOICE_NAME = f'{_pictory}.voice.name'
+    # VIDEO_CONTENT_FILE is used for title and description.
+    VIDEO_CONTENT_FILE = (f'{_video}_CONTENT_FILE', True, True)
+    # VIDEO_INPUT_FILE is used to generate the video.
+    VIDEO_INPUT_FILE = (f'{_video}_INPUT_FILE', False, True)
+    VIDEO_INPUT_TEXT = (f'{_video}_INPUT_TEXT', True)
+    VIDEO_TILE = (f'{_video}_TITLE', True)
+    VIDEO_DESCRIPTION = (f'{_video}_DESCRIPTION', True)
+    VIDEO_OUTPUT_TYPE = f'{_video}_OUTPUT_TYPE'
+    VIDEO_COVER_IMAGE = (f'{_video}_COVER_IMAGE', False, True)
+    VIDEO_COVER_IMAGE_SQUARE = (f'{_video}_COVER_IMAGE_SQUARE', True, True)
 
-    TRANSLATION_OUTPUT_LANGUAGES = f'{_translation}.output.languages'
-    TRANSLATION_FILE_EXTENSION = f'{_translation}.file.extension'
+    PICTORY_USER_EMAIL = f'{_pictory}_USER_EMAIL'
+    PICTORY_USER_PASS = f'{_pictory}_USER_PASS'
+    PICTORY_BRAND_NAME = f'{_pictory}_BRAND_NAME'
+    PICTORY_BG_MUSIC_NAME = f'{_pictory}_BG_MUSIC_NAME'
+    PICTORY_VOICE_NAME = f'{_pictory}_VOICE_NAME'
 
-    YOUTUBE_USER_EMAIL = f'{_youtube}.user.email'
-    YOUTUBE_USER_PASS = f'{_youtube}.user.pass'
-    YOUTUBE_PLAYLIST_NAME = f'{_youtube}.playlist.name'
+    TRANSLATION_OUTPUT_LANGUAGES = f'{_translation}_OUTPUT_LANGUAGES'
+    TRANSLATION_FILE_EXTENSION = f'{_translation}_FILE_EXTENSION'
 
-    TIKTOK_USER_NAME = f'{_tiktok}.user.name'
-    TIKTOK_USER_PASS = f'{_tiktok}.user.pass'
+    YOUTUBE_USER_EMAIL = f'{_youtube}_USER_EMAIL'
+    YOUTUBE_USER_PASS = f'{_youtube}_USER_PASS'
+    YOUTUBE_PLAYLIST_NAME = f'{_youtube}_PLAYLIST_NAME'
 
-    TWITTER_USER_EMAIL = f'{_twitter}.user.email'
-    TWITTER_USER_NAME = f'{_twitter}.user.name'
-    TWITTER_USER_PASS = f'{_twitter}.user.pass'
+    TIKTOK_USER_EMAIL = f'{_tiktok}_USER_EMAIL'
+    TIKTOK_USER_PASS = f'{_tiktok}_USER_PASS'
 
-    REDDIT_USER_NAME = f'{_reddit}.user.name'
-    REDDIT_USER_PASS = f'{_reddit}.user.pass'
-    REDDIT_COMMUNITY_NAME = f'{_reddit}.community.name'
+    TWITTER_USER_EMAIL = f'{_twitter}_USER_EMAIL'
+    TWITTER_USER_NAME = f'{_twitter}_USER_NAME'
+    TWITTER_USER_PASS = f'{_twitter}_USER_PASS'
 
-    FACEBOOK_USER_NAME = f'{_facebook}.user.name'
-    FACEBOOK_USER_PASS = f'{_facebook}.user.pass'
+    REDDIT_USER_NAME = f'{_reddit}_USER_NAME'
+    REDDIT_USER_PASS = f'{_reddit}_USER_PASS'
+    REDDIT_COMMUNITY_NAME = f'{_reddit}_COMMUNITY_NAME'
 
-    INSTAGRAM_USER_NAME = f'{_instagram}.user.name'
-    INSTAGRAM_USER_PASS = f'{_instagram}.user.pass'
+    FACEBOOK_USER_EMAIL = f'{_facebook}_USER_EMAIL'
+    FACEBOOK_USER_PASS = f'{_facebook}_USER_PASS'
 
-    GITHUB_USER_NAME = f'{_github}.user.name'
-    GITHUB_TOKEN = f'{_github}.token'
+    INSTAGRAM_USER_EMAIL = f'{_instagram}_USER_EMAIL'
+    INSTAGRAM_USER_PASS = f'{_instagram}_USER_PASS'
 
-    BLOG_ENV_FILE = (f'{_blog}.env.file', False, True)
-    BLOG_APP_DIR = (f'{_blog}.app.dir', False, True)
+    GITHUB_USER_NAME = f'{_github}_USER_NAME'
+    GITHUB_TOKEN = f'{_github}_TOKEN'
 
-    BROWSER_CHROME_EXECUTABLE_PATH = (f'{_browser_chrome}.executable-path', False, True)
-    BROWSER_CHROME_OPTIONS_ARGS_USER_DATA_DIR = \
-        (f'{_browser_chrome}.options.args.user-data-dir', True, True)
-    BROWSER_CHROME_OPTIONS_ARGS_PROFILE_DIRECTORY = \
-        (f'{_browser_chrome}.options.args.profile-directory', True)
+    BLOG_ENV_FILE = (f'{_blog}_ENV_FILE', False, True)
+    BLOG_APP_DIR = (f'{_blog}_APP_DIR', False, True)
+
+    BROWSER_CHROME_EXECUTABLE_PATH = (f'{_browser_chrome}_EXECUTABLE_PATH', False, True)
+    BROWSER_CHROME_OPTIONS_USERDATA_DIR = \
+        (f'{_browser_chrome}_OPTIONS_USERDATA_DIR', True, True)
+    BROWSER_CHROME_OPTIONS_PROFILE_DIR = \
+        (f'{_browser_chrome}_OPTIONS_PROFILE_DIR', True)
 
     @staticmethod
     def values():
@@ -119,7 +120,7 @@ def get_video_file() -> str:
 
 
 def get_cookies_file_path(domain: str, file_name: str = "cookies.pkl") -> str:
-    dir_path = get_path(Env.VIDEO_OUTPUT_DIR, "cookies")
+    dir_path = get_path(Env.OUTPUT_DIR, "cookies")
     return os.path.join(dir_path, domain, file_name)
 
 

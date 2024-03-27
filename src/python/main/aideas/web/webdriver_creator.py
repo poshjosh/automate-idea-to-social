@@ -25,8 +25,8 @@ class WebDriverCreator:
 
         undetected: bool = chrome_config.get('undetected', False)
 
-        remote_dvr_location: str = config['selenium.webdriver.url'] \
-            if 'selenium.webdriver.url' in config else None
+        remote_dvr_location: str = config['SELENIUM_WEBDRIVER_URL'] \
+            if 'SELENIUM_WEBDRIVER_URL' in config else None
 
         return WebDriverCreator.__create(executable_path, options, undetected, remote_dvr_location)
 

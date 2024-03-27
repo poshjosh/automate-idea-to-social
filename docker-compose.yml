@@ -21,7 +21,7 @@ services:
     depends_on:
       - selenium-chrome
 #    environment:
-#      selenium.webdriver.url: http://selenium-chrome:4444
+#      SELENIUM_WEBDRIVER_URL: http://selenium-chrome:4444
     networks:
       - browser-network
     env_file:

@@ -29,15 +29,15 @@ class AgentIT(unittest.TestCase):
     @staticmethod
     def format_tiktok_config(config: dict) -> dict:
         config = copy.deepcopy(config)
-        action_signature = ('get_first_file ${agents.dir}/' + pictory_agent + '/' +
-                            pictory_stage + '/save-file $video.output.type')
+        action_signature = ('get_first_file ${AGENTS_DIR}/' + pictory_agent + '/' +
+                            pictory_stage + '/save-file $VIDEO_OUTPUT_TYPE')
         actions: [str] = [action_signature, 'log DEBUG $results.me[0]']
         config[STAGES_KEY][tiktok_stage] = {STAGE_ITEMS_KEY: {tiktok_target: {'actions': actions}}}
         return config
 
     def test_pictory_saved_video_is_available_for_other_agents(self):
-        os.environ[Env.VIDEO_OUTPUT_DIR.value] = (
-            get_test_path(os.environ[Env.VIDEO_OUTPUT_DIR.value]))
+        os.environ[Env.OUTPUT_DIR.value] = (
+            get_test_path(os.environ[Env.OUTPUT_DIR.value]))
         os.environ[Env.AGENTS_DIR.value] = get_test_path(os.environ[Env.AGENTS_DIR.value])
         run_context: RunContext = RunContext.of_config(self.app_config, pictory_agent)
         result: ElementResultSet = self.__run_agent(pictory_agent, pictory_stage, run_context)

@@ -14,7 +14,7 @@ os.environ[Env.VIDEO_INPUT_FILE.value] = f'{__test_content_dir}/content.txt'
 os.environ[Env.VIDEO_CONTENT_FILE.value] = f'{__test_content_dir}/content.txt'
 os.environ[Env.VIDEO_COVER_IMAGE.value] = f'{__test_content_dir}/cover.jpg'
 os.environ[Env.VIDEO_COVER_IMAGE_SQUARE.value] = f'{__test_content_dir}/cover-square.jpg'
-os.environ[Env.VIDEO_OUTPUT_DIR.value] = __test_downloads_dir
+os.environ[Env.OUTPUT_DIR.value] = __test_downloads_dir
 os.environ[Env.VIDEO_OUTPUT_TYPE.value] = 'mp4'
 os.environ[Env.BLOG_ENV_FILE.value] = f'{__app_home}/blog.env'
 os.environ[Env.BLOG_APP_DIR.value] = f'{__app_home}/src/downloads'
@@ -22,5 +22,5 @@ os.environ[Env.BLOG_APP_DIR.value] = f'{__app_home}/src/downloads'
 os.environ[Env.TRANSLATION_OUTPUT_LANGUAGES.value] = "ar,de,zh"
 
 del os.environ[Env.BROWSER_CHROME_EXECUTABLE_PATH.value]
-del os.environ[Env.BROWSER_CHROME_OPTIONS_ARGS_USER_DATA_DIR.value]
-del os.environ[Env.BROWSER_CHROME_OPTIONS_ARGS_PROFILE_DIRECTORY.value]
+del os.environ[Env.BROWSER_CHROME_OPTIONS_USERDATA_DIR.value]
+del os.environ[Env.BROWSER_CHROME_OPTIONS_PROFILE_DIR.value]

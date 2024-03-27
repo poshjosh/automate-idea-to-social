@@ -78,7 +78,7 @@ class App:
 """
 The following code is used to parse command line arguments.
 """
-ARG_AGENTS = "agents"
+ARG_AGENTS = "AGENTS"
 
 T = TypeVar("T", bound=any)
 

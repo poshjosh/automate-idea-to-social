@@ -29,12 +29,12 @@ stages:
       enter-username:
         search-for: //*[@id="loginContainer"]//form//input[@name="username"]
         actions:
-          - send_keys $tiktok.user.name
+          - send_keys $TIKTOK_USER_EMAIL
           - wait 2
       enter-password:
         search-for: //*[@id="loginContainer"]//form//input[@type="password" and @placeholder="Password"]
         actions:
-          - send_keys $tiktok.user.pass
+          - send_keys $TIKTOK_USER_PASS
           - wait 2
       submit-login:
         search-for: //*[@id="loginContainer"]//form/button[contains(text(), "Log")]
@@ -57,7 +57,7 @@ stages:
         actions:
           # Use the first result from the specified pictory download stage
           #- enter_text $results.pictory.download-video-layout-2.save-file[0]
-          - get_first_file ${agents.dir}/pictory/results/download-video-layout-2/save-file $video.output.type
+          - get_first_file ${AGENTS_DIR}/pictory/results/download-video-layout-2/save-file $VIDEO_OUTPUT_TYPE
           - enter_text $results.me[0]
           - wait 5 # It takes a while but the default wait will cover the rest
       click-upload-button:
@@ -76,7 +76,7 @@ stages:
           - //*[@id="root"]//*[starts-with(@class, "DraftEditor-root")]//*[@data-contents="true"]//span[@data-text="true"]
           - //*[@id="root"]//*[@data-contents="true"]//span[@data-text="true"]
           - //*[@id="root"]//*[@data-text="true"]
-        actions: enter_text $video.description
+        actions: enter_text $VIDEO_DESCRIPTION
   submit-video:
     stage-items:
       click-submit-video:

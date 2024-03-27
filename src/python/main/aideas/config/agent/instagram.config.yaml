@@ -22,12 +22,12 @@ stages:
         search-for:
           - //*[@id="loginForm"]/div/div[1]/div/label/input
           - //*[@id="loginForm"]//input[@name="username"]
-        actions: enter_text $instagram.user.name
+        actions: enter_text $INSTAGRAM_USER_EMAIL
       password:
         search-for:
           - //*[@id="loginForm"]/div/div[2]/div/label/input
           - //*[@id="loginForm"]//input[@name="password"]
-        actions: enter_text $instagram.user.pass
+        actions: enter_text $INSTAGRAM_USER_PASS
       submit:
         search-for:
           - //*[@id="loginForm"]/div/div[3]/button
@@ -94,7 +94,7 @@ stages:
         actions:
           # Use the first result from the specified agent.stage.stage-item
           #- enter_text $results.pictory.download-video-layout-3.save-file[0]
-          - get_first_file ${agents.dir}/pictory/results/download-video-layout-3/save-file $video.output.type
+          - get_first_file ${AGENTS_DIR}/pictory/results/download-video-layout-3/save-file $VIDEO_OUTPUT_TYPE
           - enter_text $results.me[0]
           - wait 7
       dismiss-alert:
@@ -118,7 +118,7 @@ stages:
           - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[2]/div[2]/div/div/div/div/div[1]/div[1]/div/div/form/input
           - //div[@role="dialog"]//form/input[@type="file"]
         actions:
-          - enter_text $video.cover.image.square
+          - enter_text $VIDEO_COVER_IMAGE_SQUARE
           - wait 15
       proceed-to-content:
         search-for:
@@ -133,7 +133,7 @@ stages:
           - //div[@role="dialog"]//*[@role="textbox"]
           - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[2]/div[2]/div/div/div/div[1]/div[2]/div/div[1]/div[1]
           - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[2]/div[2]/div/div/div/div[1]/div[2]/div/div[1]/div[1]/p
-        actions: enter_text $video.description
+        actions: enter_text $VIDEO_DESCRIPTION
       submit:
         search-for:
           - /html/body//div[@role="dialog"]//div[contains(text(), "Share")]

@@ -112,7 +112,7 @@ class Agent:
     def get_output_dir(self, agent_name: str = None):
         if not agent_name:
             agent_name = self.get_name()
-        return os.path.join(require_path(Env.VIDEO_OUTPUT_DIR), agent_name)
+        return os.path.join(require_path(Env.OUTPUT_DIR), agent_name)
 
     def __clear_dirs(self):
         dirs_to_clear = [self.get_results_dir(), self.get_output_dir()]

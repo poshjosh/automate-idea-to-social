@@ -13,10 +13,10 @@ stages:
           - //*[@id="facebook"]//button[contains(text(), "cookies")]
       fill-username:
         search-for: //*[@id="email"]
-        actions: enter_text $facebook.user.name
+        actions: enter_text $FACEBOOK_USER_EMAIL
       fill-password:
         search-for: //*[@id="pass"]
-        actions: enter_text $facebook.user.pass
+        actions: enter_text $FACEBOOK_USER_PASS
       click-login:
         search-for:
           - //*[starts-with(@id, "u_0_2_")]/div[2]/button[contains(text(), "Log")]
@@ -56,7 +56,7 @@ stages:
         actions:
           # Use the first result from the specified pictory download stage
           #- enter_text $results.pictory.save-downloaded-video.save-file[0]
-          - get_first_file ${agents.dir}/pictory/results/save-downloaded-video/save-file $video.output.type
+          - get_first_file ${AGENTS_DIR}/pictory/results/save-downloaded-video/save-file $VIDEO_OUTPUT_TYPE
           - enter_text $results.me[0]
           - wait 10
       enter-post-text:
@@ -64,7 +64,7 @@ stages:
           - ${self.post-dialog}//form//div[@role="textbox"]
           - ${self.post-dialog}//*[@role="textbox"]
         actions:
-          - enter_text $video.description
+          - enter_text $VIDEO_DESCRIPTION
           - wait 10 # Long posts take a while
       submit-post:
         search-for:

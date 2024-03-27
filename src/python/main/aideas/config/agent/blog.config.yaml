@@ -6,23 +6,23 @@ app:
   source:
     url: https://github.com/poshjosh/${self.app.name}/archive/refs/tags/v${self.app.version}.zip
   target:
-    dir: ${blog.app.dir}/app
+    dir: ${BLOG_APP_DIR}/app
   base:
     # Downloading and extracting app.source.url will create this directory
-    dir: ${blog.app.dir}/app/${self.app.name}-${self.app.version}
+    dir: ${BLOG_APP_DIR}/app/${self.app.name}-${self.app.version}
   script:
-    convert-to-markdown: ${blog.app.dir}/app/${self.app.name}-${self.app.version}/scripts/convert-to-markdown.sh
-    update-blog: ${blog.app.dir}/app/${self.app.name}-${self.app.version}/scripts/docker-run-app.sh
-    docker-entrypoint: ${blog.app.dir}/app/${self.app.name}-${self.app.version}/app/config/setup-scripts/docker-entrypoint.sh
+    convert-to-markdown: ${BLOG_APP_DIR}/app/${self.app.name}-${self.app.version}/scripts/convert-to-markdown.sh
+    update-blog: ${BLOG_APP_DIR}/app/${self.app.name}-${self.app.version}/scripts/docker-run-app.sh
+    docker-entrypoint: ${BLOG_APP_DIR}/app/${self.app.name}-${self.app.version}/app/config/setup-scripts/docker-entrypoint.sh
 blog:
   name: liveabove3d.com
   source:
     url: https://github.com/poshjosh/${self.blog.name}.git
   target:
-    dir: ${blog.app.dir}/blog
+    dir: ${BLOG_APP_DIR}/blog
   base:
     # git clone blog.src.url will create this directory
-    dir: ${blog.app.dir}/blog/${self.blog.name}
+    dir: ${BLOG_APP_DIR}/blog/${self.blog.name}
 stages:
   download-app:
   clone-blog:

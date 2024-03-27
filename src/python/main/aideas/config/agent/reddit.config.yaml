@@ -4,11 +4,11 @@ stages:
     stage-items:
       enter-user-name:
         search-for: //*[@id="login-username"]
-        actions: enter_text $reddit.user.name
+        actions: enter_text $REDDIT_USER_NAME
       enter-password:
         search-for: //*[@id="login-password"]
         actions:
-          - enter_text $reddit.user.pass
+          - enter_text $REDDIT_USER_PASS
           - wait 2 # The button becomes clickable after both are entered
       # The target element resides within a shadow DOM, XPath will not work.
       # See: https://stackoverflow.com/questions/37384458/how-to-handle-elements-inside-shadow-dom-from-selenium
@@ -31,7 +31,7 @@ stages:
           - click
           - wait 2
   dismiss-cookie-alert:
-    url: https://www.reddit.com/r/${reddit.community.name}/submit
+    url: https://www.reddit.com/r/${REDDIT_COMMUNITY_NAME}/submit
     stage-items:
       reject-non-essential-cookies:
         wait-timeout-seconds: 10
@@ -54,14 +54,14 @@ stages:
           onerror: continue
         search-for: //*[@id="SHORTCUT_FOCUSABLE_DIV"]/div[4]/div/div/div/footer/div/button[1]
   title:
-    url: https://www.reddit.com/r/${reddit.community.name}/submit
+    url: https://www.reddit.com/r/${REDDIT_COMMUNITY_NAME}/submit
     stage-items:
       enter-title:
         search-for:
           - //*[@id="AppRouter-main-content"]//textarea[@placeholder="Title"]
           - //*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[2]/div[3]/div[2]/div[1]/div/textarea
           - //*[@id="AppRouter-main-content"]//textarea[@rows="1"]
-        actions: enter_text $video.title
+        actions: enter_text $VIDEO_TITLE
   cover-image:
     events:
       onerror: continue
@@ -72,7 +72,7 @@ stages:
           - //*[@id="AppRouter-main-content"]//button/input[@type="file"]
           - //*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[2]/div[3]/div[2]/div[2]/div/div/div[1]/div[1]/div/span[16]/button/input[@type="file"]
         actions:
-          - enter_text $video.cover.image
+          - enter_text $VIDEO_COVER_IMAGE
           - wait 5
       enter-cover-image-caption:
         search-for:
@@ -83,7 +83,7 @@ stages:
           - //*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[2]/div[3]/div[2]/div[2]/div/div/div[3]/div/div[1]/div/div/div/div/div[2]/div
           - //*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[2]/div[3]/div[2]/div[2]/div/div/div[3]/div/div[1]/div/div/div/div/div[2]/div/div
         actions:
-          - enter_text $video.title
+          - enter_text $VIDEO_TITLE
           - wait 2
   content:
     stage-items:
@@ -98,7 +98,7 @@ stages:
         actions:
           - move_to_element
           - enter
-          - enter_text $video.description
+          - enter_text $VIDEO_DESCRIPTION
           - wait 2
   post:
     stage-items:
@@ -117,7 +117,7 @@ stages:
           - click
           - wait 10
   approve-post:
-    url: https://www.reddit.com/r/${reddit.community.name}/
+    url: https://www.reddit.com/r/${REDDIT_COMMUNITY_NAME}/
     events:
       onerror:
         - log WARNING \n= = = = = = = FAILED TO APPROVE POST (Please do it manually) = = = = = = =\n
