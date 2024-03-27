@@ -214,12 +214,12 @@ class BrowserAutomator:
                               config_path: ConfigPath,
                               element: Union[WebElement, None],
                               wait_timeout_secs: float,
-                              ax_signatures: list[str],
+                              action_signatures: list[str],
                               run_context: RunContext) -> ElementResultSet:
         stage_id: str = config_path.stage().get_id()
         target_id: str = config_path.name().get_id()
         action_handler = self.__action_handler.with_timeout(wait_timeout_secs)
-        for action_signature in ax_signatures:
+        for action_signature in action_signatures:
             action = Action.of(
                 self.__agent_name, stage_id, target_id, action_signature, run_context)
 

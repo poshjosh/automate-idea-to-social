@@ -1,5 +1,7 @@
 ### Tips & Tricks
 
+- Videos with less than 150 words are less than one minute long. 
+
 - Disable 2-factor authentication on your accounts.
 
 - Use chrome Profile
