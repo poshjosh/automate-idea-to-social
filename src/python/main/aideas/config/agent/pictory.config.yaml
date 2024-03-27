@@ -261,7 +261,9 @@ stages:
           - //*[@id="h-tb1"]//img[@alt="${video.title}"]//..//..
       download-subtitles-file:
         events:
-          onerror: log WARNING \n= = = = = = = FAILED TO DOWNLOAD SUBTITLES (Please do it manually) = = = = = = =\n
+          onerror:
+            - log WARNING \n= = = = = = = FAILED TO DOWNLOAD SUBTITLES (Please do it manually) = = = = = = =\n
+            - continue
         wait-timeout-seconds: 7
         #search-from: //*[@id="h-tb1"]//div[contains(text(), "${translation.file.extension}")]
         #search-for: //*[name()="svg"]

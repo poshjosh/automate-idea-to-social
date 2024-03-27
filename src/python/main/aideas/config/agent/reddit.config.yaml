@@ -116,4 +116,19 @@ stages:
           - wait 2
           - click
           - wait 10
+  approve-post:
+    url: https://www.reddit.com/r/${reddit.community.name}/
+    events:
+      onerror:
+        - log WARNING \n= = = = = = = FAILED TO APPROVE POST (Please do it manually) = = = = = = =\n
+        - continue
+    stage-items:
+      approve-post:
+        search-for: # //*[@id="t3_1bovvsu"]/shreddit-mod-inline-actions//mod-action-button[1]
+          shadow-attributes: aria-label="Approve content"
+        actions:
+          - click
+          - wait 2
+
+
 
