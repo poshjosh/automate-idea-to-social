@@ -1,3 +1,4 @@
+import collections
 import copy
 import logging
 from typing import Union, TypeVar, Callable
@@ -17,9 +18,7 @@ RESULT = TypeVar('RESULT', bound=any)
 class ResultSet:
     def __init__(self,
                  success_test: Callable[[RESULT], bool],
-                 results: Union[dict[str, RESULT], None] = None,
-                 total: int = 0,
-                 failure: int = 0):
+                 results: Union[dict[str, RESULT], None] = None):
         self.__closed = False
         if success_test is None:
             raise ValueError('success_test cannot be None')
@@ -27,8 +26,6 @@ class ResultSet:
         self.__results: dict[str, RESULT] = {}
         if results is not None:
             self.__results.update(copy.deepcopy(results))
-        self.__total = total
-        self.__failure = failure
 
     """Returns a copy of the result or the result_if_none if the result is not found."""
     def get(self, result_id: str, result_if_none: RESULT = None) -> RESULT:
@@ -47,9 +44,6 @@ class ResultSet:
 
     def set(self, key: str, value: RESULT) -> 'ResultSet':
         self.__set(key, value)
-        self.__total += 1
-        if not self.__success_test(value):
-            self.__failure += 1
         return self
 
     def __get(self, result_id: str, result_if_none: RESULT = None) -> RESULT:
@@ -77,33 +71,53 @@ class ResultSet:
         return self.size() == 0
 
     def size(self) -> int:
-        return self.__total
+        return len(self.__results)
 
     def is_successful(self):
-        return self.__failure == 0 and self.size() > 0
+        return self.size() > 0 and self.__count_failures() == 0
 
     def is_failure(self):
-        return self.__failure > 0
+        return not self.is_successful()
 
     def items(self):
         return self.__results.items()
 
-    def get_total(self) -> int:
-        return self.__total
+    def pretty_str(self, separator: str = "\n", offset: int = 0) -> str:
+        tab = '\t'
+        output: str = ''
+        for key in self.keys():
+            output = f'{output}{separator}{tab * offset}{key}'
+            value = self.get(key)
+            if isinstance(value, ResultSet):
+                output = f'{output}{value.pretty_str(separator, offset + 1)}'
+            elif isinstance(value, dict):
+                for k, v in value.items():
+                    output = f'{output}{separator}{tab * (offset + 1)}{k}={v}'
+            elif isinstance(value, collections.Iterable):
+                for e in value:
+                    output = f'{output}{separator}{tab * (offset + 1)}{e}'
+            else:
+                output = f'{output}{separator}{tab * (offset + 1)}{value}'
+        return output
 
-    def get_failure(self) -> int:
-        return self.__failure
+    def __count_failures(self) -> int:
+        failures: int = 0
+        for result in self.__results.values():
+            if not self.__success_test(result):
+                failures += 1
+        return failures
+
+    def __check_closed(self):
+        if self.__closed:
+            raise ValueError('Cannot update result set when closed')
 
     def __eq__(self, other) -> bool:
         return self.__closed == other.__closed and self.__results == other.__results
 
     def __str__(self) -> str:
-        success: int = self.__total - self.__failure
-        return f'ResultSet(success-rate={success}/{self.__total})'
-
-    def __check_closed(self):
-        if self.__closed:
-            raise ValueError('Cannot update result set when closed')
+        size: int = self.size()
+        success: int = size - self.__count_failures()
+        return f'ResultSet(success-rate={success}/{size})'
 
 
 class ElementResultSet(ResultSet):
@@ -111,11 +125,8 @@ class ElementResultSet(ResultSet):
     def none() -> 'ElementResultSet':
         return NOOP_ELEMENT_RESULT_SET
 
-    def __init__(self,
-                 results: Union[dict[str, list[ActionResult]], None] = None,
-                 total: int = 0,
-                 failure: int = 0):
-        super().__init__(self.is_result_successful, results, total, failure)
+    def __init__(self, results: Union[dict[str, list[ActionResult]], None] = None):
+        super().__init__(self.is_result_successful, results)
 
     def add_all(self, result_set: 'ElementResultSet') -> 'ElementResultSet':
         for result_list in result_set.values():
@@ -144,21 +155,12 @@ class ElementResultSet(ResultSet):
                 return result
         return result_if_none
 
-    def is_result_successful(self, result: list[ActionResult]) -> bool:
+    @staticmethod
+    def is_result_successful(result: list[ActionResult]) -> bool:
         for r in result:
-            if not r.is_success():
+            if r.is_success() is False:
                 return False
         return True
-
-    def pretty_str(self, separator: str = "\n", offset: int = 0) -> str:
-        tab = '\t'
-        output: str = ''
-        for elem in self.keys():
-            output = f'{output}{separator}{tab * offset}{elem}'
-            action_results = self.get(elem)
-            for action_result in action_results:
-                output = f'{output}{separator}{tab * (offset + 1)}{action_result}'
-        return output
 
 
 NOOP_ELEMENT_RESULT_SET: ElementResultSet = ElementResultSet().close()
@@ -169,43 +171,21 @@ class StageResultSet(ResultSet):
     def none() -> 'StageResultSet':
         return NOOP_STAGE_RESULT_SET
 
-    def __init__(self,
-                 results: Union[dict[str, ElementResultSet], None] = None,
-                 total: int = 0,
-                 failure: int = 0):
-        super().__init__(self.is_result_successful, results, total, failure)
+    def __init__(self, results: Union[dict[str, ElementResultSet], None] = None):
+        super().__init__(self.is_result_successful, results)
 
-    def is_result_successful(self, result: ElementResultSet) -> bool:
+    @staticmethod
+    def is_result_successful(result: ElementResultSet) -> bool:
         return result.is_successful()
-
-    def pretty_str(self, separator: str = "\n", offset: int = 0) -> str:
-        tab = '\t'
-        output: str = ''
-        for stage in self.keys():
-            output = f'{output}{separator}{tab * offset}{stage}'
-            element_results = self.get(stage)
-            output = f'{output}{element_results.pretty_str(separator, offset + 1)}'
-        return output
 
 
 NOOP_STAGE_RESULT_SET: StageResultSet = StageResultSet().close()
 
 
 class AgentResultSet(ResultSet):
-    def __init__(self,
-                 results: Union[dict[str, StageResultSet], None] = None,
-                 total: int = 0,
-                 failure: int = 0):
-        super().__init__(self.is_result_successful, results, total, failure)
+    def __init__(self, results: Union[dict[str, StageResultSet], None] = None):
+        super().__init__(self.is_result_successful, results)
 
-    def is_result_successful(self, result: StageResultSet) -> bool:
+    @staticmethod
+    def is_result_successful(result: StageResultSet) -> bool:
         return result.is_successful()
-
-    def pretty_str(self, separator: str = "\n", offset: int = 0) -> str:
-        tab = '\t'
-        output: str = ''
-        for stage in self.keys():
-            output = f'{output}{separator}{tab * offset}{stage}'
-            stage_results = self.get(stage)
-            output = f'{output}{stage_results.pretty_str(separator, offset + 1)}'
-        return output

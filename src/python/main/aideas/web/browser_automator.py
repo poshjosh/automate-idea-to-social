@@ -131,6 +131,7 @@ class BrowserAutomator:
             return result
 
         def do_retry(_trials: int) -> ElementResultSet:
+            logger.debug(f"Retrying {config_path}")
             return self.__act_on_element(config, config_path, run_context, _trials)
 
         def do_run_stages(_, __):
@@ -186,6 +187,7 @@ class BrowserAutomator:
         element = element if not selected else selected
 
         expectation_actions: list[str] = config.get_expectation_actions(config_path)
+        logger.debug(f"Checking expectations: {expectation_actions}")
         if expectation_actions:
             # Since we use the same config_path as above, the
             # results of the expectation will be added to the

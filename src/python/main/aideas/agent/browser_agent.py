@@ -87,10 +87,12 @@ class BrowserAgent(Agent):
                              f"Current stage: {config_path}")
 
         def do_retry(_trials: int) -> ElementResultSet:
+            logger.debug(f"Retrying {config_path}")
             return self.__run_stage(run_context, stage, _trials)
 
         def do_run_stages(context: RunContext,
                           agent_to_stages: OrderedDict[str, [Name]]):
+            logger.debug(f"Running stages {agent_to_stages}")
             # We don't want an infinite loop, so we run this event without events.
             self.without_events()._run_agent_stages(context, agent_to_stages)
 
@@ -111,6 +113,7 @@ class BrowserAgent(Agent):
                 config, stage, run_context)
 
         except (ElementNotFoundError, ActionError, AgentError) as ex:
+            logger.debug(f"Error acting on {config_path} {type(ex)}")
             exception = ex
 
         result = self.__event_handler.handle_result_event(

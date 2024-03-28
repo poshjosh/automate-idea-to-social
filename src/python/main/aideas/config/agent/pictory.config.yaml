@@ -94,7 +94,8 @@ stages:
         expected:
           actions: not is_displayed
         events:
-          onerror: retry 1
+          onerror:
+            - retry 1
         search-for:
           - //*[@id="UploadImageModel"]/div/div/div/div[2]/div[2]/button[contains(text(), "Save")]
           - //*[@id="UploadImageModel"]//*[contains(text(), "Save")]
@@ -201,11 +202,23 @@ stages:
           - wait 2
           - dismiss_alert 10
           - wait 2
+      # We close the download alert by clicking on the page anywhere outside the alert
+      # We earlier tried clicking the notification button, but that was not reliable.
       close-download-alert:
+        events:
+          onstart: refresh # This may dismiss the alert
+        search-for:
+          - //*[@id="main-div-step-3"]//header//*[text()="Project"]//..//..//input[@type="text"]
+          - //*[@id="main-div-step-3"]//header//*[text()="Project"]//..//..
+        actions:
+          # Just to make sure we click twice
+          - click
+          - wait 1
+          - click
+          - wait 1
+      close-download-alert-if-still-open:
         when:
-          search-for:
-            - //*[@id="notification-bell-dropdown"]//span[contains(text(), "Notifications")]//..
-            - //*[@id="notification-bell-dropdown"]/ul//span[contains(text(), "Notifications")]//..
+          search-for: //*[@id="notification-bell-dropdown"]//span[contains(text(), "Notifications")]//..
           actions: is_displayed
         search-for: //*[@id="notification-bell-dropdown"]
         actions:
@@ -232,8 +245,8 @@ stages:
           - //*[@id="step-3-fixed-height"]//div[@role="combobox"]
       select-layout-2:
         search-for:
-          - //*[@id="menu-"]//ul/li[contains(text(), "Portrait")]
           - //*[@id="menu-"]//ul/li[2]
+          - //*[@id="menu-"]//ul/li[contains(text(), "Portrait")]
         actions:
           - click
           - wait 6  # An 8 mb video took 2 seconds

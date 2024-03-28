@@ -242,7 +242,7 @@ class ElementActionHandler(BrowserActionHandler):
     @staticmethod
     def __print_element_attr(element: WebElement, attribute_name: str):
         try:
-            print(f' Printing element attribute: {attribute_name}'
-                  f'\n{"="*64}\n{element.get_attribute(attribute_name)}\n{"="*64}')
+            logger.debug(f'Printing element attribute: {attribute_name}'
+                         f'\n{"="*64}\n{element.get_attribute(attribute_name)}\n{"="*64}')
         except Exception:
             pass

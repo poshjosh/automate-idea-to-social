@@ -26,6 +26,9 @@ class Name:
         self.__value = name
         self.__id = name if identifier is None else identifier
 
+    def matches(self, text: str) -> bool:
+        return self.__value == text or self.__id == text
+
     def get_id(self) -> str:
         return self.__id
 

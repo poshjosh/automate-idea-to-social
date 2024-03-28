@@ -81,8 +81,10 @@ class EventHandler:
             elif action_signature == 'fail':
                 raise AgentError(f'Error {config_path}, result: {result}') from exception
             elif action_signature.startswith('retry'):
-                if trials < self.__max_trials(action_signature):
-                    logger.debug(f'Retrying: {config_path}, tried {trials} already')
+                max_trials: int = self.__max_trials(action_signature)
+                logger.debug(f'Attempted: {trials} of {max_trials} '
+                             f'for "{action_signature}" of {config_path}')
+                if trials < max_trials:
                     retry(trials + 1)
                 else:
                     raise AgentError(

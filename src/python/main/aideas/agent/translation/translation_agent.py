@@ -115,9 +115,10 @@ class TranslationAgent(Agent):
     def __print_subtitles_if_verbose(self, subtitles_list: list[webvtt.Caption], title: str = ""):
         if self.__verbose is not True:
             return
-        print(title)
+        output: str = title
         for i in subtitles_list:
-            print(i)
+            output += f'\n{i}'
+        logger.debug(output)
 
 
 def _compose_file_name(filename: str, target_language_code: str):

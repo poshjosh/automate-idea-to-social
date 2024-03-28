@@ -138,14 +138,19 @@ class BlogAgent(Agent):
 
     def update_blog(self, action: Action, run_context: RunContext) -> ActionResult:
 
+        return_code = self.__update_blog(run_context)
+
+        return ActionResult(action, return_code == 0)
+
+    def __update_blog(self, run_context: RunContext) -> int:
+
         grant_execute_permission_if_need(self.get_docker_entrypoint_script())
 
         args: [str] = self._get_update_blog_command_args(run_context)
 
         timeout = self.get_config().get_stage_wait_timeout('update-blog', 1200)
 
-        return_code = run_script(self.get_update_blog_script(), args, timeout)
-        return ActionResult(action, return_code == 0)
+        return run_script(self.get_update_blog_script(), args, timeout).returncode
 
     def __download_and_extract_zip_to_dir(self,
                                           url: str,

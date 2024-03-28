@@ -1,4 +1,7 @@
+import logging
 from .action import Action
+
+logger = logging.getLogger(__name__)
 
 
 class ActionResult:
@@ -12,6 +15,7 @@ class ActionResult:
         self.__success = success
 
     def flip(self) -> 'ActionResult':
+        logger.debug(f'Will flip result to: {not self.__success} from: {self.__success}')
         return ActionResult(self.__action, not self.__success, self.__result)
 
     def get_action(self) -> Action:
