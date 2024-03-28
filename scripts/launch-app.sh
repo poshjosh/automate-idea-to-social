@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
+#set -euo pipefail
 
 #@echo off
 
@@ -23,8 +23,7 @@ done
 
 [ "${VERBOSE}" = "true" ] || [ "$VERBOSE" = true ] && set -o xtrace
 
-# By getting the script's dir, we can run the script from any where.
-function getScriptDir() {
+function changeToScriptDir() {
   local script_path="${BASH_SOURCE[0]}"
   local script_dir;
   while [ -L "${script_path}" ]; do
@@ -36,36 +35,15 @@ function getScriptDir() {
   cd -P "$(dirname -- "${script_path}")" >/dev/null 2>&1 && pwd
 }
 
-SCRIPT_DIR=$(getScriptDir)
-
-cd "$SCRIPT_DIR" || (echo "Could not change to script directory: $SCRIPT_DIR" && exit 1)
-
 printf "\nExporting environment\n"
 
-function get_env() {
-  # /^#/d removes comments (strings that start with #)
-  # /^\s*$/d removes empty strings, including whitespace
-  # "s/'/'\\\''/g" replaces every single quote with '\'', which is a trick sequence in bash to produce a quote :)
-  # "s/=\(.*\)/='\1'/g" converts every a=b into a='b'
-  cat ../.env | sed -e '/^#/d;/^\s*$/d' -e "s/'/'\\\''/g" # -e "s/=\(.*\)/='\1'/g"
-}
-
-if [ "${VERBOSE}" = "true" ] || [ "$VERBOSE" = true ]; then
-    printf "\nEnvironment:\n"
-    cat <(get_env)
-fi
+cd ..
 
 set -a
-#source ../.env
-source <(get_env)
+source .env
 set +a
 
-# TODO - The check below reveals that our export of env above isn't working
-#  video.cover.image and other video related environments are not printed.
-env | grep USER
-env | grep video
-
-cd ../src/python/main || (echo "Could not change from script dir to working dir: ../src/python/main" && exit 1)
+cd ./src/python/main || (echo "Could not change from script dir to working dir: ./src/python/main" && exit 1)
 
 printf "\nWorking from: %s\n" "$(pwd)"
 
