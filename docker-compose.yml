@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   aideas:
-    image: "poshjosh/aideas:${IMAGE_TAG:-latest}"
+    image: "poshjosh/aideas:${DOCKER_IMAGE_TAG:-latest}"
     build:
       context: ./src/python/main/app
       dockerfile: ../Dockerfile
@@ -15,5 +15,5 @@ services:
         source: ./src/python/main/resources
         target: /resources
       - type: bind
-        source: /Users/chinomso/Desktop/live-above-3D/eternity-is-not-kind
-        target: /Users/chinomso/Desktop/live-above-3D/eternity-is-not-kind
+        source: ${DOCKER_MOUNT_DIR}
+        target: ${DOCKER_MOUNT_DIR}
