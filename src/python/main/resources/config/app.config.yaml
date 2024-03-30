@@ -24,9 +24,10 @@ browser:
         - user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36
         - disable-infobars
         - disable-extensions
-        # Use either headless|start-maximized|kiosk
+        # Use either (headless and start-maximized) or kiosk
         # Trying to change window size, while using kiosk, will crash the driver
         - headless
+        - start-maximized
         - disable-web-security
         - allow-running-insecure-content
 ##        - remote-allow-origins=*
