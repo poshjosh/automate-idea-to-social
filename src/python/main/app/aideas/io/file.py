@@ -121,6 +121,13 @@ def load_yaml(yaml_file_path: str, file_open_mode='r') -> Any:
         return config
 
 
+def load_yaml_str(yaml_str: str) -> Any:
+    yaml = YAML(typ='rt')
+    config = yaml.load(yaml_str)
+    logger.debug(f'Loaded yaml: {config}')
+    return config
+
+
 def save_yaml(obj: Any, yaml_file_path: str, file_open_mode='w') -> Any:
     logger.debug(f'Will save yaml to: {yaml_file_path}')
     yaml = YAML()

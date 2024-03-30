@@ -26,8 +26,10 @@ browser:
         - disable-extensions
         # Use either (headless and start-maximized) or kiosk
         # Trying to change window size, while using kiosk, will crash the driver
-        - headless
+        # Without this custom window size, we got ElementNotInteractableException
+        - window-size=1920,1080
         - start-maximized
+        - headless
         - disable-web-security
         - allow-running-insecure-content
 ##        - remote-allow-origins=*

@@ -8,6 +8,7 @@ from .....main.app.aideas.event.event_handler import EventHandler
 from .....main.app.aideas.config import Name
 from .....main.app.aideas.result.result_set import ElementResultSet
 from .....main.app.aideas.run_context import RunContext
+from .....main.app.aideas.web.browser_automator import BrowserAutomator
 
 
 class TestBrowserAgent(BrowserAgent):
@@ -36,3 +37,8 @@ class TestBrowserAgent(BrowserAgent):
         return TestBrowserAgent(
             self.get_name(), self.get_config().root(), self._get_dependencies(),
             browser_automator, self.get_interval_seconds())
+
+    def with_automator(self, automator: BrowserAutomator) -> 'BrowserAgent':
+        return TestBrowserAgent(self.get_name(), self.get_config().root(), self._get_dependencies(),
+                                automator, self.get_interval_seconds())
+

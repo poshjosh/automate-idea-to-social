@@ -179,8 +179,9 @@ stages:
       expand-download-options:
         search-for: //*[@id="generate-button-dropdown"]/a
         actions:
+          - wait 7 # Sometimes the voiceover is not applied, this is a shot in the dark
           - move_to_element
-          - wait 3
+          - *default_wait
       select-video-download:
         events:
           onerror:
@@ -217,6 +218,8 @@ stages:
           - click
           - wait 1
       close-download-alert-if-still-open:
+        events:
+          onerror: continue
         when:
           search-for: //*[@id="notification-bell-dropdown"]//span[contains(text(), "Notifications")]//..
           actions: is_displayed
@@ -233,13 +236,15 @@ stages:
         # E.g. main/resources/agent/pictory/results/save-downloaded-video/save-file/original.mp4
         actions:
           - wait 10 # Wait to make sure the file is downloaded
-          - get_newest_file_in_dir ${OUTPUT_DIR}/pictory $VIDEO_OUTPUT_TYPE 120
+          - get_newest_file_in_dir ${OUTPUT_DIR}/agent/pictory $VIDEO_OUTPUT_TYPE 120
           - save_file $results.me[1]
   download-video-layout-2:
     events:
       onsuccess: run_stages download-video save-downloaded-video
     stage-items:
       expand-layout-2-options:
+        events:
+          onerror: retry 1
         search-for:
           - //*[@id="step-3-fixed-height"]/div[2]/div[1]/div/div[2]/div/div/div[2]/div/div/div
           - //*[@id="step-3-fixed-height"]//div[@role="combobox"]
@@ -249,20 +254,22 @@ stages:
           - //*[@id="menu-"]//ul/li[contains(text(), "Portrait")]
         actions:
           - click
-          - wait 6  # An 8 mb video took 2 seconds
+          - wait 10  # 8mb video took 2 seconds, we add more time 'cos voice wasn't being applied
   download-video-layout-3:
     events:
       onsuccess: run_stages download-video save-downloaded-video
     stage-items:
       expand-layout-3-options:
+        events:
+          onerror: retry 1
         search-for: $self.stages.download-video-layout-2.stage-items.expand-layout-2-options.search-for
       select-layout-3:
         search-for:
-          - //*[@id="menu-"]//ul/li[contains(text(), "Square")]
           - //*[@id="menu-"]//ul/li[3]
+          - //*[@id="menu-"]//ul/li[contains(text(), "Square")]
         actions:
           - click
-          - wait 6  # An 8 mb video took 2 seconds
+          - wait 10  # 8mb video took 2 seconds, we add more time 'cos voice wasn't being applied
   download-subtitles:
     url: https://app.pictory.ai/myvideos
     stage-items:

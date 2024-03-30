@@ -65,6 +65,10 @@ class BrowserAgent(Agent):
         return BrowserAgent(self.get_name(), self.get_config().root(), self._get_dependencies(),
                             self.__browser_automator.without_events(), self.get_interval_seconds())
 
+    def with_automator(self, automator: BrowserAutomator) -> 'BrowserAgent':
+        return BrowserAgent(self.get_name(), self.get_config().root(), self._get_dependencies(),
+                            automator, self.get_interval_seconds())
+
     def run_stage(self,
                   run_context: RunContext,
                   stage: Name) -> ElementResultSet:

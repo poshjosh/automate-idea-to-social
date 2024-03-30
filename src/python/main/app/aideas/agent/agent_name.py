@@ -1,9 +1,14 @@
 class AgentName:
+    IMAGE_GENERATOR: str = "image-generator"
     PICTORY: str = "pictory"
     TRANSLATION: str = "translation"
     YOUTUBE: str = "youtube"
-    TIKTOK: str = "tiktok"
     BLOG: str = "blog"
+    TWITTER: str = "twitter"
+    REDDIT: str = "reddit"
+    FACEBOOK: str = "facebook"
+    INSTAGRAM: str = "instagram"
+    TIKTOK: str = "tiktok"
 
     class PictoryStage:
         SAVE_DOWNLOADED_VIDEO: str = "save-downloaded-video"

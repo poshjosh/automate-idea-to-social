@@ -1,4 +1,4 @@
-import collections
+from collections.abc import Iterable
 import copy
 import logging
 from typing import Union, TypeVar, Callable
@@ -93,7 +93,7 @@ class ResultSet:
             elif isinstance(value, dict):
                 for k, v in value.items():
                     output = f'{output}{separator}{tab * (offset + 1)}{k}={v}'
-            elif isinstance(value, collections.Iterable):
+            elif isinstance(value, Iterable):
                 for e in value:
                     output = f'{output}{separator}{tab * (offset + 1)}{e}'
             else:

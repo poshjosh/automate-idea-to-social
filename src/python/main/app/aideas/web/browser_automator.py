@@ -48,9 +48,25 @@ class BrowserAutomator:
         self.__event_handler = event_handler
         self.__element_selector = element_selector
         self.__action_handler = action_handler
+        self.__populate_result_set = True
+
+    def without_results_update(self) -> 'BrowserAutomator':
+        browser_automator: BrowserAutomator = self.with_event_handler(self.__event_handler)
+        browser_automator.__populate_result_set = False
+        return browser_automator
 
     def without_events(self) -> 'BrowserAutomator':
         return self.with_event_handler(EventHandler.noop())
+
+    def with_action_handler(self, action_handler: ElementActionHandler) -> 'BrowserAutomator':
+        return BrowserAutomator(
+            self.__webdriver, self.__wait_timeout_seconds, self.__agent_name,
+            self.__event_handler, self.__element_selector, action_handler)
+
+    def with_element_selector(self, element_selector: ElementSelector) -> 'BrowserAutomator':
+        return BrowserAutomator(
+            self.__webdriver, self.__wait_timeout_seconds, self.__agent_name,
+            self.__event_handler, element_selector, self.__action_handler)
 
     def with_event_handler(self, event_handler: EventHandler) -> 'BrowserAutomator':
         return BrowserAutomator(
@@ -105,7 +121,7 @@ class BrowserAutomator:
             return True
 
         try:
-            success = self.without_events().__act_on_element(
+            success = self.without_events().without_results_update().__act_on_element(
                 config, config_path, run_context).is_successful()
         except (ElementNotFoundError, ActionError) as ex:
             logger.debug(f'Error checking condition for {config_path}, \nCause: {ex}')
@@ -221,16 +237,23 @@ class BrowserAutomator:
         stage_id: str = config_path.stage().get_id()
         target_id: str = config_path.name().get_id()
         action_handler = self.__action_handler.with_timeout(wait_timeout_secs)
+
+        result_set: ElementResultSet = ElementResultSet()
         for action_signature in action_signatures:
             action = Action.of(
                 self.__agent_name, stage_id, target_id, action_signature, run_context)
 
             result: ActionResult = action_handler.execute_on(action, element)
 
-            run_context.add_action_result(self.__agent_name, stage_id, result)
+            if self.__populate_result_set is True:
+                run_context.add_action_result(self.__agent_name, stage_id, result)
+            else:
+                result_set.add(result)
 
-        # Don't close yet
-        return run_context.get_element_results(self.__agent_name, stage_id)
+        if self.__populate_result_set is True:
+            return run_context.get_element_results(self.__agent_name, stage_id)
+        else:
+            return result_set
 
     def quit(self):
         self.__webdriver.quit()
