@@ -1,0 +1,22 @@
+from ...test_functions import delete_saved_files
+from .test_translator import TestTranslator
+from ......main.app.aideas.agent.translation.translation_agent import TranslationAgent
+from ......main.app.aideas.config import Name
+from ......main.app.aideas.result.result_set import ElementResultSet
+from ......main.app.aideas.run_context import RunContext
+
+
+class TestTranslationAgent(TranslationAgent):
+    @staticmethod
+    def of_config(agent_config: dict[str, any]) -> TranslationAgent:
+        return TestTranslationAgent(agent_config, TestTranslator.of_config(agent_config))
+
+    def run_stage(self,
+                  run_context: RunContext,
+                  stage_name: Name) -> ElementResultSet:
+        result_set: ElementResultSet = ElementResultSet.none()
+        try:
+            result_set = super().run_stage(run_context, stage_name)
+        finally:
+            delete_saved_files(result_set)
+        return result_set

@@ -1,8 +1,12 @@
+# custom
+git-ignore/
+
 # Downloaded video/subtitle files
 .mp4
 .vtt
 
 # Saved results from running the application
+output/
 results/
 
 .DS_Store
@@ -20,7 +24,7 @@ __pycache__/
 build/
 develop-eggs/
 dist/
-downloads/
+src/python/test/resources/output/
 eggs/
 .eggs/
 lib/
@@ -134,9 +138,9 @@ celerybeat.pid
 *.env
 *.env.test
 .venv
-env/
+git-ignore/
 venv/
-ENV/
+git-ignore/
 env.bak/
 venv.bak/
 

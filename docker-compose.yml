@@ -1,32 +1,18 @@
-version: '3'
+version: '3.8'
 services:
-  # To see what is happening inside the container after launching it,
-  # head to http://localhost:7900/?autoconnect=1&resize=scale&password=secret
-  selenium-chrome:
-    image: selenium/standalone-chrome-debug
-    expose:
-      - "4444"
-      - "7900"
-    ports:
-      - "4444:4444"
-      - "7900:7900"
-    shm_size: 2gb
-    networks:
-      - browser-network
-
   aideas:
     build:
-      context: .
-      dockerfile: Dockerfile
-    depends_on:
-      - selenium-chrome
-#    environment:
-#      SELENIUM_WEBDRIVER_URL: http://selenium-chrome:4444
-    networks:
-      - browser-network
+      context: ./src/python/main/app
+      dockerfile: ../Dockerfile
+    shm_size: '2gb'
+    environment:
+      PYTHONUNBUFFERED: 1
     env_file:
       - .env
-
-networks:
-  browser-network:
-    driver: bridge
+    volumes:
+      - type: bind
+        source: ./src/python/main/resources
+        target: /resources
+      - type: bind
+        source: /Users/chinomso/Desktop/live-above-3D/eternity-is-not-kind
+        target: /Users/chinomso/Desktop/live-above-3D/eternity-is-not-kind

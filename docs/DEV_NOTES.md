@@ -1,3 +1,12 @@
+### Directory Structure
+
+Run the app with the working directory set to `${PROJECT_DIR}/src/python/main`
+
+Run tests with the working directory set to `${PROJECT_DIR}/src`
+- Tests need to be able to access both test and main sources.
+
+Agents use yaml configurations in `${PROJECT_DIR}/src/python/main/aideas/config/agent` 
+
 ### Tips & Tricks
 
 - Videos with less than 150 words are less than one minute long. 
@@ -27,11 +36,7 @@ See `src/python/main/requirements.txt`
 - docker
 - git
 
-### Directory Structure
-
-Run the app with the working directory set to `${PROJECT_DIR}/src/python/main`
-RUN tests with the working directory set to `${PROJECT_DIR}/src`
-  - Tests need to be able to access both test and main sources.
+### Some Known Errors
 
 On macos, if you encounter error: 
 

@@ -1,0 +1,99 @@
+# Some times //*[@id="layers"]/div, some times //*[@id="layers"]/div[2]
+# For div, we use div[1], only for symmetry.
+stages:
+  email:
+    #url: https://twitter.com/i/flow/login
+    url: https://twitter.com/i/flow/login?redirect_after_login=%2Fhome
+    stage-items:
+      enter-email:
+        search-for:
+          - //*[@id="layers"]//label//input[@type="text" and @name="text" and @autocomplete="username"]
+          - //*[@id="layers"]/div[1]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div/div/div/div[5]/label/div/div[2]/div/input
+          - //*[@id="layers"]/div[2]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div/div/div/div[5]/label/div/div[2]/div/input
+          - //*[@id="layers"]//input[@name="text"]
+        actions: enter_text $TWITTER_USER_EMAIL
+      submit-email:
+        search-for:
+          - //*[@id="layers"]//span[contains(text(), "Next")]//..//..//..
+          - //*[@id="layers"]/div[1]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div/div/div/div[6]
+          - //*[@id="layers"]/div[2]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div/div/div/div[6]
+          # TODO - Test this xpath
+          - //*[@id="layers"]//div[@role="button"//*[contains(text(), "Next")]]
+  # This stage is only shown when twitter wants to confirm your identity
+  # So we have onerror: continue
+  username:
+    events:
+      onerror: continue
+    stage-items:
+      enter-username:
+        wait-timeout-seconds: 120
+        search-for:
+          - //*[@id="layers"]/div[1]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[1]/div/div[2]/label/div/div[2]/div/input
+          - //*[@id="layers"]/div[2]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[1]/div/div[2]/label/div/div[2]/div/input
+        actions: enter_text $TWITTER_USER_NAME
+      submit-username:
+        search-for:
+          - //*[@id="layers"]/div[1]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[2]/div/div/div/div
+          - //*[@id="layers"]/div[2]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[2]/div/div/div/div
+          - //*[@id="layers"]/div[1]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[2]/div/div/div/div/div/span/span
+          - //*[@id="layers"]/div[2]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[2]/div/div/div/div/div/span/span
+  password:
+    stage-items:
+      enter-password:
+        search-for:
+          - //*[@id="layers"]//input[@type="password" and @name="password"]
+          - //*[@id="layers"]//input[@type="password"]
+        actions: enter_text $TWITTER_USER_PASS
+      submit-password:
+        search-for:
+          - //*[@id="layers"]//div[@role="button"//*[contains(text(), "Log in")]]
+          - //*[@id="layers"]/div[1]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[2]/div/div/div/div
+          - //*[@id="layers"]/div[2]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[2]/div/div/div/div
+          - //*[@id="layers"]/div[1]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[2]/div/div[1]/div/div/div
+          - //*[@id="layers"]/div[2]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[2]/div/div[1]/div/div/div
+        actions:
+          - click
+          - wait 5
+  tweet:
+    url: https://twitter.com/home
+    stage-items:
+      refuse-non-essential-cookies:
+        events:
+          onerror: continue
+        search-for:
+          - //*[@id="layers"]//span[contains(text(), "non-essential cookies")]//..//..//..
+      dismiss-initial-alert:
+        events:
+          onerror: continue
+        actions: dismiss_alert 3
+      enter-tweet:
+        search-for:
+          - //*[@id="react-root"]//div[@class="DraftEditor-root"]//div[@role="textbox"]
+          - //*[@id="react-root"]//div[@role="textbox" and @aria-label="Post text"]
+          - //*[@id="react-root"]/div/div/div[2]/main/div/div/div/div[1]/div/div[3]/div/div[2]/div[1]/div/div/div/div[2]/div[1]/div/div/div/div/div/div/div/div/div/div/label/div[1]/div/div/div/div/div/div[2]/div
+        actions:
+          - get_file_content ${OUTPUT_DIR}/agent/youtube/results/wait-for-video-link/save-video-link/result.txt
+          - enter_text $VIDEO_TITLE $results.me[0]
+          # When we enter a link, twitter retrieves some metadata from the link
+          - wait 5
+      post-tweet:
+        search-for:
+          - //*[@id="react-root"]//main//div[@role="button" and @data-testid="tweetButtonInline"]
+          - //*[@id="react-root"]//*[@data-testid="tweetButtonInline"]
+          - //*[@id="react-root"]//main//span[contains(text(), "Post")]//..//..//..
+        actions:
+          - click
+          - wait 5
+  ensure-posted:
+    stage-items:
+      wait-for-post-to-appear:
+        events:
+          onerror: continue
+        search-for:
+          - //article[@data-testid="tweet"]//*[@id="id__lni092zntmo"]//a[contains(@aria-label, "Now")]
+          - //article[@data-testid="tweet"]//*[@data-testid="User-Name"]//a[contains(@aria-label, "Now")]
+          - //article[@data-testid="tweet"]//*[@id="id__lni092zntmo"]//a[contains(@aria-label, "seconds ago")]
+          - //article[@data-testid="tweet"]//*[@data-testid="User-Name"]//a[contains(@aria-label, "seconds ago")]
+        actions:
+          - wait 5
+
