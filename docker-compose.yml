@@ -1,6 +1,7 @@
 version: '3.8'
 services:
   aideas:
+    image: "poshjosh/aideas:${IMAGE_TAG:-latest}"
     build:
       context: ./src/python/main/app
       dockerfile: ../Dockerfile
