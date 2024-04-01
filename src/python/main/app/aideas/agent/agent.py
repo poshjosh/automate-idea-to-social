@@ -120,4 +120,4 @@ class Agent:
             logger.debug(f"Successfully removed dir: {self.get_output_dir()}")
         if not os.path.exists(self.get_results_dir()):
             os.makedirs(self.get_results_dir())
-            logger.debug(f"Successfully created  dir: {self.get_results_dir()}")
+            logger.debug(f"Successfully created dir: {self.get_results_dir()}")

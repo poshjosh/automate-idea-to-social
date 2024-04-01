@@ -1,6 +1,9 @@
+import logging
 from typing import Callable
 
 from selenium.webdriver.remote.webelement import WebElement
+
+logger = logging.getLogger(__name__)
 
 
 class ReloadableWebElement(WebElement):
@@ -13,10 +16,14 @@ class ReloadableWebElement(WebElement):
         self.__reload = reload
         self.__timeout = timeout
 
+    def load(self) -> WebElement:
+        return self.__delegate if self.__delegate is not None else self.reload()
+
     def get_delegate(self) -> WebElement:
         return self.__delegate
 
     def reload(self) -> WebElement:
+        logger.warning('Reloading element')
         return ReloadableWebElement.__run_till_success(self.__reload, self.__timeout)
 
     @staticmethod

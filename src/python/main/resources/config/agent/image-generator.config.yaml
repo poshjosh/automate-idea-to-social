@@ -1,7 +1,3 @@
-browser:
-  chrome:
-    undetected: false
-    use-profile: false
 stages:
   generate-image:
     url: https://designer.microsoft.com/image-creator
@@ -20,13 +16,13 @@ stages:
           - //*[@id="root"]/div/div/div/div[3]/div[2]/div/div/form/div[1]/span/textarea
         actions:
           - enter_text $VIDEO_TITLE
-      submit-image-description:
-        search-for:
-          - //*[@id="root"]//form//button[text()="Generate"]
-          - //*[@id="root"]/div/div/div/div[3]/div[2]/div/div/form/div[2]/div[2]/button
-        actions:
-          - click
-          - wait 3 # TODO - Change to 30
+#      submit-image-description:
+#        search-for:
+#          - //*[@id="root"]//form//button[text()="Generate"]
+#          - //*[@id="root"]/div/div/div/div[3]/div[2]/div/div/form/div[2]/div[2]/button
+#        actions:
+#          - click
+#          - wait 3 # TODO - Change to 30
 #      select-image:
 #        search-for:
 #          # The images are in sibling div/button elements

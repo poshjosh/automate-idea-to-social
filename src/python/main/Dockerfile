@@ -1,11 +1,15 @@
 FROM python:3.9.5
 
-RUN apt-get update && apt -f install -y && apt-get install -y \
+# We only need this during build time, so we use ARG instead of ENV
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN apt update && apt -f install -y && apt install -y \
     git \
     wget \
     && git --version && wget --version \
     && wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
-    && apt-get install ./google-chrome-stable_current_amd64.deb -y --fix-missing \
+    && apt install ./google-chrome-stable_current_amd64.deb -y --fix-missing \
+    && apt install xvfb -y \
     # removes the package deb file
     && apt-get clean \
     # removes package lists, loaded by apt update
@@ -19,4 +23,6 @@ COPY ./ ./
 
 RUN pip install -r requirements.txt
 
-CMD [ "python", "main.py" ]
+#CMD [ "python", "main.py" ]
+RUN chmod +x /docker-entrypoint.sh
+ENTRYPOINT ["/docker-entrypoint.sh"]

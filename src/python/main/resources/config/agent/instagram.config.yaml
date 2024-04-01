@@ -84,7 +84,10 @@ stages:
   proceed-to-post:
     stage-items:
       click-create:
-        search-for: //*[starts-with(@id,"mount_0_0_")]//*[text()="Create"]//..//..//..//..//..//..
+        search-for:
+          - //*[starts-with(@id,"mount_0_0_")]/div/div/div[2]/div/div/div[1]/div[1]/div[1]/div/div/div/div/div[2]/div[7]//a
+          - //*[starts-with(@id,"mount_0_0_")]/div/div/div[2]/div/div/div[1]/div[1]/div[1]/div/div/div/div/div[2]/div[7]/div/span/div/a
+          - //*[starts-with(@id,"mount_0_0_")]//*[text()="Create"]//..//..//..//..//..//..
       add-video:
         search-for:
           - //form[@enctype="multipart/form-data"]/input[@type="file"]

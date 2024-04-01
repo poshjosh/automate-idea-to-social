@@ -2,6 +2,8 @@ import copy
 import logging
 from typing import Union, Tuple, Callable
 
+from ..env import Env
+
 """
 Each run may involve one or more agents. All the agents involved 
 share the same RunContext. Each agent has its own configuration.
@@ -49,7 +51,11 @@ def __is_variable_with_prefix(value: str, prefix: str) -> bool:
     return False
 
 
-def replace_all_variables(target: dict[str, any], source: dict[str, any]) -> dict[str, any]:
+def replace_all_variables(
+        target: dict[str, any], source: Union[dict[str, any], None] = None) -> dict[str, any]:
+
+    if not source:
+        source = Env.load()
 
     target = copy.deepcopy(target)
 

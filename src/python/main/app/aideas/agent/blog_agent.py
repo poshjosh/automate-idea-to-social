@@ -245,7 +245,7 @@ class BlogAgent(Agent):
         app_location = self.get_app_base_dir()
         app_env_file = run_context.get_env(Env.BLOG_ENV_FILE)
         app_image_name = self.get_app_docker_image_name()
-        return ['-d', app_location, '-e', app_env_file, '-i', app_image_name, '-s', 'true']
+        return ['-d', app_location, '-e', app_env_file, '-i', app_image_name]
 
     def __app(self):
         return self.get_config().get('app')

@@ -3,9 +3,17 @@
 interval-seconds: 1
 browser:
   chrome:
-    # Without these 2, TikTok asked us to solve some anti-bot challenge
+    # Try to prevent TikTok from detecting the browser as a bot
     undetected: true
-    use-profile: false
+    options:
+      args:
+        - user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36
+        # Use either (headless and start-maximized) or kiosk
+        # Trying to change window size, while using kiosk, will crash the driver
+        # Without this custom window size, we got ElementNotInteractableException
+        # Window size should match that in docker-entrypoint.sh
+        - window-size=1920,1080
+        - start-maximized
 stages:
   setup:
     events:

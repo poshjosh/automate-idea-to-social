@@ -1,11 +1,23 @@
 browser:
   chrome:
     undetected: true
-    use-profile: false
+    options:
+      args:
+        - user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36
+        # Use either (headless and start-maximized) or kiosk
+        # Trying to change window size, while using kiosk, will crash the driver
+        # Without this custom window size, we got ElementNotInteractableException
+        # Window size should match that in docker-entrypoint.sh
+        - window-size=1920,1080
+        - start-maximized
+
 stages:
   login:
     url: https://www.youtube.com/
     stage-items:
+# !!!NOTE!!! When YouTube gets finicky, try uncommenting this
+#      delete-cookies:
+#        actions: delete_cookies
       website-cookies:
         search-for:
           - //*[@id="content"]//ytd-button-renderer/yt-button-shape/button/div/span[starts-with(text(), "Accept")]//..//..

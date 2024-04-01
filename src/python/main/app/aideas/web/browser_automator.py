@@ -11,7 +11,8 @@ from ..action.action_result import ActionResult
 from ..action.action_signatures import element_action_signatures
 from ..action.action_handler import ActionError
 from ..action.element_action_handler import ElementActionHandler
-from ..config import AgentConfig, ConfigPath, Name, SearchConfigs, TIMEOUT_KEY, WHEN_KEY, ON_START
+from ..config import (AgentConfig, ConfigPath, Name, SearchConfigs,
+                      TIMEOUT_KEY, WHEN_KEY, ON_START, merge_configs)
 from ..result.result_set import ElementResultSet
 from ..event.event_handler import EventHandler
 from ..run_context import RunContext
@@ -25,8 +26,10 @@ class BrowserAutomator:
            agent_name: str,
            agent_config: dict[str, any] = None) -> 'BrowserAutomator':
         # app_config['browser'].update(agent_config.get('browser', {}))
-        app_config['browser'] = BrowserAutomator._update(agent_config.get('browser', {}), app_config['browser'])
-        web_driver = WebDriverCreator.create(app_config, agent_name)
+        app_config = copy.deepcopy(app_config)  # Don't update the original
+        app_config['browser'] = merge_configs(
+            agent_config.get('browser', {}), app_config['browser'], False)
+        web_driver = WebDriverCreator.create(app_config)
         wait_timeout_seconds = app_config['browser']['chrome'].get(TIMEOUT_KEY, 20)
         action_handler = ElementActionHandler(web_driver, wait_timeout_seconds)
         event_handler = EventHandler(action_handler)
@@ -275,20 +278,3 @@ class BrowserAutomator:
 
     def get_action_handler(self) -> ElementActionHandler:
         return self.__action_handler
-
-    @staticmethod
-    def _update(src: dict[str, any], tgt: dict[str, any]) -> dict[str, any]:
-        tgt = copy.deepcopy(tgt)
-        for k, v in src.items():
-            if isinstance(v, dict):
-                v = BrowserAutomator._update(v, tgt.get(k, {}))
-            if isinstance(v, list):
-                # We save our yaml comments
-                # These config dicts come from yaml files.
-                # This section of code will lead to loss of comments.
-                # TODO - Implement preservation of comments
-                existing_v = set(tgt.get(k, []))
-                existing_v.update(v)
-                v = list(existing_v)
-            tgt[k] = v
-        return tgt

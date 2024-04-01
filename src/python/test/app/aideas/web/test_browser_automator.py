@@ -13,16 +13,16 @@ class TestBrowserAutomator(BrowserAutomator):
     def of(app_config: dict[str, any],
            agent_name: str,
            agent_config: dict[str, any] = None) -> 'BrowserAutomator':
-        # app_config['browser'].update(agent_config.get('browser', {}))
-        app_config['browser'] = BrowserAutomator._update(agent_config.get('browser', {}), app_config['browser'])
         web_driver = create_webdriver(app_config, agent_name)
         wait_timeout_seconds = app_config['browser']['chrome'][TIMEOUT_KEY]
         action_handler = TestElementActionHandler(web_driver, wait_timeout_seconds)
         event_handler = EventHandler(action_handler)
         element_selector = TestElementSelector.of(web_driver, agent_name, wait_timeout_seconds)
-        return TestBrowserAutomator(
-            web_driver, wait_timeout_seconds, agent_name,
-            event_handler, element_selector, action_handler)
+
+        browser_automator = BrowserAutomator.of(app_config, agent_name, agent_config)
+        return (browser_automator.with_event_handler(event_handler)
+                .with_element_selector(element_selector)
+                .with_action_handler(action_handler))
 
     def with_action_handler(self, action_handler: ElementActionHandler) -> 'BrowserAutomator':
         return TestBrowserAutomator(

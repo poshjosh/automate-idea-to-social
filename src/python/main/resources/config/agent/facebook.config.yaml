@@ -19,9 +19,9 @@ stages:
         actions: enter_text $FACEBOOK_USER_PASS
       click-login:
         search-for:
+          - //*[starts-with(@id, "u_0_5_")]
           - //*[starts-with(@id, "u_0_2_")]/div[2]/button[contains(text(), "Log")]
           - //*[starts-with(@id, "u_0_2_")]//button[contains(text(), "Log")]
-          - //*[starts-with(@id, "u_0_5_")]
       wait-till-logged-in:
         events:
           onerror: continue

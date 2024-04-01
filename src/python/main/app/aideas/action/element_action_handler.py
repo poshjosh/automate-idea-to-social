@@ -60,13 +60,13 @@ class ElementActionHandler(BrowserActionHandler):
                 # We use the actual web element for the action
                 # When we used the ReloadableWebElement, the action fails with message:
                 # TypeError: Object of type ReloadableWebElement is not JSON serializable
-                element = element.get_delegate()
+                element = element.load()
 
             result = self._execute_on(key, action, element)
 
         except StaleElementReferenceException as ex:
+            logger.warning('Element is stale')
             if isinstance(element, ReloadableWebElement):
-                logger.warning('Element is stale. Attempting to reload')
                 element = element.reload()
                 logger.debug(f'Retrying action after reloading element: {action}')
                 result = self._execute_on(key, action, element)
@@ -81,7 +81,7 @@ class ElementActionHandler(BrowserActionHandler):
         try:
             return self.__do_execute_on(key, action, element)
         except Exception as ex:
-            self.__print_element_attr(element, 'outerHTML')
+            self.__print_element_attr(ex, element, 'outerHTML')
             raise ex
 
     def __do_execute_on(self, key: str, action: Action, element: WebElement) -> ActionResult:
@@ -240,9 +240,9 @@ class ElementActionHandler(BrowserActionHandler):
         return 0, 'px'
 
     @staticmethod
-    def __print_element_attr(element: WebElement, attribute_name: str):
-        try:
-            logger.debug(f'Printing element attribute: {attribute_name}'
+    def __print_element_attr(exception: Exception, element: WebElement, attribute_name: str):
+        if element:
+            logger.debug(f'After {type(exception)}, printing element attribute: {attribute_name}'
                          f'\n{"="*64}\n{element.get_attribute(attribute_name)}\n{"="*64}')
-        except Exception:
-            pass
+            return
+        logger.debug(f'After {type(exception)}, printing element: \n{"="*64}\n{element}\n{"="*64}')

@@ -3,12 +3,13 @@ from typing import Union
 
 from .action.action_result import ActionResult
 from .action.variable_parser import replace_all_variables
-from .agent.agent_args import AgentArgs
+from .env import Env
 from .result.result_set import AgentResultSet, ElementResultSet, StageResultSet
 
 
 CURRENT_URL = 'current_url'
 CURRENT_ELEMENT = 'current_element'
+
 
 class RunContext:
     @staticmethod
@@ -18,8 +19,8 @@ class RunContext:
     @staticmethod
     def of_config(app_config: dict[str, any],
                   agent_names: Union[str, list[str], None] = None) -> 'RunContext':
-        agent_inputs = AgentArgs.from_config(app_config)
-        return RunContext(app_config, agent_names, agent_inputs.load())
+        app_name = app_config['app']['name']
+        return RunContext(app_config, agent_names, Env.load(app_name))
 
     def __init__(self,
                  app_config: dict[str, any],

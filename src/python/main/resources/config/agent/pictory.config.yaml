@@ -1,3 +1,7 @@
+browser:
+  chrome:
+    prefs:
+      download.default_directory: ${OUTPUT_DIR}/agent/pictory
 define:
   &default_wait 'wait 3'
 interval-seconds: 1
@@ -110,29 +114,6 @@ stages:
           - //*[@id="tbinner-3"]//div[@role="rowgroup"]/div[2]/div/div[1]/a
           - //*[@id="tbinner-3"]//div[@role="rowgroup"]/div[2]/div/div[1]/a/div
           - //*[@id="tbinner-3"]//div[@role="rowgroup"]/div[2]/div/div[1]/a/div/img
-  audio:
-    event:
-      onerror: continue
-    stage-items:
-      select-audio-tab:
-        search-for:
-          - //*[@id="side-navbar"]/ul/li/a/*[contains(text(), "Audio")]//..
-          - //*[@id="side-navbar"]//*[contains(text(), "Audio")]//..
-      select-volume:
-        search-for:
-          - //*[@id="step-3-fixed-height"]//div[@role="tablist"]/button[contains(text(), "Volume")]
-          - //*[@id="step-3-fixed-height"]//*[contains(text(), "Volume")]
-      move-volume-slider:
-        search-for:
-          - //*[@id="bgMusicVolPercent"]
-          - //*[@id="voice-tabpanel-settings"]//div[contains(@class, "volume-slider")]
-        actions:
-          - move_to_element_offset bottom-left 10% 20%
-          - wait 2
-          - click_and_hold_current_position
-          - wait 1
-          - move_by_offset 0 32
-          - wait 1
   branding:
     stage-items:
       branding-tab:
@@ -167,13 +148,82 @@ stages:
           # After clicking an alert is displayed for a few seconds informing us of changes
           # After the first alert another is displayed when the changes have been applied
           # The second alert is handled by the next target
-      dismiss-brand-voice-notice:
+  wait-till-voiceover-applied:
+    stage-items:
+      wait-for-notice:
         events:
           onerror: continue
         # There will be some default waiting for this element to appear
         wait-timeout-seconds: 120
         search-for: //*[contains(text(), "Voiceover applied")]
         actions: wait 2
+  select-audio:
+    event:
+      onerror: continue
+    stage-items:
+      select-audio-tab:
+        search-for:
+          - //*[@id="side-navbar"]/ul/li/a/*[contains(text(), "Audio")]//..
+          - //*[@id="side-navbar"]//*[contains(text(), "Audio")]//..
+  audio-volume:
+    event:
+      onerror: continue
+    stage-items:
+      select-volume:
+        search-for:
+          - //*[@id="step-3-fixed-height"]//div[@role="tablist"]/button[contains(text(), "Volume")]
+          - //*[@id="step-3-fixed-height"]//*[contains(text(), "Volume")]
+      move-volume-slider:
+        search-for:
+          - //*[@id="bgMusicVolPercent"]
+          - //*[@id="voice-tabpanel-settings"]//div[contains(@class, "volume-slider")]
+        actions:
+          - move_to_element_offset bottom-left 10% 20%
+          - wait 2
+          - click_and_hold_current_position
+          - wait 1
+          - move_by_offset 0 32
+          - wait 1
+  voiceover:
+    event:
+      onsuccess: run_stages wait-till-voiceover-applied
+      onerror: continue
+    stage-items:
+      select-voiceover-tab:
+        search-for:
+          - //*[@id="step-3-fixed-height"]//div[@role="tablist"]/button[contains(text(), "Voiceover")]
+          - //*[@id="step-3-fixed-height"]//*[contains(text(), "Voiceover")]
+          - //*[@id="step-3-fixed-height"]/div[1]/div/div[3]/div/div[1]/div/div/div/button[2]
+      hover-over-voiceover:
+        events:
+          onerror: continue
+        search-for:
+          - //*[@id="voiceTrack3024"]
+          - //*[@id="collapseOnePremVoices"]/div/ol/li[contains(text(), "Daniel") and contains(text(), "male")]
+          - //*[@id="collapseOnePremVoices"]/div/ol/li[1]
+        actions:
+          - move_to_element
+          - wait 3
+      apply-voiceover-1:
+        events:
+          onerror: continue
+        search-for:
+          - //*[@id="voiceTrack3024"]//span[text()="Apply"]
+          - //*[@id="voiceTrack3024"]/div[2]/div/div[1]/div/span
+        actions:
+          - move_to_element
+          - wait 1
+          - click
+          - wait 5
+      apply-voiceover-2:
+        events:
+          onerror: continue
+        search-for: $self.stages.voiceover.stage-items.apply-voiceover-1.search-for
+        actions:
+          - move_to_element
+          - wait 1
+          - execute_script_on arguments[0].click();
+          - wait 5
   download-video:
     stage-items:
       expand-download-options:
@@ -240,7 +290,7 @@ stages:
           - save_file $results.me[1]
   download-video-layout-2:
     events:
-      onsuccess: run_stages download-video save-downloaded-video
+      onsuccess: run_stages select-audio voiceover download-video save-downloaded-video
     stage-items:
       expand-layout-2-options:
         events:
@@ -257,7 +307,7 @@ stages:
           - wait 10  # 8mb video took 2 seconds, we add more time 'cos voice wasn't being applied
   download-video-layout-3:
     events:
-      onsuccess: run_stages download-video save-downloaded-video
+      onsuccess: run_stages select-audio voiceover download-video save-downloaded-video
     stage-items:
       expand-layout-3-options:
         events:

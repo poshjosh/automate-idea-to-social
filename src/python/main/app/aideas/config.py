@@ -1,8 +1,111 @@
+import copy
 import logging
+from collections.abc import Iterable
 from enum import Enum
-from typing import Union, TypeVar
+from typing import Union, TypeVar, Callable
+
+from selenium.webdriver.chrome.options import Options
 
 logger = logging.getLogger(__name__)
+
+
+def __default_get_keys(src: dict, tgt: dict) -> Iterable:
+    return set(src.keys()).union(tgt.keys())
+
+
+def update_config(src: dict[str, any],
+                  tgt: dict[str, any],
+                  keys: Iterable = None) -> dict[str, any]:
+    if keys is None:
+        keys = __default_get_keys(src, tgt)
+
+    output = {}
+
+    for key in keys:
+        value = src.get(key)
+        if value is None:
+            value = tgt.get(key)
+        if value is not None:
+            output[key] = value
+    return output
+
+
+def merge_configs(src: dict[str, any],
+                  tgt: dict[str, any],
+                  merge_lists: bool = False,
+                  get_keys: Callable[[dict, dict], Iterable] = __default_get_keys) \
+        -> dict[str, any]:
+    if not src:
+        return copy.deepcopy(tgt)
+    if not tgt:
+        return copy.deepcopy(src)
+
+    keys = get_keys(src, tgt)
+
+    output = {}
+
+    for key in keys:
+        src_value = src.get(key)
+        tgt_value = tgt.get(key)
+        if src_value is None and tgt_value is None:
+            continue
+        ref_value = src_value if src_value is not None else tgt_value
+        # We save our yaml comments
+        # These config dicts come from yaml files.
+        # This section of code will lead to loss of comments.
+        # TODO - Implement preservation of comments
+        if isinstance(ref_value, dict):
+            output[key] = merge_configs(src_value, tgt_value, merge_lists, get_keys)
+        elif merge_lists is True and isinstance(ref_value, list):
+            existing_value = set() if not tgt_value else set(tgt_value)
+            existing_value.update(src_value)
+            output[key] = list(existing_value)
+        else:
+            output[key] = ref_value
+    return output
+
+
+class BrowserConfig:
+    def __init__(self, config: dict[str, any]):
+        self.__config = config.get('browser', {})
+
+    def get_chrome_options(self) -> Options:
+        preferences = {} if self.is_undetected() is True else self.prefs()
+        return self.__collect_options(self.get_options(), preferences)
+
+    def get_executable_path(self, default: Union[str, None] = None) -> str:
+        return self.chrome_config().get('executable_path', default)
+
+    def is_undetected(self, default: Union[bool, None] = False) -> bool:
+        return self.chrome_config().get('undetected', default)
+
+    def get_options(self) -> list[str]:
+        return self.chrome_config().get('options', {}).get('args', [])
+
+    def get_download_dir(self, default: Union[str, None] = None) -> str:
+        return self.prefs().get('download.default_directory', default)
+
+    def prefs(self) -> dict[str, str]:
+        return self.chrome_config().get('prefs', {})
+
+    def chrome_config(self) -> dict[str, str]:
+        return self.__config.get('chrome', {})
+
+    @staticmethod
+    def __collect_options(option_args: list[str], prefs: dict[str, str]) -> Options:
+        logger.debug(f'Will create browser with\nprefs: {prefs}\noptions: {option_args}')
+        options = Options()
+        if option_args:
+            for arg in option_args:
+                if not arg:
+                    continue
+                options.add_argument("--" + arg)
+
+        if not prefs:
+            return options
+
+        options.add_experimental_option("prefs", prefs)
+        return options
 
 
 class Name:

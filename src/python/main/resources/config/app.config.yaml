@@ -1,7 +1,13 @@
+# For undetected browser, some options and prefs cause some websites
+# (e.g. YouTube) to detect the browser as a bot. Therefore, we use:
+# minimal options e.g: window-size,start-maximized,user-agent
+# minimal prefs e.g: download.default_directory
 app:
   name: aideas
 browser:
   chrome:
+#    executable_path:
+    undetected: false
     wait-timeout-seconds: 20
     prefs:
       # prevent credentials based popups (e.g. save password popups)
@@ -27,13 +33,18 @@ browser:
         # Use either (headless and start-maximized) or kiosk
         # Trying to change window size, while using kiosk, will crash the driver
         # Without this custom window size, we got ElementNotInteractableException
+        # Window size should match that in docker-entrypoint.sh
         - window-size=1920,1080
         - start-maximized
         - headless
         - disable-web-security
         - allow-running-insecure-content
-##        - remote-allow-origins=*
-##        - remote-debugging-port=9222
+#        Location where chrome stores profiles
+#        - user-data-dir=/Users/chinomso/Library/Application Support/Google/Chrome
+#        Location relative to user-data-dir where chrome profile to be used is stored
+#        - profile-directory=Default
+#        - remote-allow-origins=*
+#        - remote-debugging-port=9222
 #        - incognito
 #        - crash-dumps-dir=/tmp
 

@@ -56,6 +56,7 @@ def run_script(script_location: str, args: [str], timeout=30, stdout=sys.stdout)
 def run_command(command: [str], timeout=30, stdout=sys.stdout) \
         -> Union[subprocess.CompletedProcess[bytes], subprocess.CompletedProcess]:
     command = ' '.join(command)
+    logger.debug(f"Will execute command: {command}")
 
     ps = subprocess.run(
         command, shell=True, check=False, timeout=timeout,

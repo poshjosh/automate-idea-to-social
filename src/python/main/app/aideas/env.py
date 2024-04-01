@@ -15,6 +15,9 @@ _github = 'GITHUB'
 _blog = 'BLOG'
 _browser_chrome = 'BROWSER_CHROME'
 
+_DEFAULT_OUTPUT_LANGUAGES = [
+    "ar", "bn", "de", "es", "fr", "hi", "it", "ja", "ko", "ru", "zh", "zh-TW"]
+
 
 @unique
 class Env(str, Enum):
@@ -30,6 +33,8 @@ class Env(str, Enum):
 
     def is_path(self) -> bool:
         return self.__path
+
+    SETUP_DISPLAY = ('SETUP_DISPLAY', True, False)
 
     AGENTS = ('AGENTS', True, False)
 
@@ -82,18 +87,42 @@ class Env(str, Enum):
     BLOG_ENV_FILE = (f'{_blog}_ENV_FILE', False, True)
     BLOG_APP_DIR = (f'{_blog}_APP_DIR', False, True)
 
-    BROWSER_CHROME_EXECUTABLE_PATH = (f'{_browser_chrome}_EXECUTABLE_PATH', False, True)
-    BROWSER_CHROME_OPTIONS_USERDATA_DIR = \
-        (f'{_browser_chrome}_OPTIONS_USERDATA_DIR', True, True)
-    BROWSER_CHROME_OPTIONS_PROFILE_DIR = \
-        (f'{_browser_chrome}_OPTIONS_PROFILE_DIR', True)
-
     @staticmethod
     def values():
         return [Env(e).value for e in Env]
 
     @staticmethod
-    def collect(add_to: dict[str, any] = None) -> dict[str, any]:
+    def load(app_name: Union[str, None] = None) -> dict[str, any]:
+        result = {Env.TRANSLATION_OUTPUT_LANGUAGES.value: ','.join(_DEFAULT_OUTPUT_LANGUAGES)}
+
+        if app_name:
+            result.update({'app.name': app_name})
+
+        def read_file(file_path: str):
+            with open(file_path) as file:
+                return file.read()
+
+        result.update(Env.__collect())
+
+        if not result.get(Env.VIDEO_INPUT_TEXT.value):
+            result[Env.VIDEO_INPUT_TEXT.value] = read_file(require_path(Env.VIDEO_INPUT_FILE))
+
+        video_content_file = get_video_file()
+        result[Env.VIDEO_CONTENT_FILE.value] = video_content_file
+
+        if not result.get(Env.VIDEO_TILE.value):
+            result[Env.VIDEO_TILE.value] = os.path.basename(video_content_file).split('.')[0]
+
+        if not result.get(Env.VIDEO_DESCRIPTION.value):
+            result[Env.VIDEO_DESCRIPTION.value] = read_file(video_content_file)
+
+        if not result.get(Env.VIDEO_COVER_IMAGE_SQUARE.value):
+            result[Env.VIDEO_COVER_IMAGE_SQUARE.value] = result.get(Env.VIDEO_COVER_IMAGE.value)
+
+        return result
+
+    @staticmethod
+    def __collect(add_to: dict[str, any] = None) -> dict[str, any]:
         all_env_names: [str] = Env.values()
         if add_to is None:
             add_to = {}

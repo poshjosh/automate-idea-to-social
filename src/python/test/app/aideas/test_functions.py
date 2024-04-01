@@ -45,20 +45,23 @@ def create_webdriver(config: Union[dict, None] = None, agent_name: str = None) -
 
     args = chrome_config.get("options", {}).get("args", [])
 
+    for e in args:
+        if e.startswith("window-size="):
+            args.remove(e)
+            break
+
     if "start-maximized" in args:
         args.remove("start-maximized")
     if "kiosk" in args:
         args.remove("kiosk")
     if "headless" not in args:
         args.append("headless")
-    if not agent_name:
-        agent_name = "test-agent"
 
     # For now undetected Chrome browser is crashing during tests.
     # So we set undetected to False, for the time being.
     chrome_config['undetected'] = False
 
-    return WebDriverCreator.create(config, agent_name)
+    return WebDriverCreator.create(config)
 
 
 def get_agent_resource(agent_name: str, file_name: str) -> str:

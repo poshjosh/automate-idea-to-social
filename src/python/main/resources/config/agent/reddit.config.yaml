@@ -117,18 +117,22 @@ stages:
           - click
           - wait 10
   approve-post:
-    url: https://www.reddit.com/r/${REDDIT_COMMUNITY_NAME}/
+    url: https://www.reddit.com/r/mod/
     events:
+      onstart: run_stages reddit.login
       onerror: log WARNING \n= = = = = = = FAILED TO APPROVE POST (Please do it manually) = = = = = = =\n
     stage-items:
-      approve-post:
+      click-approve-button:
         search-for:
-          - //*[@id="t3_1bovvsu"]/shreddit-mod-inline-actions//mod-action-button[1]
-          # This did not work
-          # shadow-attributes: aria-label="Approve content"
+          - //*[@data-testid="post-container"]/*[contains(text(), "${VIDEO_TITLE}")]//button[text()="approve"]
+          - //*[@data-testid="post-container"]/*[contains(text(), "${VIDEO_TITLE}")]//button[starts-with(@id, "ModToolsFlatlist-Approvet3_1b")]
+          - //*[starts-with(@id, "t3_1b")]/div[3]/div[4]/div[2]/div[2]//button
         actions:
           - click
           - wait 2
+
+
+
 
 
 

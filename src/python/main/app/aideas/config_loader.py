@@ -1,6 +1,7 @@
 import logging
 import os
 
+from .action.variable_parser import replace_all_variables
 from .io.file import load_yaml
 
 logger = logging.getLogger(__name__)
@@ -17,7 +18,8 @@ class ConfigLoader:
     def load_app_config(self, path: str = None) -> dict[str, any]:
         if not path:
             path = self.get_app_config_path()
-        return self.__load_from_path(path)
+        config: dict[str, any] = self.__load_from_path(path)
+        return replace_all_variables(config)
 
     def load_logging_config(self, path: str = None) -> dict[str, any]:
         if not path:
@@ -25,7 +27,8 @@ class ConfigLoader:
         return self.__load_from_path(path)
 
     def load_agent_config(self, agent_name: str) -> dict[str, any]:
-        return self.__load_from_path(self.get_agent_config_path(agent_name))
+        config: dict[str, any] = self.__load_from_path(self.get_agent_config_path(agent_name))
+        return replace_all_variables(config)
 
     def __load_from_path(self, path: str) -> dict[str, any]:
         try:

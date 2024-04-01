@@ -62,8 +62,7 @@ class EventHandler:
                        trials: int = 1) -> ElementResultSet:
 
         if event_name == ON_ERROR:
-            logger.debug(f'For {config_path}, handling event: {event_name} '
-                         f'with config: {config.get(config_path)}')
+            logger.debug(f'Handling {event_name} event for {config_path}')
 
         action_signature_list = config.get_event_actions(config_path, event_name)
 

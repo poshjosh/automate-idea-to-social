@@ -46,8 +46,8 @@ stages:
         actions: enter_text $TWITTER_USER_PASS
       submit-password:
         search-for:
-          - //*[@id="layers"]//div[@role="button"//*[contains(text(), "Log in")]]
           - //*[@id="layers"]/div[1]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[2]/div/div/div/div
+          - //*[@id="layers"]//div[@role="button"//*[contains(text(), "Log in")]]
           - //*[@id="layers"]/div[2]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[2]/div/div/div/div
           - //*[@id="layers"]/div[1]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[2]/div/div[1]/div/div/div
           - //*[@id="layers"]/div[2]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[2]/div/div[1]/div/div/div
@@ -90,8 +90,8 @@ stages:
         events:
           onerror: continue
         search-for:
-          - //article[@data-testid="tweet"]//*[@id="id__lni092zntmo"]//a[contains(@aria-label, "Now")]
           - //article[@data-testid="tweet"]//*[@data-testid="User-Name"]//a[contains(@aria-label, "Now")]
+          - //article[@data-testid="tweet"]//*[@id="id__lni092zntmo"]//a[contains(@aria-label, "Now")]
           - //article[@data-testid="tweet"]//*[@id="id__lni092zntmo"]//a[contains(@aria-label, "seconds ago")]
           - //article[@data-testid="tweet"]//*[@data-testid="User-Name"]//a[contains(@aria-label, "seconds ago")]
         actions:
