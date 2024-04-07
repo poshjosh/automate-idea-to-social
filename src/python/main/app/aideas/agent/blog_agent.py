@@ -12,11 +12,10 @@ from ..agent.agent_name import AgentName
 from ..action.action import Action
 from ..action.action_result import ActionResult
 from ..config import Name
-from ..env import Env
-from ..io.shell import (grant_execute_permission_if_need, run_command,
-                        run_commands_from_dir, run_script)
+from ..env import Env, is_docker
+from ..io.shell import execute_command, run_command, run_commands_from_dir, run_script
 from ..io.net import download_file
-from ..io.file import extract_zip_file, visit_dirs, prepend_line
+from ..io.file import extract_zip_file, prepend_line, read_content, visit_dirs
 from ..result.result_set import ElementResultSet
 from ..run_context import RunContext
 
@@ -82,8 +81,8 @@ class BlogAgent(Agent):
 
         self.__delete_cloned_blog_if_exists()
 
-        url: str = self.get_blog_src_url()
-        success = self.__clone_git_repo_to_dir(url, output_dir, run_context)
+        git_clone_url: str = self.__get_blog_src_url_with_credentials(run_context)
+        success = self.__clone_git_repo_to_dir(git_clone_url, output_dir)
         return ActionResult(action, success, output_dir)
 
     def convert_to_markdown(self, action: Action, run_context: RunContext) -> ActionResult:
@@ -121,7 +120,7 @@ class BlogAgent(Agent):
         if len(moved) == 0:  # Nothing to update
             return ActionResult(action, True)
 
-        commands: list[list[str]] = self._get_update_blog_content_commands()
+        commands: list[list[str]] = self._get_update_blog_content_commands(run_context)
 
         success = run_commands_from_dir(blog_base_dir, commands)
 
@@ -137,20 +136,33 @@ class BlogAgent(Agent):
         return run_context.get_env(Env.VIDEO_CONTENT_FILE)
 
     def update_blog(self, action: Action, run_context: RunContext) -> ActionResult:
+        return ActionResult(action, self.__update_blog(run_context))
 
-        return_code = self.__update_blog(run_context)
+    def __update_blog(self, run_context: RunContext) -> bool:
 
-        return ActionResult(action, return_code == 0)
+        app_base_dir = self.get_app_base_dir()
 
-    def __update_blog(self, run_context: RunContext) -> int:
+        if not os.path.exists(os.path.join(app_base_dir, 'Dockerfile')):
+            logger.error("Dockerfile not found in dir: %s", app_base_dir)
+            return False
 
-        grant_execute_permission_if_need(self.get_docker_entrypoint_script())
+        docker_container = self.get_app_docker_container_name()
 
-        args: [str] = self._get_update_blog_command_args(run_context)
+        # Stop docker container if it is running
+        # We run this container separately, because we ignore the error if it fails
+        docker_stop_container_cmd = (f'docker ps -a | grep {docker_container} '
+                                     f'&& timeout --kill-after=10 30 '
+                                     f'docker container stop {docker_container}')
+        execute_command(docker_stop_container_cmd, 60)
 
-        timeout = self.get_config().get_stage_wait_timeout('update-blog', 1200)
+        docker_build_cmd = self._get_build_update_blog_image_command_args()
 
-        return run_script(self.get_update_blog_script(), args, timeout).returncode
+        docker_run_cmd = self._get_update_blog_command_args(run_context)
+
+        timeout = self.get_config().get_stage_wait_timeout('update-blog', 1800)
+
+        return run_commands_from_dir(
+            app_base_dir, [docker_build_cmd, docker_run_cmd], [600, timeout - 600])
 
     def __download_and_extract_zip_to_dir(self,
                                           url: str,
@@ -170,19 +182,18 @@ class BlogAgent(Agent):
             # Rather than remove the dir, we could just pull the latest changes
             shutil.rmtree(self.get_blog_base_dir())
 
-    def __clone_git_repo_to_dir(self,
-                                url: str,
-                                save_to_dir: str,
-                                run_context: RunContext) -> bool:
+    @staticmethod
+    def __clone_git_repo_to_dir(url: str, save_to_dir: str) -> bool:
         if not url.endswith(".git"):
             raise ValueError("URL must end with .git")
 
-        url = self.__add_credentials_to_url(
-            url,
-            run_context.get_env(Env.GITHUB_USER_NAME),
-            run_context.get_env(Env.GITHUB_TOKEN))
-
         return run_command(['git', 'clone', url, save_to_dir]).returncode == 0
+
+    def __get_blog_src_url_with_credentials(self, run_context: RunContext) -> str:
+        return self.__add_credentials_to_url(
+            self.get_blog_src_url(),
+            run_context.get_env(Env.GIT_USER_NAME),
+            run_context.get_env(Env.GIT_TOKEN))
 
     @staticmethod
     def __add_credentials_to_url(url: str, user: str, password: str) -> str:
@@ -234,18 +245,39 @@ class BlogAgent(Agent):
         # Add the cover image at the top of the file
         prepend_line(target_file, f"![Video cover image](./{tgt_image_name})\n")
 
-    def _get_update_blog_content_commands(self):
+    def _get_update_blog_content_commands(self, run_context: RunContext) -> list[list[str]]:
         return [
+            ['git', 'config', 'user.email', f'"{run_context.get_env(Env.GIT_USER_EMAIL)}"'],
+            ['git', 'remote', 'set-url', 'origin',
+             self.__get_blog_src_url_with_credentials(run_context)],
             ['git', 'add', '.'],
             ['git', 'commit', '-m', '"Add blog post"'],
             ['git', 'push']
         ]
 
+    def _get_build_update_blog_image_command_args(self) -> [str]:
+        return ['docker', 'build', '-t', self.get_app_docker_image_name(), '.']
+
     def _get_update_blog_command_args(self, run_context: RunContext) -> [str]:
-        app_location = self.get_app_base_dir()
-        app_env_file = run_context.get_env(Env.BLOG_ENV_FILE)
-        app_image_name = self.get_app_docker_image_name()
-        return ['-d', app_location, '-e', app_env_file, '-i', app_image_name]
+
+        blog_env_file = run_context.get_env(Env.BLOG_ENV_FILE)
+
+        m = re.search(r"^APP_PORT=(\d*)", read_content(blog_env_file), re.MULTILINE)
+        port_str: str = None if not m else m.group(1)
+        port = 8000 if not port_str else int(port_str)
+
+        commands = ['docker', 'run', '--name', self.get_app_docker_container_name(), '--rm']
+
+        if is_docker() is False:
+            app_base_dir = os.path.join(os.getcwd(), self.get_app_base_dir())
+            commands.extend(['-v', f'"{app_base_dir}/app:/app"'])
+
+        commands.extend(['--env-file', f'"{blog_env_file}"',
+                         '-u', '0',
+                         '-p', f'{port}:{port}',
+                         '-e', f'APP_PORT={port}',
+                         self.get_app_docker_image_name()])
+        return commands
 
     def __app(self):
         return self.get_config().get('app')
@@ -267,6 +299,9 @@ class BlogAgent(Agent):
 
     def get_app_base_dir(self) -> str:
         return self.__app()['base']['dir']
+
+    def get_app_docker_container_name(self) -> str:
+        return self.get_app_docker_image_name().replace('/', '-')
 
     def get_app_docker_image_name(self) -> str:
         return self.__app()['docker']['image']

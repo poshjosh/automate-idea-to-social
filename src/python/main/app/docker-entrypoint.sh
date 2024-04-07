@@ -2,8 +2,16 @@
 # print debug information
 #set -ex
 
-function keepUpScreen()
-{
+function grantExecutePermissionToShellScriptsInDir() {
+    IFS=$'\n'; set -f
+    for f in $(find "$1" -name "*.sh"); do
+      printf "\nGranting execute permission to: %s\n" "$f"
+      chmod +x "$f"
+    done
+    unset IFS; set +f
+}
+
+function keepUpScreen() {
     printf "\nKeeping up screen\n"
     while true; do
         sleep 1
@@ -13,6 +21,8 @@ function keepUpScreen()
         fi
     done
 }
+
+grantExecutePermissionToShellScriptsInDir "${OUTPUT_DIR}"
 
 # Our python image uses a minimal debian, so we need to do
 # the following for undetected chrome browser to work well.

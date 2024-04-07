@@ -38,15 +38,16 @@ class TestBlogAgent(BlogAgent):
             print(f'{__name__} Manually created dir: {dir_to_create}')
         return result
 
-    def _get_update_blog_content_commands(self):
-        commands: list[list[str]] = super()._get_update_blog_content_commands()
+    def _get_update_blog_content_commands(self, run_context: RunContext) -> list[list[str]]:
+        commands: list[list[str]] = super()._get_update_blog_content_commands(run_context)
         # We remove the last command which is: git push
         return commands[:-1]
 
+    def _get_build_update_blog_image_command_args(self) -> [str]:
+        return ['echo', '"Test mode: Skipping actual build of blog update image."']
+
     def _get_update_blog_command_args(self, run_context: RunContext) -> [str]:
-        command: [str] = super()._get_update_blog_command_args(run_context)
-        command.extend(['-s', 'true'])  # skip running the app
-        return command
+        return ['echo', '"Test mode: Skipping actual blog update."']
 
     def __delete_dirs(self, run_context: RunContext):
         dirs_to_delete = [self.get_blog_input_dir(run_context), self.get_blog_tgt_dir()]

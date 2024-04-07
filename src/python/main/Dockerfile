@@ -3,10 +3,11 @@ FROM python:3.9.5
 # We only need this during build time, so we use ARG instead of ENV
 ARG DEBIAN_FRONTEND=noninteractive
 
-RUN apt update && apt -f install -y && apt install -y \
+RUN apt-get update && apt -f install -y \
     git \
     wget \
-    && git --version && wget --version \
+    docker.io \
+    && git --version && wget --version && docker --version \
     && wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
     && apt install ./google-chrome-stable_current_amd64.deb -y --fix-missing \
     && apt install xvfb -y \

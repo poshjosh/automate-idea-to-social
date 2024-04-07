@@ -11,7 +11,7 @@ _twitter = 'TWITTER'
 _reddit = 'REDDIT'
 _facebook = 'FACEBOOK'
 _instagram = 'INSTAGRAM'
-_github = 'GITHUB'
+_git = 'GIT'
 _blog = 'BLOG'
 _browser_chrome = 'BROWSER_CHROME'
 
@@ -81,8 +81,9 @@ class Env(str, Enum):
     INSTAGRAM_USER_EMAIL = f'{_instagram}_USER_EMAIL'
     INSTAGRAM_USER_PASS = f'{_instagram}_USER_PASS'
 
-    GITHUB_USER_NAME = f'{_github}_USER_NAME'
-    GITHUB_TOKEN = f'{_github}_TOKEN'
+    GIT_USER_NAME = f'{_git}_USER_NAME'
+    GIT_USER_EMAIL = f'{_git}_USER_EMAIL'
+    GIT_TOKEN = f'{_git}_TOKEN'
 
     BLOG_ENV_FILE = (f'{_blog}_ENV_FILE', False, True)
     BLOG_APP_DIR = (f'{_blog}_APP_DIR', False, True)
@@ -134,6 +135,10 @@ class Env(str, Enum):
                 add_to[k] = v
 
         return add_to
+
+
+def is_docker() -> bool:
+    return 'docker' in os.environ.get('PROFILES', '')
 
 
 def get_cached_results_dir(agent_name: str) -> str:

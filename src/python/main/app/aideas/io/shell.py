@@ -13,12 +13,19 @@ class ShellError(Exception):
 
 def run_commands_from_dir(working_dir: str,
                           commands: list[list[str]],
-                          timeout_per_command=30) -> bool:
+                          timeouts: Union[list[int], int] = 30,
+                          stdout=sys.stdout) -> bool:
+
+    count: int = len(commands)
+
+    if isinstance(timeouts, int):
+        timeouts = [timeouts] * count
+
     cwd = os.getcwd()
     try:
         __cd(working_dir)
-        for command in commands:
-            success = run_command(command, timeout_per_command).returncode == 0
+        for i in range(count):
+            success = run_command(commands[i], timeouts[i], stdout).returncode == 0
             if not success:
                 return False
         return True
@@ -56,11 +63,8 @@ def run_script(script_location: str, args: [str], timeout=30, stdout=sys.stdout)
 def run_command(command: [str], timeout=30, stdout=sys.stdout) \
         -> Union[subprocess.CompletedProcess[bytes], subprocess.CompletedProcess]:
     command = ' '.join(command)
-    logger.debug(f"Will execute command: {command}")
 
-    ps = subprocess.run(
-        command, shell=True, check=False, timeout=timeout,
-        stderr=subprocess.PIPE, stdout=stdout, text=True)
+    ps = execute_command(command, timeout, stdout)
 
     if stdout == subprocess.PIPE:
         line = '=' * 67
@@ -71,6 +75,16 @@ def run_command(command: [str], timeout=30, stdout=sys.stdout) \
         raise ShellError(f"Error running command: {command}.\n{error_message}")
 
     return ps
+
+
+def execute_command(command: str, timeout=30, stdout=sys.stdout) \
+        -> Union[subprocess.CompletedProcess[bytes], subprocess.CompletedProcess]:
+
+    logger.debug(f"Will execute command: {command}")
+
+    return subprocess.run(
+        command, shell=True, check=False, timeout=timeout,
+        stderr=subprocess.PIPE, stdout=stdout, text=True)
 
 
 def grant_execute_permission_if_need(script_location: str) -> bool:

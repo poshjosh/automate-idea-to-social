@@ -2,18 +2,28 @@ version: '3.8'
 services:
   aideas:
     image: "poshjosh/aideas:${DOCKER_IMAGE_TAG:-latest}"
+    stdin_open: true # equivalent to docker run -i
+    tty: true        # equivalent to docker run -t
     build:
       context: ./src/python/main/app
       dockerfile: ../Dockerfile
     shm_size: '2gb'
     environment:
       PYTHONUNBUFFERED: 1
+      PROFILES: docker
     env_file:
       - .env
     volumes:
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
       - type: bind
         source: ./src/python/main/resources
         target: /resources
       - type: bind
         source: ${DOCKER_MOUNT_DIR}
         target: ${DOCKER_MOUNT_DIR}
+      - type: bind
+        # TODO - This should be dynamic. By the way it is only required by the blog agent
+        source: /Users/chinomso/dev_chinomso/automate-idea-to-social/src/python/main/resources/output/blog-app/app/automate-jamstack-0.0.9/app
+        target: /app
