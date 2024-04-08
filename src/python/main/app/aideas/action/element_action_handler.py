@@ -3,7 +3,7 @@ import time
 from enum import unique
 from typing import Tuple
 
-from selenium.common import StaleElementReferenceException
+from selenium.common import StaleElementReferenceException, ElementClickInterceptedException
 from selenium.webdriver import ActionChains, Keys
 from selenium.webdriver.remote.webelement import WebElement
 
@@ -94,7 +94,7 @@ class ElementActionHandler(BrowserActionHandler):
 
             result = execute_for_result(clear_text, element, action)
         elif key == ElementActionId.CLICK.value:
-            result = execute_for_result(lambda arg: arg.click(), element, action)
+            result = execute_for_result(lambda arg: self.__do_click(driver, arg), element, action)
         elif key == ElementActionId.CLICK_AND_HOLD.value:
             def click_and_hold(tgt: WebElement):
                 ActionChains(driver).click_and_hold(tgt).perform()
@@ -144,6 +144,14 @@ class ElementActionHandler(BrowserActionHandler):
             return super()._execute(key, action)  # Success state has already been printed
         logger.debug(f'{result}')
         return result
+
+    @staticmethod
+    def __do_click(webdriver: WEB_DRIVER, element: WebElement):
+        try:
+            ActionChains(webdriver).move_to_element(element).click().perform()
+        except ElementClickInterceptedException:
+            logger.warning('Element click intercepted. Will try clicking via JavaScript.')
+            webdriver.execute_script("arguments[0].click();", element)
 
     @staticmethod
     def __execute_script_on(webdriver, action: Action, element: WebElement) -> ActionResult:
