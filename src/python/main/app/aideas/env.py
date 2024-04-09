@@ -56,6 +56,7 @@ class Env(str, Enum):
     PICTORY_BRAND_NAME = f'{_pictory}_BRAND_NAME'
     PICTORY_BG_MUSIC_NAME = f'{_pictory}_BG_MUSIC_NAME'
     PICTORY_VOICE_NAME = f'{_pictory}_VOICE_NAME'
+    PICTORY_TEXT_STYLE = f'{_pictory}_TEXT_STYLE'
 
     TRANSLATION_OUTPUT_LANGUAGES = f'{_translation}_OUTPUT_LANGUAGES'
     TRANSLATION_FILE_EXTENSION = f'{_translation}_FILE_EXTENSION'

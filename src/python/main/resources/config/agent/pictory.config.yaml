@@ -116,6 +116,33 @@ stages:
           - //*[@id="tbinner-3"]//div[@role="rowgroup"]/div[2]/div/div[1]/a
           - //*[@id="tbinner-3"]//div[@role="rowgroup"]/div[2]/div/div[1]/a/div
           - //*[@id="tbinner-3"]//div[@role="rowgroup"]/div[2]/div/div[1]/a/div/img
+  text-style:
+    events:
+      onerror: continue
+    stage-items:
+      select-styles-tab:
+        search-for:
+          - //*[@id="template-styles-tab"]
+          - //*[@id="side-navbar"]/ul/li/a/*[contains(text(), "Styles")]//..
+          - //*[@id="side-navbar"]//*[contains(text(), "Styles")]//..
+      # This stage-item and the next are related, so edit with care
+      select-style:
+        search-for:
+          - //*[@id="globalTemplateStylesTab-div"]//div[contains(@class, "style-library")]//p[contains(text(), "${PICTORY_TEXT_STYLE}")]//..
+          - //*[@id="globalTemplateStylesTab-div"]//p[contains(text(), "${PICTORY_TEXT_STYLE}")]//..
+          - //*[@id="globalTemplateStylesTab-div"]//div[contains(@class, "style-library")]/div[8]
+          - //*[@id="globalTemplateStylesTab-div"]/div/div/div/div[8]
+      # This stage-item and the previous are related, so edit with care
+      apply-style-to-all:
+        search-for:
+          - ${self.stages.text-style.stage-items.select-style.search-for[0]}//img
+          - ${self.stages.text-style.stage-items.select-style.search-for[1]}//img
+          - ${self.stages.text-style.stage-items.select-style.search-for[2]}//img
+          - ${self.stages.text-style.stage-items.select-style.search-for[3]}//img
+        action:
+          - move_to_element
+          - wait 2
+          - click
   branding:
     stage-items:
       branding-tab:
