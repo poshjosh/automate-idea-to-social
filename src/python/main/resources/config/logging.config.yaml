@@ -13,7 +13,7 @@ handlers:
     level: DEBUG
     formatter: simple
     filename: resources/output/logs/aideas.log
-    maxBytes: 102400
+    maxBytes: 409600
     backupCount: 9
 loggers:
   aideas:
