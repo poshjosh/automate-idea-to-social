@@ -40,7 +40,9 @@ stages:
   login-via-facebook:
     when:
       # When the submit button from above is displayed
-      search-for: $self.stages.login.stage-items.submit.search-for[0]
+      search-for:
+        - $self.stages.login.stage-items.submit.search-for[0]
+        - $self.stages.login.stage-items.submit.search-for[1]
       actions: is_displayed
     events:
       onstart: run_stages facebook.login
@@ -50,13 +52,9 @@ stages:
         - retry 1
   if-still-not-logged-in:
     url: https://www.instagram.com/
-    when:
-      search-for: $self.stages.login.stage-items.submit.search-for[0]
-      actions: is_displayed
     events:
-      onerror:
-        - wait 2
-        - retry 1
+      # If we have successfully logged in, then this will have an error; we simply continue
+      onerror: continue
     stage-items:
       # After successful login via facebook, we are redirected to instagram
       # where we often have to click login via facebook once-again before we
