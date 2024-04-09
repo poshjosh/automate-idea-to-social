@@ -178,9 +178,10 @@ class BlogAgent(Agent):
             shutil.rmtree(self.get_blog_tgt_dir())
 
     def __delete_cloned_blog_if_exists(self):
-        if os.path.exists(self.get_blog_base_dir()):  # Already cloned
-            # Rather than remove the dir, we could just pull the latest changes
-            shutil.rmtree(self.get_blog_base_dir())
+        # TODO Rather than remove the dir, we could just pull the latest changes
+        self.__delete_blog_related_dirs_if_exists()
+        # if os.path.exists(self.get_blog_base_dir()):  # Already cloned
+        #     shutil.rmtree(self.get_blog_base_dir())
 
     @staticmethod
     def __clone_git_repo_to_dir(url: str, save_to_dir: str) -> bool:
