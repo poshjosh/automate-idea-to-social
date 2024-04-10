@@ -280,13 +280,26 @@ ON_SUCCESS = 'onsuccess'
 VALUE = TypeVar("VALUE", bound=Union[any, None])
 
 
+def check_for_typo(config: dict[str, any], valid_key: str) -> dict[str, any]:
+    """
+    Check if the config contains any key with a typo in its spelling.
+    :param config: The dict to check
+    :param valid_key: The valid key for which misspelled variants are to be checked
+    :return: None
+    """
+    last_char_missing: str = valid_key[:-1]
+    if config.get(last_char_missing):
+        raise ValueError(f'Invalid key: "{last_char_missing}", use "{valid_key}" instead.')
+    return config
+
+
 class AgentConfig:
     @staticmethod
     def is_default_actions_key(stage_item: Union[str, Name]) -> bool:
         return AgentConfig.__value(stage_item) == DEFAULT_ACTIONS_KEY
 
     def __init__(self, config: dict[str, any]):
-        self.__config = config
+        self.__config = check_for_typo(config, STAGES_KEY)
 
     def root(self) -> dict[str, any]:
         return self.__config
@@ -311,7 +324,9 @@ class AgentConfig:
             # element-0: //*[@id="element-0"]
             # element-1: //*[@id="element-1"]
         """
-        return self.stage(self.__value(stage), {}).get(STAGE_ITEMS_KEY, result_if_none)
+        stage: dict = self.stage(self.__value(stage), {})
+        check_for_typo(stage, STAGE_ITEMS_KEY)
+        return stage.get(STAGE_ITEMS_KEY, result_if_none)
 
     def stage_item_names(self, stage: Union[str, Name]) -> [str]:
         stage_items = self.stage_items(stage)
@@ -340,7 +355,9 @@ class AgentConfig:
         return None
 
     def events(self, config_path: ConfigPath, default: dict = None) -> dict[str, any]:
-        return self.get(config_path, {}).get(EVENTS, default)
+        parent: dict = self.get(config_path, {})
+        check_for_typo(parent, EVENTS)
+        return parent.get(EVENTS, default)
 
     def get_event_actions(self, config_path: ConfigPath, event_name: str) -> Union[str, list]:
         default_action: str = 'fail' if event_name == ON_ERROR else 'continue'

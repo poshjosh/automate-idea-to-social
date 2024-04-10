@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from typing import TypeVar, Union
 
-from ..config import AgentConfig, ACTIONS_KEY, DEFAULT_ACTIONS_KEY, Name
+from ..config import AgentConfig, ACTIONS_KEY, DEFAULT_ACTIONS_KEY, Name, check_for_typo
 
 STR_OR_DICT = TypeVar("STR_OR_DICT", bound=Union[str, dict])
 STR_OR_LIST = TypeVar("STR_OR_LIST", bound=Union[str, list[str]])
@@ -27,6 +27,7 @@ def element_action_signatures(config: dict[str, any], element_name: str) -> list
 def __element_action_signatures(config: dict[str, any],
                                 name: str,
                                 result_if_none: list[str]) -> list[str]:
+    check_for_typo(config, name)
     default_actions: STR_OR_LIST = result_if_none if not config \
         else config.get(name, result_if_none)
     return __to_list(default_actions)
