@@ -4,6 +4,7 @@ import shutil
 from .....main.app.aideas.action.action import Action
 from .....main.app.aideas.action.action_result import ActionResult
 from .....main.app.aideas.agent.blog_agent import BlogAgent
+from .....main.app.aideas.env import Env
 from .....main.app.aideas.result.result_set import StageResultSet
 from .....main.app.aideas.run_context import RunContext
 
@@ -39,9 +40,14 @@ class TestBlogAgent(BlogAgent):
         return result
 
     def _get_update_blog_content_commands(self, run_context: RunContext) -> list[list[str]]:
-        commands: list[list[str]] = super()._get_update_blog_content_commands(run_context)
-        # We remove the last command which is: git push
-        return commands[:-1]
+        return [
+            ['git', 'config', 'user.email', f'"{run_context.get_env(Env.GIT_USER_EMAIL)}"'],
+            # ['git', 'remote', 'set-url', 'origin',
+            #  self.__get_blog_src_url_with_credentials(run_context)],
+            ['git', 'add', '.'],
+            ['git', 'commit', '-m', '"Add blog post"'],
+            # ['git', 'push']
+        ]
 
     def _get_build_update_blog_image_command_args(self) -> [str]:
         return ['echo', '"Test mode: Skipping actual build of blog update image."']
