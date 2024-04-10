@@ -117,7 +117,7 @@ class BrowserAgent(Agent):
                 config, stage, run_context)
 
         except (ElementNotFoundError, ActionError, AgentError) as ex:
-            logger.debug(f"Error acting on {config_path} {type(ex)}")
+            logger.debug(f"Error acting on {config_path}\n{str(ex)}")
             exception = ex
 
         result = self.__event_handler.handle_result_event(

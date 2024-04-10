@@ -177,7 +177,8 @@ class BrowserAutomator:
                 self.__check_expectations(config, config_path, run_context, element, timeout)
 
         except (ElementNotFoundError, ActionError) as ex:
-            logger.debug(f"Error acting on {config_path} {type(ex)}")
+            # Error should be logged with more details at the stage level by browser agent.
+            logger.debug(f"Error acting on {config_path} {ex.__class__.__name__}")
             exception = ex
 
         result = self.__event_handler.handle_result_event(
