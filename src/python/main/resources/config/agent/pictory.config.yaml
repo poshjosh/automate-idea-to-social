@@ -56,13 +56,16 @@ stages:
           - //*[@id="root"]/div[1]/div[4]/div/main/div/div/div[2]/span[2]/div/div[2]/button[contains(text(), "Proceed")]
         actions:
           - click
-          - wait 15 # TODO - Change to 30, also check if we even need this
+          - wait 5
   pre-post:
     url: https://app.pictory.ai/storyboard/scripttovideo
     events:
       onerror: continue
     stage-items:
       close-app-cues:
+        # The previous stage takes a while to complete.
+        # We add extra 30 seconds wait time here.
+        wait-timeout-seconds: 60
         search-for:
           - /html/body/appcues/div/a
           - /html/body/appcues//*[@aria-label="Close modal"]
@@ -125,24 +128,43 @@ stages:
           - //*[@id="template-styles-tab"]
           - //*[@id="side-navbar"]/ul/li/a/*[contains(text(), "Styles")]//..
           - //*[@id="side-navbar"]//*[contains(text(), "Styles")]//..
-      # This stage-item and the next are related, so edit with care
-      select-style:
+      select-styles-library:
+        events:
+          onerror: continue
+        search-for: //*[@id="globalTemplateStylesTab"]
+      # Hovering over the style, makes the button to apply the style visible
+      hover-over-style:
+        events:
+          onerror: continue
+        search-for: //*[@id="${PICTORY_TEXT_STYLE}"]
+        actions:
+          - execute_script_on arguments[0].scrollIntoView(true);
+          - move_to_element_offset top-right -20 -20
+          - wait 2
+      apply-style-to-all-scenes-1:
+        events:
+          onerror: continue
         search-for:
-          - //*[@id="globalTemplateStylesTab-div"]//div[contains(@class, "style-library")]//p[contains(text(), "${PICTORY_TEXT_STYLE}")]//..
-          - //*[@id="globalTemplateStylesTab-div"]//p[contains(text(), "${PICTORY_TEXT_STYLE}")]//..
-          - //*[@id="globalTemplateStylesTab-div"]//div[contains(@class, "style-library")]/div[8]
-          - //*[@id="globalTemplateStylesTab-div"]/div/div/div/div[8]
-      # This stage-item and the previous are related, so edit with care
-      apply-style-to-all:
-        search-for:
-          - ${self.stages.text-style.stage-items.select-style.search-for[0]}//img
-          - ${self.stages.text-style.stage-items.select-style.search-for[1]}//img
-          - ${self.stages.text-style.stage-items.select-style.search-for[2]}//img
-          - ${self.stages.text-style.stage-items.select-style.search-for[3]}//img
-        action:
+          - //*[@id="${PICTORY_TEXT_STYLE}"]//img[@aria-label="Apply to all scenes"]
+          - //*[@id="${PICTORY_TEXT_STYLE}"]//img
+        actions:
           - move_to_element
           - wait 2
+          - execute_script_on arguments[0].click();
           - click
+          - wait 7
+      apply-style-to-all-scenes-2:
+        events:
+          onerror: continue
+        search-for:
+          - //*[@id="${PICTORY_TEXT_STYLE}"]//img[@aria-label="Apply to all scenes"]//..
+          - //*[@id="${PICTORY_TEXT_STYLE}"]//img//..
+        actions:
+          - move_to_element
+          - wait 2
+          - execute_script_on arguments[0].click();
+          - click
+          - wait 7
   branding:
     stage-items:
       branding-tab:
@@ -162,8 +184,11 @@ stages:
           onerror: continue
         search-for: /html/body//*[@role="dialog"]//button[contains(text(), "Continue")]
       select-brand-background-music:
-        search-for: //*[@id="step-3-fixed-height"]//span[contains(text(), "${PICTORY_BG_MUSIC_NAME}")]//..
+        search-for:
+          - //*[@id="step-3-fixed-height"]//span[contains(text(), "${PICTORY_BG_MUSIC_NAME}")]/preceding-sibling::div
+          - //*[@id="step-3-fixed-height"]//span[contains(text(), "${PICTORY_BG_MUSIC_NAME}")]//../div[1]
         actions:
+          - move_to_element_offset bottom-right -8 8
           - click
           - wait 3
       select-brand-voice:
@@ -187,7 +212,7 @@ stages:
         search-for: //*[contains(text(), "Voiceover applied")]
         actions: wait 2
   select-audio:
-    event:
+    events:
       onerror: continue
     stage-items:
       select-audio-tab:
@@ -195,13 +220,13 @@ stages:
           - //*[@id="side-navbar"]/ul/li/a/*[contains(text(), "Audio")]//..
           - //*[@id="side-navbar"]//*[contains(text(), "Audio")]//..
   audio-volume:
-    event:
+    events:
       onerror: continue
     stage-items:
       select-volume:
         search-for:
-          - //*[@id="step-3-fixed-height"]//div[@role="tablist"]/button[contains(text(), "Volume")]
-          - //*[@id="step-3-fixed-height"]//*[contains(text(), "Volume")]
+          - //*[@id="step-3-fixed-height"]//div[@role="tablist"]/button[@aria-label="Volume"]
+          - //*[@id="step-3-fixed-height"]//*[@aria-label="Volume"]
       move-volume-slider:
         search-for:
           - //*[@id="bgMusicVolPercent"]
@@ -214,7 +239,7 @@ stages:
           - move_by_offset 0 32
           - wait 1
   voiceover:
-    event:
+    events:
       onsuccess: run_stages wait-till-voiceover-applied
       onerror: continue
     stage-items:
