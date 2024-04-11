@@ -94,7 +94,7 @@ class ElementActionHandler(BrowserActionHandler):
 
             result = execute_for_result(clear_text, element, action)
         elif key == ElementActionId.CLICK.value:
-            result = execute_for_result(lambda arg: self.__do_click(driver, arg), element, action)
+            result = execute_for_result(lambda arg: self.__click(driver, arg), element, action)
         elif key == ElementActionId.CLICK_AND_HOLD.value:
             def click_and_hold(tgt: WebElement):
                 ActionChains(driver).click_and_hold(tgt).perform()
@@ -146,9 +146,14 @@ class ElementActionHandler(BrowserActionHandler):
         return result
 
     @staticmethod
-    def __do_click(webdriver: WEB_DRIVER, element: WebElement):
+    def __click(webdriver: WEB_DRIVER, element: WebElement):
         try:
-            ActionChains(webdriver).move_to_element(element).click().perform()
+            # Click means only click. We have a separate action for move_to_element
+            # Adding move_to_element here will disrupt some reasonable expectations
+            # For example. When we move to bottom right before clicking,
+            # we don't expect additional movements before the click is effected.
+            # If you need to, explicitly specify move_to_element before click
+            element.click()
         except ElementClickInterceptedException:
             logger.warning('Element click intercepted. Will try clicking via JavaScript.')
             webdriver.execute_script("arguments[0].click();", element)
