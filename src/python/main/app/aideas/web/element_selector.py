@@ -3,7 +3,8 @@ from datetime import datetime
 from time import sleep
 from typing import List, Callable
 
-from selenium.common import NoSuchWindowException, StaleElementReferenceException, TimeoutException
+from selenium.common import NoSuchWindowException, StaleElementReferenceException, \
+    NoSuchElementException, TimeoutException
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
@@ -179,8 +180,7 @@ class ElementSelector:
         ElementSelector.__collect_shadows(webdriver, root, timeout_seconds, collect)
 
         if len(collection) == 0:
-            raise ElementNotFoundError(
-                f"No shadow element found by attributes: {attributes}")
+            raise NoSuchElementException(f"No shadow element found by attributes: {attributes}")
 
         return collection[0]
 
@@ -213,22 +213,20 @@ class ElementSelector:
                                   xpath: str,
                                   timeout_seconds: float) -> WebElement:
         search_by: By = By.XPATH
-        try:
-            if timeout_seconds < 1:
+        if timeout_seconds < 1:
+            return root.find_element(search_by, xpath)
+        else:
+            try:
+                return WebDriverWait(root, timeout_seconds).until(
+                    WaitCondition.element_to_be_clickable((search_by, xpath)))
+            except TimeoutException:
+                # Element exists but, we timed out waiting for the above condition
+                logger.debug(f"Selecting element directly, "
+                             f"despite timeout: {timeout_seconds} using: {xpath}")
                 return root.find_element(search_by, xpath)
-            else:
-                try:
-                    return WebDriverWait(root, timeout_seconds).until(
-                        WaitCondition.element_to_be_clickable((search_by, xpath)))
-                except TimeoutException:
-                    logger.debug(f"Selecting element directly, "
-                                 f"despite timeout: {timeout_seconds} using: {xpath}")
-                    return root.find_element(search_by, xpath)
-                except StaleElementReferenceException:
-                    logger.debug(f"Selecting element directly, despite staleness using: {xpath}")
-                    return root.find_element(search_by, xpath)
-        except Exception as ex:
-            raise ElementNotFoundError(f"Failed to select element by xpath: {xpath}") from ex
+            except StaleElementReferenceException:
+                logger.debug(f"Selecting element directly, despite staleness using: {xpath}")
+                return root.find_element(search_by, xpath)
 
     @staticmethod
     def validate_search_inputs(search_configs: SearchConfigs):
