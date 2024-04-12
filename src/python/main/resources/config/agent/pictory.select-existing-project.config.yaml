@@ -1,0 +1,27 @@
+depends-on:
+  - pictory
+stages:
+  login:
+    events:
+      onstart: run_stages pictory.login
+      onsuccess: log INFO "Logged in to Pictory"
+  select-existing-project:
+    url: https://app.pictory.ai/myvideos
+    stage-items:
+# Use this to debug, by revealing cursor
+#      enable-cursor:
+#        actions: enable_cursor
+      proceed-to-select-project:
+        search-for:
+          - //*[@id="h-tb1"]//div[@class="inner-vdbox"]//..
+          - //*[@id="h-tb1"]/div/div/div/div/div/div[2]/div/div[1]/div[2]/div/div/div[1]
+        actions:
+          - click
+          - wait 2
+      select-project:
+        search-for:
+          - //*[@id="h-tb1"]//div[@class="inner-vdbox"]//..
+          - //*[@id="h-tb1"]/div/div/div/div/div/div[1]/div/div/div/div[1]/div
+        actions:
+          - click
+          - wait 2

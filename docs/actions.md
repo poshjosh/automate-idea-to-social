@@ -18,21 +18,23 @@ Actions may be global, browser or element specific.
 
 ### Browser actions
 
-| Action         | Argument type(s)  | Remarks                       |
-|----------------|-------------------|-------------------------------|
-| accept_alert   | int (timeout)     |                               |
-| delete_cookies | none              |                               |
-| dismiss_alert  | int (timeout)     |                               |
-| execute_script | str (javascript)  |                               |
-| move_by_offset | int, int (px, px) |                               |
-| refresh        | None              |                               |
+| Action         | Argument type(s)        | Remarks |
+|----------------|-------------------------|---------|
+| accept_alert   | int (timeout)           |         |
+| delete_cookies | none                    |         |
+| disable_cursor | none                    |         |
+| dismiss_alert  | int (timeout)           |         |
+| enable_cursor  | none                    |         |
+| execute_script | str (javascript)        |         |
+| move_by_offset | int, int (px, px)       |         |
+| refresh        | None                    |         |
 
 ### Element Actions
 
 | Action                          | Argument type(s)                                                          | Remarks                                   |
 |---------------------------------|---------------------------------------------------------------------------|-------------------------------------------|
 | clear_text                      | None                                                                      |                                           |
-| click                           | None                                                                      | default action                            |
+| click                           | bool (click on element, true by default)                                  | default action                            |
 | click_and_hold                  | None                                                                      |                                           |
 | click_and_hold_current_position | None                                                                      |                                           |
 | enter                           | None                                                                      |                                           |

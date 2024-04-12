@@ -25,7 +25,9 @@ ALERT_ACTION = TypeVar("ALERT_ACTION", bound=Union['accept', 'dismiss'])
 class BrowserActionId(BaseActionId):
     ACCEPT_ALERT = ('accept_alert', False)
     DELETE_COOKIES = ('delete_cookies', False)
+    DISABLE_CURSOR = ('disable_cursor', False)
     DISMISS_ALERT = ('dismiss_alert', False)
+    ENABLE_CURSOR = ('enable_cursor', False)
     EXECUTE_SCRIPT = 'execute_script'
     MOVE_BY_OFFSET = ('move_by_offset', False)
     REFRESH = ('refresh', False)
@@ -55,6 +57,10 @@ class BrowserActionHandler(ActionHandler):
             result = self.__handle_alert(action)
         elif key == BrowserActionId.DELETE_COOKIES.value:
             result = self.__delete_cookies(action)
+        elif key == BrowserActionId.DISABLE_CURSOR.value:
+            result = self.__disable_cursor(action)
+        elif key == BrowserActionId.ENABLE_CURSOR.value:
+            result = self.__enable_cursor(action)
         elif key == BrowserActionId.EXECUTE_SCRIPT.value:
             result = self.__execute_script(action)
         elif key == BrowserActionId.MOVE_BY_OFFSET.value:
@@ -93,6 +99,57 @@ class BrowserActionHandler(ActionHandler):
                 logger.debug(f"Deleted cookies file: {file}")
         cookies_file = get_cookies_file_path(action.get_agent_name())
         return execute_for_result(delete_all_cookies, cookies_file, action)
+
+    def __disable_cursor(self, action: Action) -> ActionResult:
+        # This is a hack.
+        disable_cursor = """
+                function disableCursor() {
+                  var seleniumFollowerImg = document.getElementById('selenium_mouse_follower')
+                  if (seleniumFollowerImg) {
+                    document.body.removeChild(seleniumFollowerImg);
+                  }
+                };
+        
+                disableCursor();
+        """
+
+        def execute(script: str):
+            self.get_web_driver().execute_script(script)
+
+        return execute_for_result(execute, disable_cursor, action)
+
+    def __enable_cursor(self, action: Action) -> ActionResult:
+        # This is a hack.
+        # See https://stackoverflow.com/questions/53900972/how-can-i-see-the-mouse-pointer-as-it-performs-actions-in-selenium
+        enable_cursor = """
+                function enableCursor() {
+                  var seleniumFollowerImg = document.createElement("img");
+                  seleniumFollowerImg.setAttribute('src', 'data:image/png;base64,'
+                    + 'iVBORw0KGgoAAAANSUhEUgAAABQAAAAeCAQAAACGG/bgAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAA'
+                    + 'HsYAAB7GAZEt8iwAAAAHdElNRQfgAwgMIwdxU/i7AAABZklEQVQ4y43TsU4UURSH8W+XmYwkS2I0'
+                    + '9CRKpKGhsvIJjG9giQmliHFZlkUIGnEF7KTiCagpsYHWhoTQaiUUxLixYZb5KAAZZhbunu7O/PKf'
+                    + 'e+fcA+/pqwb4DuximEqXhT4iI8dMpBWEsWsuGYdpZFttiLSSgTvhZ1W/SvfO1CvYdV1kPghV68a3'
+                    + '0zzUWZH5pBqEui7dnqlFmLoq0gxC1XfGZdoLal2kea8ahLoqKXNAJQBT2yJzwUTVt0bS6ANqy1ga'
+                    + 'VCEq/oVTtjji4hQVhhnlYBH4WIJV9vlkXLm+10R8oJb79Jl1j9UdazJRGpkrmNkSF9SOz2T71s7M'
+                    + 'SIfD2lmmfjGSRz3hK8l4w1P+bah/HJLN0sys2JSMZQB+jKo6KSc8vLlLn5ikzF4268Wg2+pPOWW6'
+                    + 'ONcpr3PrXy9VfS473M/D7H+TLmrqsXtOGctvxvMv2oVNP+Av0uHbzbxyJaywyUjx8TlnPY2YxqkD'
+                    + 'dAAAAABJRU5ErkJggg==');
+                  seleniumFollowerImg.setAttribute('id', 'selenium_mouse_follower');
+                  seleniumFollowerImg.setAttribute('style', 'position: absolute; z-index: 99999999999; pointer-events: none; left:0; top:0');
+                  document.body.appendChild(seleniumFollowerImg);
+                  document.addEventListener('mousemove', function (e) {
+                    document.getElementById("selenium_mouse_follower").style.left = e.pageX + 'px';
+                    document.getElementById("selenium_mouse_follower").style.top = e.pageY + 'px';
+                  });  
+                };
+        
+                enableCursor();
+        """
+
+        def execute(script: str):
+            self.get_web_driver().execute_script(script)
+
+        return execute_for_result(execute, enable_cursor, action)
 
     def __execute_script(self, action: Action) -> ActionResult:
         def execute(script: str):

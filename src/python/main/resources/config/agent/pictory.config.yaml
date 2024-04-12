@@ -119,52 +119,6 @@ stages:
           - //*[@id="tbinner-3"]//div[@role="rowgroup"]/div[2]/div/div[1]/a
           - //*[@id="tbinner-3"]//div[@role="rowgroup"]/div[2]/div/div[1]/a/div
           - //*[@id="tbinner-3"]//div[@role="rowgroup"]/div[2]/div/div[1]/a/div/img
-  text-style:
-    events:
-      onerror: continue
-    stage-items:
-      select-styles-tab:
-        search-for:
-          - //*[@id="template-styles-tab"]
-          - //*[@id="side-navbar"]/ul/li/a/*[contains(text(), "Styles")]//..
-          - //*[@id="side-navbar"]//*[contains(text(), "Styles")]//..
-      select-styles-library:
-        events:
-          onerror: continue
-        search-for: //*[@id="globalTemplateStylesTab"]
-      # Hovering over the style, makes the button to apply the style visible
-      hover-over-style:
-        events:
-          onerror: continue
-        search-for: //*[@id="${PICTORY_TEXT_STYLE}"]
-        actions:
-          - execute_script_on arguments[0].scrollIntoView(true);
-          - move_to_element_offset top-right -20 -20
-          - wait 2
-      apply-style-to-all-scenes-1:
-        events:
-          onerror: continue
-        search-for:
-          - //*[@id="${PICTORY_TEXT_STYLE}"]//img[@aria-label="Apply to all scenes"]
-          - //*[@id="${PICTORY_TEXT_STYLE}"]//img
-        actions:
-          - move_to_element
-          - wait 2
-          - execute_script_on arguments[0].click();
-          - click
-          - wait 7
-      apply-style-to-all-scenes-2:
-        events:
-          onerror: continue
-        search-for:
-          - //*[@id="${PICTORY_TEXT_STYLE}"]//img[@aria-label="Apply to all scenes"]//..
-          - //*[@id="${PICTORY_TEXT_STYLE}"]//img//..
-        actions:
-          - move_to_element
-          - wait 2
-          - execute_script_on arguments[0].click();
-          - click
-          - wait 7
   branding:
     stage-items:
       branding-tab:
@@ -188,13 +142,13 @@ stages:
           - //*[@id="step-3-fixed-height"]//span[contains(text(), "${PICTORY_BG_MUSIC_NAME}")]/preceding-sibling::div
           - //*[@id="step-3-fixed-height"]//span[contains(text(), "${PICTORY_BG_MUSIC_NAME}")]//../div[1]
         actions:
-          - move_to_element_offset bottom-right -8 8
+          - move_to_element_offset bottom-right -8 -8
           - click
           - wait 3
       select-brand-voice:
         search-for: //*[@id="step-3-fixed-height"]//span[contains(text(), "${PICTORY_VOICE_NAME}")]//..
         actions:
-          - move_to_element_offset bottom-right -5 6
+          - move_to_element_offset bottom-right -5 -6
           - wait 1
           - click_and_hold_current_position
           - wait 0.5
@@ -232,7 +186,7 @@ stages:
           - //*[@id="bgMusicVolPercent"]
           - //*[@id="voice-tabpanel-settings"]//div[contains(@class, "volume-slider")]
         actions:
-          - move_to_element_offset bottom-left 10% 20%
+          - move_to_element_offset bottom-left 10% -20%
           - wait 2
           - click_and_hold_current_position
           - wait 1
@@ -278,6 +232,33 @@ stages:
           - wait 1
           - execute_script_on arguments[0].click();
           - wait 5
+  # The text style was only successfully applied when I move this stage after the branding stage.
+  text-style:
+    url: https://app.pictory.ai/storyboard/scripttovideo
+    events:
+      onerror: continue
+    stage-items:
+      select-styles-tab:
+        search-for:
+          - //*[@id="template-styles-tab"]
+          - //*[@id="side-navbar"]/ul/li/a/*[contains(text(), "Styles")]//..
+          - //*[@id="side-navbar"]//*[contains(text(), "Styles")]//..
+      select-styles-library:
+        events:
+          onerror: continue
+        search-for: //*[@id="globalTemplateStylesTab"]
+      apply-style-to-all-scenes:
+        events:
+          onerror: continue
+        search-for: //*[@id="${PICTORY_TEXT_STYLE}"]
+        actions:
+          - execute_script_on arguments[0].scrollIntoView(true);
+          - move_to_element
+          - wait 2
+          - move_to_element_offset top-right -20 20
+          - wait 2
+          - click false
+          - wait 7
   download-video:
     stage-items:
       expand-download-options:
@@ -344,7 +325,7 @@ stages:
           - save_file $results.me[1]
   download-video-layout-2:
     events:
-      onsuccess: run_stages select-audio voiceover download-video save-downloaded-video
+      onsuccess: run_stages download-video save-downloaded-video
     stage-items:
       expand-layout-2-options:
         events:
@@ -361,7 +342,7 @@ stages:
           - wait 10  # 8mb video took 2 seconds, we add more time 'cos voice wasn't being applied
   download-video-layout-3:
     events:
-      onsuccess: run_stages select-audio voiceover download-video save-downloaded-video
+      onsuccess: run_stages download-video save-downloaded-video
     stage-items:
       expand-layout-3-options:
         events:
