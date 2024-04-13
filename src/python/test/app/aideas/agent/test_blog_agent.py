@@ -10,10 +10,6 @@ from .....main.app.aideas.run_context import RunContext
 
 
 class TestBlogAgent(BlogAgent):
-    @staticmethod
-    def of_config(agent_config: dict[str, any]) -> BlogAgent:
-        return TestBlogAgent(agent_config)
-
     def run(self, run_context: RunContext) -> StageResultSet:
         try:
             return super().run(run_context)

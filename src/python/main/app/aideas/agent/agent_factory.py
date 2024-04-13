@@ -57,7 +57,7 @@ class AgentFactory:
                 # dependencies will be detected by the recursive call involved.
                 raise ValueError(f'Circular dependency detected: '
                                  f'{author_name} depends on {dep_name} and vice-versa')
-            dep = self.__create_dependency(author, dep_name, dep_config, None)
+            dep = self.__create_dependency(author, dep_config, None)
 
             if dep is None:
                 continue
@@ -70,7 +70,6 @@ class AgentFactory:
 
     @staticmethod
     def __create_dependency(author: Agent,
-                            dep_name: str,
                             dep_config: dict[str, any],
                             result_if_none: Union[Agent, None] = None) -> Agent:
         if isinstance(author, BrowserAgent):

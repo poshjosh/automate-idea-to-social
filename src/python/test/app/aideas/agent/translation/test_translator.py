@@ -3,10 +3,6 @@ from ......main.app.aideas.agent.translation.translator import Translator
 
 class TestTranslator(Translator):
     @staticmethod
-    def of_config(agent_config: dict[str, any]) -> 'Translator':
-        return Translator.of_dynamic(agent_config, TestTranslator)
-
-    @staticmethod
     def get_input():
         return [
             "1. Мене звати Тіна, я інженер-програміст у Google. А також щось тут з двох речень.",

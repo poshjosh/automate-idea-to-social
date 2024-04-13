@@ -23,8 +23,9 @@ logger = logging.getLogger(__name__)
 
 
 class BrowserAutomator:
-    @staticmethod
-    def of(app_config: dict[str, any],
+    @classmethod
+    def of(cls,
+           app_config: dict[str, any],
            agent_name: str,
            agent_config: dict[str, any] = None,
            run_stages: Callable[[RunContext, OrderedDict[str, [Name]]], None] = None) \
@@ -38,7 +39,7 @@ class BrowserAutomator:
         action_handler = ElementActionHandler(web_driver, wait_timeout_seconds)
         event_handler = EventHandler(action_handler)
         element_selector = ElementSelector.of(web_driver, agent_name, wait_timeout_seconds)
-        return BrowserAutomator(
+        return cls(
             web_driver, wait_timeout_seconds, agent_name,
             event_handler, element_selector, action_handler,
             run_stages)
@@ -91,7 +92,7 @@ class BrowserAutomator:
         return clone
 
     def clone(self) -> 'BrowserAutomator':
-        return BrowserAutomator(
+        return self.__class__(
             self.__webdriver, self.__wait_timeout_seconds, self.__agent_name,
             self.__event_handler, self.__element_selector, self.__action_handler, self.__run_stages)
 
@@ -176,7 +177,6 @@ class BrowserAutomator:
             if not self.__run_stages:
                 raise ValueError(f'Event: run_stages is not supported for {config_path}')
             self.__run_stages(context, agent_to_stages)
-
 
         exception = None
         try:

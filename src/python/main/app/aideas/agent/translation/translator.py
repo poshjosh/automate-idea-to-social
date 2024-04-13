@@ -5,16 +5,12 @@ logger = logging.getLogger(__name__)
 
 
 class Translator:
-    @staticmethod
-    def of_config(agent_config: dict[str, any]) -> 'Translator':
-        return Translator.of_dynamic(agent_config, Translator)
-
-    @staticmethod
-    def of_dynamic(agent_config: dict[str, any], init) -> 'Translator':
+    @classmethod
+    def of_config(cls, agent_config: dict[str, any]) -> 'Translator':
         net_config = agent_config['net']
-        return init(net_config['service-url'],
-                    net_config.get('chunk-size', 10000),
-                    net_config.get('user-agent'))
+        return cls(net_config['service-url'],
+                   net_config.get('chunk-size', 10000),
+                   net_config.get('user-agent'))
 
     __verbose = True
     __default_user_agent = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "

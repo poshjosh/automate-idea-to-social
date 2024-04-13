@@ -15,20 +15,12 @@ logger = logging.getLogger(__name__)
 
 
 class BrowserAgent(Agent):
-    @staticmethod
-    def of_config(agent_name: str,
+    @classmethod
+    def of_config(cls,
+                  agent_name: str,
                   app_config: dict[str, any],
                   agent_config: dict[str, any],
                   dependencies: Union[dict[str, Agent], None] = None) -> 'BrowserAgent':
-        return BrowserAgent.of_dynamic(
-            agent_name, app_config, agent_config, dependencies, BrowserAgent)
-
-    @staticmethod
-    def of_dynamic(agent_name: str,
-                   app_config: dict[str, any],
-                   agent_config: dict[str, any],
-                   dependencies: Union[dict[str, Agent], None],
-                   init) -> 'BrowserAgent':
         """
         See example usage below:
         highlight:: python
@@ -40,7 +32,7 @@ class BrowserAgent(Agent):
         """
         browser_automator = BrowserAutomator.of(app_config, agent_name, agent_config)
         interval_seconds: int = agent_config.get('interval-seconds', 0)
-        return init(agent_name, agent_config, dependencies, browser_automator, interval_seconds)
+        return cls(agent_name, agent_config, dependencies, browser_automator, interval_seconds)
 
     def __init__(self,
                  name: str,
@@ -57,18 +49,29 @@ class BrowserAgent(Agent):
     def close(self):
         self.__browser_automator.quit()
 
+    def with_config(self, config: dict[str, any]) -> 'BrowserAgent':
+        clone: BrowserAgent = self.clone()
+        clone.__config = AgentConfig(config)
+        return clone
+
+    def without_events(self) -> 'BrowserAgent':
+        clone: BrowserAgent = self.clone()
+        clone.__browser_automator = self.get_browser_automator().without_events()
+        return clone
+
+    def with_automator(self, automator: BrowserAutomator) -> 'BrowserAgent':
+        clone: BrowserAgent = self.clone()
+        clone.__browser_automator = automator
+        return clone
+
+    def clone(self) -> 'BrowserAgent':
+        return self.__class__(self.get_name(), self.get_config().root(), self._get_dependencies(),
+                              self.get_browser_automator(), self.get_interval_seconds())
+
     def create_dependency(self, name: str, config: dict[str, any]) -> 'BrowserAgent':
         return BrowserAgent(
             name, config, None,
             self.__browser_automator, self.__interval_seconds)
-
-    def without_events(self) -> 'BrowserAgent':
-        return BrowserAgent(self.get_name(), self.get_config().root(), self._get_dependencies(),
-                            self.__browser_automator.without_events(), self.get_interval_seconds())
-
-    def with_automator(self, automator: BrowserAutomator) -> 'BrowserAgent':
-        return BrowserAgent(self.get_name(), self.get_config().root(), self._get_dependencies(),
-                            automator, self.get_interval_seconds())
 
     def run_stage(self,
                   run_context: RunContext,

@@ -23,14 +23,17 @@ logger = logging.getLogger(__name__)
 class TranslationAgent(Agent):
     __verbose = False
 
-    @staticmethod
-    def of_config(agent_config: dict[str, any]) -> 'TranslationAgent':
-        return TranslationAgent(agent_config, Translator.of_config(agent_config))
+    @classmethod
+    def of_config(cls, agent_config: dict[str, any]) -> 'TranslationAgent':
+        return cls(agent_config, Translator.of_config(agent_config))
 
     def __init__(self, agent_config: dict[str, any], translator: Translator):
         super().__init__(AgentName.TRANSLATION, agent_config)
         self.__from_lang = "en"
         self.__translator = translator
+
+    def with_config(self, config: dict[str, any]) -> 'TranslationAgent':
+        return self.__class__(config, self.__translator)
 
     def run_stage(self,
                   run_context: RunContext,

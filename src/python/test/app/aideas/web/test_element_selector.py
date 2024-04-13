@@ -9,7 +9,8 @@ from .....main.app.aideas.web.element_selector import ElementSelector
 
 
 class TestWebElement(WebElement):
-    def __init__(self, is_displayed: bool = True, is_enabled: bool = True, is_selected: bool = False):
+    def __init__(self,
+                 is_displayed: bool = True, is_enabled: bool = True, is_selected: bool = False):
         super().__init__({}, str(uuid.uuid4().hex))
         self.__is_displayed = is_displayed
         self.__is_enabled = is_enabled
@@ -26,15 +27,10 @@ class TestWebElement(WebElement):
 
 
 class TestElementSelector(ElementSelector):
-    @staticmethod
-    def of(webdriver, domain, wait_timeout_seconds: float = 20) -> 'ElementSelector':
+    @classmethod
+    def of(cls, webdriver, domain, wait_timeout_seconds: float = 20) -> 'ElementSelector':
         cookie_store = NoopCookieStore(webdriver, get_cookies_file_path(domain))
-        return TestElementSelector(
-            webdriver, wait_timeout_seconds, cookie_store)
-
-    def with_timeout(self, timeout: float) -> 'ElementSelector':
-        return TestElementSelector(
-            self.get_webdriver(), timeout, self.get_browser_cookie_store())
+        return cls(webdriver, wait_timeout_seconds, cookie_store)
 
     def select_element(self, search_configs: SearchConfigs) -> WebElement:
         self.validate_search_inputs(search_configs)

@@ -55,13 +55,13 @@ stages:
         run_context: RunContext = RunContext.of_config(self.app_config, agent_name)
         self._named_agent_should_run_successfully(agent_name, run_context)
 
-    # def test_pictory(self):
-    #     run_context: RunContext = RunContext.of_config(self.app_config, AgentName.PICTORY)
-    #     self._named_agent_should_run_successfully(AgentName.PICTORY, run_context)
-    #
-    # def test_tiktok(self):
-    #     run_context: RunContext = self._given_run_context_with_downloaded_file(AgentName.PICTORY)
-    #     self._named_agent_should_run_successfully(AgentName.TIKTOK, run_context)
+    def test_pictory(self):
+        run_context: RunContext = RunContext.of_config(self.app_config, AgentName.PICTORY)
+        self._named_agent_should_run_successfully(AgentName.PICTORY, run_context)
+
+    def test_tiktok(self):
+        run_context: RunContext = self._given_run_context_with_downloaded_file(AgentName.PICTORY)
+        self._named_agent_should_run_successfully(AgentName.TIKTOK, run_context)
 
     def _named_agent_should_run_successfully(self, agent_name: str, run_context: RunContext):
 

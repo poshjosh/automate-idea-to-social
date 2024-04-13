@@ -24,6 +24,14 @@ class Agent:
         self.__config = AgentConfig(agent_config)
         self.__dependencies = {} if dependencies is None else dependencies
 
+    def with_config(self, config: dict[str, any]) -> 'Agent':
+        clone: Agent = self.clone()
+        clone.__config = AgentConfig(config)
+        return clone
+
+    def clone(self) -> 'Agent':
+        return self.__class__(self.get_name(), self.get_config().root(), self._get_dependencies())
+
     def add_dependency(self, agent_name: str, agent: 'Agent') -> 'Agent':
         if agent is None:
             raise ValueError('Agent cannot be None')

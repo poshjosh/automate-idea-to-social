@@ -26,11 +26,10 @@ class ElementNotFoundError(Exception):
 
 
 class ElementSelector:
-    @staticmethod
-    def of(webdriver, domain: str, wait_timeout_seconds: float = 20) -> 'ElementSelector':
+    @classmethod
+    def of(cls, webdriver, domain: str, wait_timeout_seconds: float = 20) -> 'ElementSelector':
         cookie_store = BrowserCookieStore(webdriver, get_cookies_file_path(domain))
-        return ElementSelector(
-            webdriver, wait_timeout_seconds, cookie_store)
+        return cls(webdriver, wait_timeout_seconds, cookie_store)
 
     def __init__(self,
                  webdriver: WebDriver,
@@ -43,7 +42,7 @@ class ElementSelector:
     def with_timeout(self, timeout: float) -> 'ElementSelector':
         if timeout == self.__wait_timeout_seconds:
             return self
-        return ElementSelector(self.__webdriver, timeout, self.__browser_cookie_store)
+        return self.__class__(self.__webdriver, timeout, self.__browser_cookie_store)
 
     def select_element(self, search_configs: SearchConfigs) -> WebElement:
         self.validate_search_inputs(search_configs)
@@ -184,7 +183,7 @@ class ElementSelector:
 
         return collection[0]
 
-    # Adapted from jaksco's answer here:
+    # Adapted from here:
     # https://stackoverflow.com/questions/37384458/how-to-handle-elements-inside-shadow-dom-from-selenium
     @staticmethod
     def __collect_shadows(webdriver,
@@ -203,10 +202,10 @@ class ElementSelector:
                     if collect(element):
                         break
 
-        elements = WebDriverWait(root, timeout_seconds).until(
+        all_elements = WebDriverWait(root, timeout_seconds).until(
                 WaitCondition.presence_of_all_elements_located((By.CSS_SELECTOR, '*')))
 
-        visit_all_elements(webdriver, elements)
+        visit_all_elements(webdriver, all_elements)
 
     @staticmethod
     def __select_element_by_xpath(root: D,
@@ -220,7 +219,7 @@ class ElementSelector:
                 return WebDriverWait(root, timeout_seconds).until(
                     WaitCondition.element_to_be_clickable((search_by, xpath)))
             except TimeoutException:
-                # Element exists but, we timed out waiting for the above condition
+                # Element exists but, we timed-out waiting for the above condition
                 logger.debug(f"Selecting element directly, "
                              f"despite timeout: {timeout_seconds} using: {xpath}")
                 return root.find_element(search_by, xpath)

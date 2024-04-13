@@ -23,9 +23,9 @@ logger = logging.getLogger(__name__)
 
 
 class BlogAgent(Agent):
-    @staticmethod
-    def of_config(agent_config: dict[str, any]) -> 'BlogAgent':
-        return BlogAgent(agent_config)
+    @classmethod
+    def of_config(cls, agent_config: dict[str, any]) -> 'BlogAgent':
+        return cls(agent_config)
 
     def __init__(self, agent_config: dict[str, any]):
         super().__init__(AgentName.BLOG, agent_config)
@@ -35,6 +35,9 @@ class BlogAgent(Agent):
         # For future git clones to succeed we need to remove the existing directory.
         # TODO - Implement git pull, if the directory already exists.
         self.__delete_blog_related_dirs_if_exists()
+
+    def with_config(self, config: dict[str, any]) -> 'BlogAgent':
+        return self.__class__(config)
 
     def run_stage(self,
                   run_context: RunContext,

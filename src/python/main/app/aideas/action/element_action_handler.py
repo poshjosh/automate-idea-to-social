@@ -51,7 +51,7 @@ class ElementActionHandler(BrowserActionHandler):
     def with_timeout(self, timeout: float) -> 'ElementActionHandler':
         if timeout == self.get_wait_timeout_seconds():
             return self
-        return ElementActionHandler(self.get_web_driver(), timeout)
+        return self.__class__(self.get_web_driver(), timeout)
 
     def execute_on(self, action: Action, element: WebElement) -> ActionResult:
         key = action.get_name_without_negation() if action.is_negation() else action.get_name()
