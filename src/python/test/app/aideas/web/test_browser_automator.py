@@ -1,9 +1,13 @@
+from collections import OrderedDict
+from typing import Callable
+
 from ..action.test_element_action_handler import TestElementActionHandler
 from ..web.test_element_selector import TestElementSelector
 from ..test_functions import create_webdriver
 from .....main.app.aideas.action.element_action_handler import ElementActionHandler
-from .....main.app.aideas.config import TIMEOUT_KEY
+from .....main.app.aideas.config import TIMEOUT_KEY, Name
 from .....main.app.aideas.event.event_handler import EventHandler
+from .....main.app.aideas.run_context import RunContext
 from .....main.app.aideas.web.browser_automator import BrowserAutomator
 from .....main.app.aideas.web.element_selector import ElementSelector
 
@@ -12,14 +16,16 @@ class TestBrowserAutomator(BrowserAutomator):
     @staticmethod
     def of(app_config: dict[str, any],
            agent_name: str,
-           agent_config: dict[str, any] = None) -> 'BrowserAutomator':
+           agent_config: dict[str, any] = None,
+           run_stages: Callable[[RunContext, OrderedDict[str, [Name]]], None] = None) \
+            -> 'BrowserAutomator':
         web_driver = create_webdriver(app_config, agent_name)
         wait_timeout_seconds = app_config['browser']['chrome'][TIMEOUT_KEY]
         action_handler = TestElementActionHandler(web_driver, wait_timeout_seconds)
         event_handler = EventHandler(action_handler)
         element_selector = TestElementSelector.of(web_driver, agent_name, wait_timeout_seconds)
 
-        browser_automator = BrowserAutomator.of(app_config, agent_name, agent_config)
+        browser_automator = BrowserAutomator.of(app_config, agent_name, agent_config, run_stages)
         return (browser_automator.with_event_handler(event_handler)
                 .with_element_selector(element_selector)
                 .with_action_handler(action_handler))

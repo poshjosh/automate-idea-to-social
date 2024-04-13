@@ -1,6 +1,8 @@
+from collections import OrderedDict
 import copy
 import logging
-from typing import Union
+
+from typing import Union, Callable
 
 from selenium.webdriver.remote.webelement import WebElement
 
@@ -24,7 +26,9 @@ class BrowserAutomator:
     @staticmethod
     def of(app_config: dict[str, any],
            agent_name: str,
-           agent_config: dict[str, any] = None) -> 'BrowserAutomator':
+           agent_config: dict[str, any] = None,
+           run_stages: Callable[[RunContext, OrderedDict[str, [Name]]], None] = None) \
+            -> 'BrowserAutomator':
         # app_config['browser'].update(agent_config.get('browser', {}))
         app_config = copy.deepcopy(app_config)  # Don't update the original
         app_config['browser'] = merge_configs(
@@ -36,7 +40,8 @@ class BrowserAutomator:
         element_selector = ElementSelector.of(web_driver, agent_name, wait_timeout_seconds)
         return BrowserAutomator(
             web_driver, wait_timeout_seconds, agent_name,
-            event_handler, element_selector, action_handler)
+            event_handler, element_selector, action_handler,
+            run_stages)
 
     def __init__(self,
                  web_driver: WEB_DRIVER,
@@ -44,13 +49,15 @@ class BrowserAutomator:
                  agent_name: str,
                  event_handler: EventHandler,
                  element_selector: ElementSelector,
-                 action_handler: ElementActionHandler):
+                 action_handler: ElementActionHandler,
+                 run_stages: Callable[[RunContext, OrderedDict[str, [Name]]], None] = None):
         self.__webdriver = web_driver
         self.__wait_timeout_seconds = 0 if wait_timeout_seconds is None else wait_timeout_seconds
         self.__agent_name = agent_name
         self.__event_handler = event_handler
         self.__element_selector = element_selector
         self.__action_handler = action_handler
+        self.__run_stages = run_stages
         self.__populate_result_set = True
 
     def without_results_update(self) -> 'BrowserAutomator':
@@ -62,19 +69,31 @@ class BrowserAutomator:
         return self.with_event_handler(EventHandler.noop())
 
     def with_action_handler(self, action_handler: ElementActionHandler) -> 'BrowserAutomator':
-        return BrowserAutomator(
-            self.__webdriver, self.__wait_timeout_seconds, self.__agent_name,
-            self.__event_handler, self.__element_selector, action_handler)
+        clone: BrowserAutomator = self.clone()
+        clone.__action_handler = action_handler
+        return clone
 
     def with_element_selector(self, element_selector: ElementSelector) -> 'BrowserAutomator':
-        return BrowserAutomator(
-            self.__webdriver, self.__wait_timeout_seconds, self.__agent_name,
-            self.__event_handler, element_selector, self.__action_handler)
+        clone: BrowserAutomator = self.clone()
+        clone.__element_selector = element_selector
+        return clone
 
     def with_event_handler(self, event_handler: EventHandler) -> 'BrowserAutomator':
+        clone: BrowserAutomator = self.clone()
+        clone.__event_handler = event_handler
+        return clone
+
+    def with_stage_runner(
+            self, run_stages: Callable[[RunContext, OrderedDict[str, [Name]]], None]) \
+            -> 'BrowserAutomator':
+        clone: BrowserAutomator = self.clone()
+        clone.__run_stages = run_stages
+        return clone
+
+    def clone(self) -> 'BrowserAutomator':
         return BrowserAutomator(
             self.__webdriver, self.__wait_timeout_seconds, self.__agent_name,
-            event_handler, self.__element_selector, self.__action_handler)
+            self.__event_handler, self.__element_selector, self.__action_handler, self.__run_stages)
 
     def act_on_elements(self,
                         config: AgentConfig,
@@ -153,8 +172,11 @@ class BrowserAutomator:
             logger.debug(f"Retrying {config_path}")
             return self.__act_on_element(config, config_path, run_context, _trials)
 
-        def do_run_stages(_, __):
-            raise ValueError(f'Event: run_stages is not supported for {config_path}')
+        def do_run_stages(context: RunContext, agent_to_stages: OrderedDict[str, [Name]]):
+            if not self.__run_stages:
+                raise ValueError(f'Event: run_stages is not supported for {config_path}')
+            self.__run_stages(context, agent_to_stages)
+
 
         exception = None
         try:

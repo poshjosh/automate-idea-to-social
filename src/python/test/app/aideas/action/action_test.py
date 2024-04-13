@@ -2,7 +2,7 @@ import unittest
 
 from .....main.app.aideas.action.action import Action, NOT
 
-agent_name = "test-agent-name"
+agent_name = "test-agent"
 stage_id = "test-stage-id"
 target_id = "test-target-id"
 

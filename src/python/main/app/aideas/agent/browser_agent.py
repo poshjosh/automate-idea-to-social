@@ -49,7 +49,8 @@ class BrowserAgent(Agent):
                  browser_automator: BrowserAutomator,
                  interval_seconds: int = 0):
         super().__init__(name, agent_config, dependencies)
-        self.__browser_automator = browser_automator
+        self.__browser_automator = (browser_automator
+                                    .with_stage_runner(self._run_stages_without_events))
         self.__event_handler = browser_automator.get_event_handler()
         self.__interval_seconds = interval_seconds
 
@@ -94,12 +95,6 @@ class BrowserAgent(Agent):
             logger.debug(f"Retrying {config_path}")
             return self.__run_stage(run_context, stage, _trials)
 
-        def do_run_stages(context: RunContext,
-                          agent_to_stages: OrderedDict[str, [Name]]):
-            logger.debug(f"Running stages {agent_to_stages}")
-            # We don't want an infinite loop, so we run this event without events.
-            self.without_events()._run_agent_stages(context, agent_to_stages)
-
         exception = None
         result = ElementResultSet.none()
         try:
@@ -111,7 +106,7 @@ class BrowserAgent(Agent):
 
             self.__event_handler.handle_event(
                 self.get_name(), config, config_path,
-                ON_START, run_context, do_run_stages)
+                ON_START, run_context, self._run_stages_without_events)
 
             result: ElementResultSet = self.__browser_automator.act_on_elements(
                 config, stage, run_context)
@@ -122,9 +117,15 @@ class BrowserAgent(Agent):
 
         result = self.__event_handler.handle_result_event(
             self.get_name(), config, config_path, run_context,
-            do_run_stages, do_retry, exception, result, trials)
+            self._run_stages_without_events, do_retry, exception, result, trials)
 
         return ElementResultSet.none() if result is None else result
+
+    def _run_stages_without_events(
+            self, context: RunContext, agent_to_stages: OrderedDict[str, [Name]]):
+        logger.debug(f"Running stages {agent_to_stages}")
+        # We don't want an infinite loop, so we run this event without events.
+        self.without_events()._run_agent_stages(context, agent_to_stages)
 
     def __sleep(self):
         if self.__interval_seconds <= 0:
