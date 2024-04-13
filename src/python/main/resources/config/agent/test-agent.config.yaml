@@ -1,0 +1,15 @@
+stages:
+  open-home-page:
+    url: https://www.google.com/
+    stage-items:
+      item-1:
+        actions: log INFO Item 1
+      item-2:
+        actions: log INFO Item 2
+  run-other-stage-with-different-config:
+    stage-items:
+      item-1:
+        events:
+          onstart: run_stages open-home-page
+        actions: log INFO Stage 2 Item 2
+
