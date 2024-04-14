@@ -13,36 +13,53 @@ set -o pipefail
 #python3 -m unittest discover -s . -p '/**/*_test.py'
 #sudo find . -name '*_test.py' -exec python3 '-m unittest {}' \;
 
+LINE="----------------------------------------------------------------------"
+#exit|continue
+ON_ERROR="exit"
+
 run_unit_test() {
-    local line="----------------------------------------------------------------------"
     local filepath="$1"
-    printf '%s\n' "$filepath"
+#    printf 'Test file: %s\n' "$filepath"
     path_without_ext=${filepath::${#filepath}-3}
     module_name=$(echo "$path_without_ext" | sed -r 's/[/]+/./g')
-    printf '%s\n' "$module_name"
+#    printf 'Module name: %s\n' "$module_name"
     module_name="${module_name:1}"
     module_name="${module_name:1}"
-    printf '\n%s\nRunning unit tests in: %s\n%s\n' "$line" "$module_name" "$line"
+    printf '\n%s\nRunning unit tests in: %s\n%s\n' "$LINE" "$module_name" "$LINE"
     python3 -m unittest "$module_name"
 }
 
-walk_dir () {
+run_tests_in_dir () {
+    local total=0
+    local passed=0
     # By setting the dotglob and nullglob shell options in bash, we are
     # able  to find hidden pathnames and will not have to test specially
     # for possibly empty directories.
     shopt -s nullglob dotglob
-    #line="----------------------------------------------------------------------"
-    line="x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x"
     for filepath in "$1"/*; do
         if [ -d "$filepath" ]; then
-            walk_dir "$filepath"
+            run_tests_in_dir "$filepath"
         else
             case "$filepath" in *_test.py)
-                run_unit_test "$filepath"
+                total=$((total + 1))
+                run_unit_test "$filepath" && passed=$((passed + 1))
             esac
         fi
     done
+
+    local failed=$((total - passed))
+
+    if [ "$total" -gt 0 ]; then
+        printf '\n%s\nTotal: %d, Failed: %d, Passed: %d\n%s\n' "$LINE" "$total" "$failed" "$passed" "$LINE"
+    fi
+
+    if [ "$failed" -gt 0 ]; then
+        if [ "${ON_ERROR}" = "exit" ]; then
+            exit "$failed"
+        fi
+    fi
 }
 
-cd '/Users/chinomso/dev_chinomso/automate-idea-to-social/src' || exit 1
-walk_dir .
+cd "/Users/chinomso/dev_chinomso/automate-idea-to-social/src" || exit 1
+
+run_tests_in_dir .
