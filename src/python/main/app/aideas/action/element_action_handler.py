@@ -94,7 +94,9 @@ class ElementActionHandler(BrowserActionHandler):
 
             result = execute_for_result(clear_text, element, action)
         elif key == ElementActionId.CLICK.value:
-            result = execute_for_result(lambda arg: self.__click(driver, arg), element, action)
+            click_on_element: bool = action.get_first_arg('true') == 'true'
+            target: WebElement = element if click_on_element is True else None
+            result = execute_for_result(lambda arg: self.__click(driver, arg), target, action)
         elif key == ElementActionId.CLICK_AND_HOLD.value:
             def click_and_hold(tgt: WebElement):
                 ActionChains(driver).click_and_hold(tgt).perform()
@@ -146,14 +148,17 @@ class ElementActionHandler(BrowserActionHandler):
         return result
 
     @staticmethod
-    def __click(webdriver: WEB_DRIVER, element: WebElement):
+    def __click(webdriver: WEB_DRIVER, element: WebElement = None):
         try:
             # Click means only click. We have a separate action for move_to_element
             # Adding move_to_element here will disrupt some reasonable expectations
             # For example. When we move to bottom right before clicking,
             # we don't expect additional movements before the click is effected.
             # If you need to, explicitly specify move_to_element before click
-            element.click()
+            if element is None:
+                ActionChains(webdriver).click().perform()
+            else:
+                element.click()
         except ElementClickInterceptedException:
             logger.warning('Element click intercepted. Will try clicking via JavaScript.')
             webdriver.execute_script("arguments[0].click();", element)
@@ -182,6 +187,9 @@ class ElementActionHandler(BrowserActionHandler):
         x = offset_from_center[0] + additional_offset[0]
         y = offset_from_center[1] + additional_offset[1]
 
+        logger.debug(f"Element size: {element_size}, offset from center: {offset_from_center}, "
+                     f"additional offset: {additional_offset}, total offset from center: ({x}, {y})")
+
         return ElementActionHandler.__move_to_center_offset(
             webdriver, element, (x, y), action)
 
@@ -202,14 +210,15 @@ class ElementActionHandler(BrowserActionHandler):
         half_h = height/2
 
         # We calculate how much to move from the center of the element to these positions
+        # x-axis increases towards the right, y-axis increases towards the bottom
         if start == "top-left":
-            point = -half_w, half_h
-        elif start == "top-right":
-            point = half_w, half_h
-        elif start == "bottom-left":
             point = -half_w, -half_h
-        elif start == "bottom-right":
+        elif start == "top-right":
             point = half_w, -half_h
+        elif start == "bottom-left":
+            point = -half_w, half_h
+        elif start == "bottom-right":
+            point = half_w, half_h
         else:
             raise ValueError(f"Invalid start point: {start}")
 
