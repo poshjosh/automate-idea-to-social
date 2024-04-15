@@ -98,7 +98,7 @@ class BrowserActionHandler(ActionHandler):
         def execute(script: str):
             return self.__web_driver.execute_script(script)
 
-        return execute_for_result(execute, ' '.join(action.get_args()), action)
+        return execute_for_result(execute, action.get_arg_str(), action)
 
     def __move_by_offset(self, action: Action) -> ActionResult:
         def move_by_offset(offset: tuple[int, int]):

@@ -4,17 +4,18 @@ Actions may be global, browser or element specific.
 
 ### Global actions
 
-| Action                 | Argument type(s)                     | Remarks                                           |
-|------------------------|--------------------------------------|---------------------------------------------------|
-| get_file_content       | str (file path)                      |                                                   |
-| get_files              |                                      |                                                   |
-| get_first_file         | str, str (file path, file extension) |                                                   |
-| get_newest_file_in_dir | str, int (directory, timeout)        | Example: `get_newest_file_in_dir /path/to/dir 30` |
-| log                    | str, str (log level, log message)    |                                                   |
-| save_file              | str                                  |                                                   |
-| save_to_file           | str                                  |                                                   |
-| starts_with            |                                      |                                                   |
-| wait                   | None                                 |                                                   |
+| Action                 | Argument type(s)                     | Remarks                                                     |
+|------------------------|--------------------------------------|-------------------------------------------------------------|
+| eval                   | str (python code to evaluate)        | `importlib` will be automatically imported before each eval |
+| get_file_content       | str (file path)                      |                                                             |
+| get_files              |                                      |                                                             |
+| get_first_file         | str, str (file path, file extension) |                                                             |
+| get_newest_file_in_dir | str, int (directory, timeout)        | Example: `get_newest_file_in_dir /path/to/dir 30`           |
+| log                    | str, str (log level, log message)    |                                                             |
+| save_file              | str                                  |                                                             |
+| save_to_file           | str                                  |                                                             |
+| starts_with            |                                      |                                                             |
+| wait                   | None                                 |                                                             |
 
 ### Browser actions
 

@@ -10,10 +10,10 @@ share the same RunContext. Each agent has its own configuration.
 From the agent configuration file (e.g yaml), access is provided
 to each of the following:
 
-context: This is the run context. Variables are resolve at run time.
+context: This is the run context. Variables are resolved on the fly.
 Example: `${context.context-available-attribute}`
 
-results: This is the available results. Variables are resolved at run time.
+results: This is the available results. Variables are resolved on the fly.
 Example format: `${results.agent.stage.stage-item[ACTION_INDEX]}`
 
 self: This is the agent's configuration. Variables are resolved prior to the run.

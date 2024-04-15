@@ -108,7 +108,7 @@ class ElementActionHandler(BrowserActionHandler):
         elif key == ElementActionId.ENTER.value:
             result = execute_for_result(lambda arg: arg.send_keys(Keys.ENTER), element, action)
         elif key == ElementActionId.ENTER_TEXT.value:
-            text: str = ' '.join(action.get_args())
+            text: str = action.get_arg_str()
             result = execute_for_result(lambda arg: arg.send_keys(text), element, action)
         elif key == ElementActionId.EXECUTE_SCRIPT_ON.value:
             result = self.__execute_script_on(self.get_web_driver(), action, element)
@@ -139,7 +139,7 @@ class ElementActionHandler(BrowserActionHandler):
                     time.sleep(0.5)
                 return txt
 
-            result = execute_for_result(send_keys, ' '.join(action.get_args()), action)
+            result = execute_for_result(send_keys, action.get_arg_str(), action)
         else:
             return super()._execute(key, action)  # Success state has already been printed
         logger.debug(f'{result}')
@@ -162,7 +162,7 @@ class ElementActionHandler(BrowserActionHandler):
     def __execute_script_on(webdriver, action: Action, element: WebElement) -> ActionResult:
         def execute_on(script: str):
             return webdriver.execute_script(script, element)
-        return execute_for_result(execute_on, ' '.join(action.get_args()), action)
+        return execute_for_result(execute_on, action.get_arg_str(), action)
 
     @staticmethod
     def __move_to_element_offset(webdriver, action: Action, element: WebElement):

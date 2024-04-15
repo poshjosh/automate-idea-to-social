@@ -42,11 +42,12 @@ class BaseActionId(str, Enum):
 
 @unique
 class ActionId(BaseActionId):
+    EVAL = 'eval'
     GET_FILE_CONTENT = 'get_file_content'
     GET_FILES = 'get_files'
     GET_FIRST_FILE = 'get_first_file'
     GET_NEWEST_FILE_IN_DIR = 'get_newest_file_in_dir'
-    LOG = 'log'
+    LOG = ('log', False)
     SAVE_FILE = 'save_file'
     SAVE_TO_FILE = 'save_to_file'
     STARTS_WITH = 'starts_with'
@@ -74,6 +75,8 @@ class ActionHandler:
     def _execute(self, key: str, action: Action) -> ActionResult:
         if action == Action.none():
             result = ActionResult.none()
+        elif key == ActionId.EVAL.value:
+            result: ActionResult = self.eval(action)
         elif key == ActionId.GET_FILE_CONTENT.value:
             result: ActionResult = self.get_file_content(action)
         elif key == ActionId.GET_FILES.value:
@@ -172,6 +175,13 @@ class ActionHandler:
         files: list[str] = files_result.get_result()
         first_file = None if files is None or len(files) == 0 else files[0]
         return ActionResult(action, first_file is not None, first_file)
+
+    @staticmethod
+    def eval(action: Action) -> ActionResult:
+        def evaluate(arg: str):
+            exec("import importlib")
+            return eval(arg)
+        return execute_for_result(evaluate, action.get_arg_str(), action)
 
     @staticmethod
     def get_file_content(action: Action) -> ActionResult:

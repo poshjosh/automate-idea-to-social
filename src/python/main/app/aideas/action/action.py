@@ -94,6 +94,9 @@ class Action:
     def get_args(self) -> list:
         return self.__args
 
+    def get_arg_str(self) -> str:
+        return ' '.join(self.__args)
+
     @staticmethod
     def __split_into_name_and_args(parts: list[str]) -> tuple[str, [str]]:
         """
