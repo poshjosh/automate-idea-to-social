@@ -69,6 +69,7 @@ class Translator:
         return result
 
     def call_translation_service(self, params: dict, headers: dict) -> list[str]:
+        logger.debug(f"Requesting translation from: {self.__service_url}")
         r = requests.get(self.__service_url, params=params, headers=headers)
         return r.json()
 

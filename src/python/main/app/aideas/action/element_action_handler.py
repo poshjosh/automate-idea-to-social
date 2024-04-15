@@ -60,16 +60,18 @@ class ElementActionHandler(BrowserActionHandler):
                 # We use the actual web element for the action
                 # When we used the ReloadableWebElement, the action fails with message:
                 # TypeError: Object of type ReloadableWebElement is not JSON serializable
-                element = element.load()
+                target = element.load()
+            else:
+                target = element
 
-            result = self._execute_on(key, action, element)
+            result = self.__execute_on(key, action, target)
 
         except StaleElementReferenceException as ex:
             logger.warning('Element is stale')
             if isinstance(element, ReloadableWebElement):
                 element = element.reload()
                 logger.debug(f'Retrying action after reloading element: {action}')
-                result = self._execute_on(key, action, element)
+                result = self.__execute_on(key, action, element)
             else:
                 raise ex
 
@@ -77,7 +79,7 @@ class ElementActionHandler(BrowserActionHandler):
             result = result.flip()
         return result
 
-    def _execute_on(self, key: str, action: Action, element: WebElement) -> ActionResult:
+    def __execute_on(self, key: str, action: Action, element: WebElement) -> ActionResult:
         try:
             return self.__do_execute_on(key, action, element)
         except Exception as ex:
