@@ -24,7 +24,9 @@ def execute_for_result(func: Callable[[any], any],
     try:
         result = func(arg)
     except Exception as ex:
-        raise ActionError(f'Error while executing {action}') from ex
+        error_msg = f'Error while executing {action}'
+        logger.error(error_msg, exc_info=ex)
+        raise ActionError(error_msg)
     else:
         return ActionResult(action, True, result)
 

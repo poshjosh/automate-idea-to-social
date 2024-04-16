@@ -19,16 +19,17 @@ Actions may be global, browser or element specific.
 
 ### Browser actions
 
-| Action         | Argument type(s)        | Remarks |
-|----------------|-------------------------|---------|
-| accept_alert   | int (timeout)           |         |
-| delete_cookies | none                    |         |
-| disable_cursor | none                    |         |
-| dismiss_alert  | int (timeout)           |         |
-| enable_cursor  | none                    |         |
-| execute_script | str (javascript)        |         |
-| move_by_offset | int, int (px, px)       |         |
-| refresh        | None                    |         |
+| Action         | Argument type(s)  | Remarks |
+|----------------|-------------------|---------|
+| accept_alert   | int (timeout)     |         |
+| browse_to      | str (url/link)    |         |
+| delete_cookies | none              |         |
+| disable_cursor | none              |         |
+| dismiss_alert  | int (timeout)     |         |
+| enable_cursor  | none              |         |
+| execute_script | str (javascript)  |         |
+| move_by_offset | int, int (px, px) |         |
+| refresh        | None              |         |
 
 ### Element Actions
 

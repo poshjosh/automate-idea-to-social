@@ -42,7 +42,7 @@ stages:
         # We use a ElementActionHandler, rather than TestElementActionHandler
         automator = agent.get_browser_automator()
         automator = automator.with_action_handler(
-            ElementActionHandler(automator.get_web_driver(), 10))
+            ElementActionHandler(automator.get_element_selector(), 10))
 
         agent = agent.with_automator(automator)
 

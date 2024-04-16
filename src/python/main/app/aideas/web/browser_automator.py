@@ -36,35 +36,35 @@ class BrowserAutomator:
             agent_config.get('browser', {}), app_config['browser'], False)
         web_driver = WebDriverCreator.create(app_config)
         wait_timeout_seconds = app_config['browser']['chrome'].get(TIMEOUT_KEY, 20)
-        action_handler = ElementActionHandler(web_driver, wait_timeout_seconds)
-        event_handler = EventHandler(action_handler)
         element_selector = ElementSelector.of(web_driver, agent_name, wait_timeout_seconds)
+        action_handler = ElementActionHandler(element_selector, wait_timeout_seconds)
+        event_handler = EventHandler(action_handler)
         return cls(
             web_driver, wait_timeout_seconds, agent_name,
-            event_handler, element_selector, action_handler,
+            element_selector, action_handler, event_handler,
             run_stages)
 
     def __init__(self,
                  web_driver: WEB_DRIVER,
                  wait_timeout_seconds: float,
                  agent_name: str,
-                 event_handler: EventHandler,
                  element_selector: ElementSelector,
                  action_handler: ElementActionHandler,
+                 event_handler: EventHandler,
                  run_stages: Callable[[RunContext, OrderedDict[str, [Name]]], None] = None):
         self.__webdriver = web_driver
         self.__wait_timeout_seconds = 0 if wait_timeout_seconds is None else wait_timeout_seconds
         self.__agent_name = agent_name
-        self.__event_handler = event_handler
         self.__element_selector = element_selector
         self.__action_handler = action_handler
+        self.__event_handler = event_handler
         self.__run_stages = run_stages
         self.__populate_result_set = True
 
     def without_results_update(self) -> 'BrowserAutomator':
-        browser_automator: BrowserAutomator = self.with_event_handler(self.__event_handler)
-        browser_automator.__populate_result_set = False
-        return browser_automator
+        clone: BrowserAutomator = self.clone()
+        clone.__populate_result_set = False
+        return clone
 
     def without_events(self) -> 'BrowserAutomator':
         return self.with_event_handler(EventHandler.noop())
@@ -94,7 +94,7 @@ class BrowserAutomator:
     def clone(self) -> 'BrowserAutomator':
         return self.__class__(
             self.__webdriver, self.__wait_timeout_seconds, self.__agent_name,
-            self.__event_handler, self.__element_selector, self.__action_handler, self.__run_stages)
+            self.__element_selector, self.__action_handler, self.__event_handler, self.__run_stages)
 
     def act_on_elements(self,
                         config: AgentConfig,

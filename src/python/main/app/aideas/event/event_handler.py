@@ -78,7 +78,10 @@ class EventHandler:
                         f'For {config_path}, will continue despite error: {type(exception)}!')
                     logger.exception(exception)
             elif action_signature == 'fail':
-                raise AgentError(f'Error {config_path}, result: {result}') from exception
+                error_msg: str = f'Error {config_path}, result: {result}'
+                if exception:
+                    logger.error(error_msg, exc_info=exception)
+                raise AgentError(error_msg)
             elif action_signature.startswith('retry'):
                 max_trials: int = self.__max_trials(action_signature)
                 logger.debug(f'Attempted: {trials} of {max_trials} '
@@ -86,8 +89,10 @@ class EventHandler:
                 if trials < max_trials:
                     retry(trials + 1)
                 else:
-                    raise AgentError(
-                        f'Max retries exceeded {config_path}, result: {result}') from exception
+                    error_msg: str = f'Max retries exceeded {config_path}, result: {result}'
+                    if exception:
+                        logger.error(error_msg, exc_info=exception)
+                    raise AgentError(error_msg)
             elif action_signature.startswith('run_stages'):
                 _, agent_to_stages = parse_agent_to_stages(
                     action_signature, agent_name, config_path.stage())

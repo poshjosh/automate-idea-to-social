@@ -42,17 +42,6 @@ class ElementActionHandler(BrowserActionHandler):
         except ValueError:
             return ElementActionId(action)
 
-    def __init__(self,
-                 web_driver: WEB_DRIVER,
-                 wait_timeout_seconds: float):
-        super().__init__(
-            web_driver, wait_timeout_seconds)
-
-    def with_timeout(self, timeout: float) -> 'ElementActionHandler':
-        if timeout == self.get_wait_timeout_seconds():
-            return self
-        return self.__class__(self.get_web_driver(), timeout)
-
     def execute_on(self, action: Action, element: WebElement) -> ActionResult:
         key = action.get_name_without_negation() if action.is_negation() else action.get_name()
         try:
@@ -189,8 +178,10 @@ class ElementActionHandler(BrowserActionHandler):
         x = offset_from_center[0] + additional_offset[0]
         y = offset_from_center[1] + additional_offset[1]
 
-        logger.debug(f"Element size: {element_size}, offset from center: {offset_from_center}, "
-                     f"additional offset: {additional_offset}, total offset from center: ({x}, {y})")
+        logger.debug(f"Element size: {element_size}, "
+                     f"offset from center: {offset_from_center}, "
+                     f"additional offset: {additional_offset}, "
+                     f"total offset from center: ({x}, {y})")
 
         return ElementActionHandler.__move_to_center_offset(
             webdriver, element, (x, y), action)

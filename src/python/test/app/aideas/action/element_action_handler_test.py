@@ -4,6 +4,7 @@ from .....main.app.aideas.action.action import Action
 from .....main.app.aideas.action.action_signatures import element_action_signatures
 from .....main.app.aideas.action.element_action_handler import ElementActionHandler
 from .....main.app.aideas.config import AgentConfig, STAGES_KEY, STAGE_ITEMS_KEY
+from .....main.app.aideas.web.element_selector import ElementSelector
 
 from ..test_functions import create_webdriver, get_agent_resource, get_config_loader
 
@@ -39,7 +40,8 @@ def _execute_actions(webdriver, agent_name: str, stage_name: str, stage_config: 
             print(f'executing action: {stage_name}.{action} for: {target}')
             try:
                 action = Action.of(agent_name, stage_name, target, action)
-                ElementActionHandler(webdriver, 10).execute(action)
+                element_selector = ElementSelector.of(webdriver, agent_name, 10)
+                ElementActionHandler(element_selector, 10).execute(action)
             except Exception as ex:
                 print('Failed')
                 # print(f'{ex}')

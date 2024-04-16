@@ -30,6 +30,8 @@ class WebDriverCreator:
         if browser_config.is_undetected():
             logger.debug("Undetected ChromeDriver will be used")
             # See https://github.com/ultrafunkamsterdam/undetected-chromedriver
+            # TODO - Find out why this takes about 10 minutes to complete
+            # It took about 10 minutes for this next line to complete, at least on local machine
             driver = uc.Chrome(options=options, use_subprocess=False)
             download_dir: str = browser_config.get_download_dir()
             if not download_dir:
