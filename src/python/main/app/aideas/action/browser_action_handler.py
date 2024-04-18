@@ -14,6 +14,7 @@ from ..action.action import Action
 from ..action.action_handler import ActionHandler, BaseActionId
 from ..action.action_result import ActionResult
 from ..env import get_cookies_file_path
+from ..run_context import RunContext
 from ..web.element_selector import ElementSelector
 
 logger = logging.getLogger(__name__)
@@ -54,7 +55,7 @@ class BrowserActionHandler(ActionHandler):
             return self
         return self.__class__(self.__element_selector, timeout)
 
-    def _execute(self, key: str, action: Action) -> ActionResult:
+    def _execute(self, run_context: RunContext, action: Action, key: str) -> ActionResult:
         if key.endswith('alert'):  # accept_alert|dismiss_alert
             result = self.__handle_alert(action)
         elif key == BrowserActionId.BROWSE_TO.value:
@@ -72,7 +73,7 @@ class BrowserActionHandler(ActionHandler):
         elif key == BrowserActionId.REFRESH.value:
             result = self.__refresh(action)
         else:
-            return super()._execute(key, action)
+            return super()._execute(run_context, action, key)
         logger.debug(f'{result}')
         return result
 

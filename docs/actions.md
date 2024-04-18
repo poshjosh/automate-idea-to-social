@@ -14,6 +14,7 @@ Actions may be global, browser or element specific.
 | log                    | str, str (log level, log message)    |                                                             |
 | save_file              | str                                  |                                                             |
 | save_to_file           | str                                  |                                                             |
+| set_context_values     | str (key-value pairs)                | Example `set_context_values k0=v0 k1="value with space"`    |
 | starts_with            |                                      |                                                             |
 | wait                   | None                                 |                                                             |
 

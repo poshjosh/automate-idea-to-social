@@ -509,15 +509,15 @@ def __list_to_dict(result: list) -> dict:
     return pairs
 
 
-def parse_attributes(value: str) -> dict[str, str]:
+def parse_query(value: str, separator=' ') -> dict[str, str]:
     """
     Converts a string to a dictionary of attributes.
     Input: key_0=value_0 key_1="value with spaces"
     Output: {key_0: value_0, key_1: value with spaces}
     :param value: The value to parse into a dictionary.
+    :param separator: The separator between the attribute pairs.
     :return: The dictionary of attributes.
     """
-    separator = ' '
     value = value.replace('=', separator)
     result: list[str] = tokenize(value, separator)
     return __list_to_dict(result)

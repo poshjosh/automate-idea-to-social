@@ -12,6 +12,7 @@ from .action_handler import BaseActionId
 from .browser_action_handler import BrowserActionHandler, WEB_DRIVER
 from ..action.action import Action
 from ..action.action_result import ActionResult
+from ..run_context import RunContext
 from ..web.reloadable_web_element import ReloadableWebElement
 
 logger = logging.getLogger(__name__)
@@ -43,7 +44,7 @@ class ElementActionHandler(BrowserActionHandler):
         except ValueError:
             return ElementActionId(action)
 
-    def execute_on(self, action: Action, element: WebElement) -> ActionResult:
+    def execute_on(self, run_context: RunContext, action: Action, element: WebElement) -> ActionResult:
         result: ActionResult = ActionResult.none()
         key = action.get_name_without_negation() if action.is_negation() else action.get_name()
         try:
@@ -51,16 +52,16 @@ class ElementActionHandler(BrowserActionHandler):
                 # We use the actual web element for the action
                 # When we used the ReloadableWebElement, the action fails with message:
                 # TypeError: Object of type ReloadableWebElement is not JSON serializable
-                result = self.__execute_on(key, action, element.load())
+                result = self.__execute_on(run_context, action, key, element.load())
             else:
-                result = self.__execute_on(key, action, element)
+                result = self.__execute_on(run_context, action, key, element)
 
         except (StaleElementReferenceException, ElementNotInteractableException) as ex:
             if isinstance(element, ReloadableWebElement):
                 logger.warning(f'Encountered {ex.__class__.__name__}'
                                f', will reload element and retry: {action}')
                 try:
-                    result = self.__execute_on(key, action, element.reload())
+                    result = self.__execute_on(run_context, action, key, element.reload())
                 except Exception as ex:
                     ElementActionHandler.throw_error(ex, action)
             else:
@@ -73,15 +74,19 @@ class ElementActionHandler(BrowserActionHandler):
 
         return result
 
-    def __execute_on(self, key: str, action: Action, element: WebElement) -> ActionResult:
+    def __execute_on(
+            self, run_context: RunContext, action: Action, key: str, element: WebElement) -> ActionResult:
         try:
-            return self.__do_execute_on(key, action, element)
+            return self.__do_execute_on(run_context, action, key, element)
         except Exception as ex:
             self.__print_element_attr(ex, element, 'outerHTML')
             raise ex
 
-    def __do_execute_on(
-            self, key: str, action: Action, element: WebElement) -> ActionResult:
+    def __do_execute_on(self,
+                        run_context: RunContext,
+                        action: Action,
+                        key: str,
+                        element: WebElement) -> ActionResult:
         driver = self.get_web_driver()
         result: any = None
         if key == ElementActionId.CLEAR_TEXT.value:
@@ -124,7 +129,7 @@ class ElementActionHandler(BrowserActionHandler):
                 time.sleep(0.5)
             result = action.get_arg_str()
         else:
-            return super()._execute(key, action)  # Success state has already been printed
+            return super()._execute(run_context, action, key)  # Success state has already been printed
         result = result if isinstance(result, ActionResult) else ActionResult.success(action, result)
         logger.debug(f'{result}')
         return result

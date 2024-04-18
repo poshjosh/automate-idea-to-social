@@ -13,7 +13,7 @@ from selenium.webdriver.support.wait import WebDriverWait, D
 
 from .browser_cookie_store import BrowserCookieStore
 from .reloadable_web_element import ReloadableWebElement
-from ..config import parse_attributes, SearchBy, SearchConfig, SearchConfigs
+from ..config import parse_query, SearchBy, SearchConfig, SearchConfigs
 from ..env import get_cookies_file_path
 
 logger = logging.getLogger(__name__)
@@ -145,7 +145,7 @@ class ElementSelector:
 
         if by == SearchBy.SHADOW_ATTRIBUTE:
             return self.__select_shadow_by_attributes(
-                self.__webdriver, root, parse_attributes(query), timeout_seconds)
+                self.__webdriver, root, parse_query(query), timeout_seconds)
 
         return self.__select_element_by_xpath(root, query, timeout_seconds)
 

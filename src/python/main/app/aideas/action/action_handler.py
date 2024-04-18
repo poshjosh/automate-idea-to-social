@@ -7,7 +7,9 @@ from typing import Union
 
 from .action import Action
 from .action_result import ActionResult
+from ..config import parse_query
 from ..io.file import read_content, write_content
+from ..run_context import RunContext
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +41,7 @@ class ActionId(BaseActionId):
     LOG = ('log', False)
     SAVE_FILE = 'save_file'
     SAVE_TO_FILE = 'save_to_file'
+    SET_CONTEXT_VALUES = ('set_context_values', False)
     STARTS_WITH = 'starts_with'
     WAIT = ('wait', False)
 
@@ -62,17 +65,17 @@ class ActionHandler:
         logger.error(error_msg, exc_info=ex)
         raise ActionError(error_msg)
 
-    def execute(self, action: Action) -> ActionResult:
+    def execute(self, run_context: RunContext, action: Action) -> ActionResult:
         try:
             key = action.get_name_without_negation() if action.is_negation() else action.get_name()
-            result = self._execute(key, action)
+            result = self._execute(run_context, action, key)
             if action.is_negation():
                 result = result.flip()
             return result
         except Exception as ex:
             self.throw_error(ex, action)
 
-    def _execute(self, key: str, action: Action) -> ActionResult:
+    def _execute(self, run_context: RunContext, action: Action, key: str) -> ActionResult:
         if action == Action.none():
             result = ActionResult.none()
         elif key == ActionId.EVAL.value:
@@ -91,6 +94,8 @@ class ActionHandler:
             result: ActionResult = self.save_file(action)
         elif key == ActionId.SAVE_TO_FILE.value:
             result: ActionResult = self.save_to_file(action)
+        elif key == ActionId.SET_CONTEXT_VALUES.value:
+            result: ActionResult = self.set_context_values(run_context, action)
         elif key == ActionId.STARTS_WITH.value:
             result: ActionResult = self.starts_with(action)
         elif key == ActionId.WAIT.value:
@@ -149,6 +154,14 @@ class ActionHandler:
         tgt = os.path.join(tgt_dir, DEFAULT_FILE_NAME if len(args) < 2 else args[1])
         logger.debug(f'Writing to {tgt}')
         return ActionResult.success(action, write_content(content, tgt))
+
+    @staticmethod
+    def set_context_values(run_context: RunContext, action: Action) -> ActionResult:
+        query: str = action.get_arg_str()
+        values: dict = parse_query(query)
+        for key, value in values.items():
+            run_context.set(key, value)
+        return ActionResult.success(action)
 
     @staticmethod
     def starts_with(action: Action) -> ActionResult:
@@ -231,7 +244,7 @@ class ActionHandler:
 
 
 class NoopActionHandler(ActionHandler):
-    def execute(self, action: Action) -> ActionResult:
+    def execute(self, run_context: RunContext, action: Action) -> ActionResult:
         return ActionResult.none()
 
 

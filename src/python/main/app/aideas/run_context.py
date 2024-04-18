@@ -107,6 +107,11 @@ class RunContext:
     def get_current_url(self, result_if_none: str = None) -> str:
         return self.get(CURRENT_URL, result_if_none)
 
+    def set(self, key: str, value: any) -> Union[any or None]:
+        result = self.get(key)
+        self.__values[key] = value
+        return result
+
     def set_current_url(self, value: str) -> 'RunContext':
         self.__values[CURRENT_URL] = value
         return self

@@ -269,7 +269,7 @@ class BrowserAutomator:
             action = Action.of(
                 self.__agent_name, stage_id, target_id, action_signature, run_context)
 
-            result: ActionResult = action_handler.execute_on(action, element)
+            result: ActionResult = action_handler.execute_on(run_context, action, element)
 
             if self.__populate_result_set is True:
                 run_context.add_action_result(self.__agent_name, stage_id, result)

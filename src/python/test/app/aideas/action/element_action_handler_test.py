@@ -5,6 +5,7 @@ from .....main.app.aideas.action.action_signatures import element_action_signatu
 from .....main.app.aideas.action.element_action_handler import ElementActionHandler
 from .....main.app.aideas.config import AgentConfig, STAGES_KEY, STAGE_ITEMS_KEY
 from .....main.app.aideas.web.element_selector import ElementSelector
+from .....main.app.aideas.run_context import RunContext
 
 from ..test_functions import create_webdriver, get_agent_resource, get_config_loader
 
@@ -24,11 +25,15 @@ class ElementActionHandlerTest(unittest.TestCase):
         config = get_config_loader().load_agent_config(agent_name)
         stage_config = config[STAGES_KEY][stage_name]
         targets = stage_config[STAGE_ITEMS_KEY].keys()
+        run_context = RunContext.of_config(get_config_loader().load_app_config())
         for target in targets:
-            _execute_actions(webdriver, agent_name, stage_name, stage_config, target, None)
+            _execute_actions(
+                webdriver, run_context, agent_name, stage_name, stage_config, target)
 
 
-def _execute_actions(webdriver, agent_name: str, stage_name: str, stage_config: dict, target: str, action_prefix: str):
+def _execute_actions(webdriver, run_context: RunContext,
+                     agent_name: str, stage_name: str,
+                     stage_config: dict, target: str, action_prefix: str = None):
     stage_actions: dict[str, list[str]] = _collect_stage_actions(stage_name, stage_config)
     for key, action_list in stage_actions.items():
         if key != f'{stage_name}.{target}':
@@ -41,8 +46,8 @@ def _execute_actions(webdriver, agent_name: str, stage_name: str, stage_config: 
             try:
                 action = Action.of(agent_name, stage_name, target, action)
                 element_selector = ElementSelector.of(webdriver, agent_name, 10)
-                ElementActionHandler(element_selector, 10).execute(action)
-            except Exception as ex:
+                ElementActionHandler(element_selector, 10).execute(run_context, action)
+            except Exception:
                 print('Failed')
                 # print(f'{ex}')
                 # raise ex
