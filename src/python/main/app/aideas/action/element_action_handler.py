@@ -3,11 +3,12 @@ import time
 from enum import unique
 from typing import Tuple
 
-from selenium.common import StaleElementReferenceException, ElementClickInterceptedException
+from selenium.common import StaleElementReferenceException, ElementClickInterceptedException, \
+    ElementNotInteractableException
 from selenium.webdriver import ActionChains, Keys
 from selenium.webdriver.remote.webelement import WebElement
 
-from .action_handler import execute_for_result, BaseActionId
+from .action_handler import BaseActionId
 from .browser_action_handler import BrowserActionHandler, WEB_DRIVER
 from ..action.action import Action
 from ..action.action_result import ActionResult
@@ -43,29 +44,33 @@ class ElementActionHandler(BrowserActionHandler):
             return ElementActionId(action)
 
     def execute_on(self, action: Action, element: WebElement) -> ActionResult:
+        result: ActionResult = ActionResult.none()
         key = action.get_name_without_negation() if action.is_negation() else action.get_name()
         try:
             if isinstance(element, ReloadableWebElement):
                 # We use the actual web element for the action
                 # When we used the ReloadableWebElement, the action fails with message:
                 # TypeError: Object of type ReloadableWebElement is not JSON serializable
-                target = element.load()
+                result = self.__execute_on(key, action, element.load())
             else:
-                target = element
-
-            result = self.__execute_on(key, action, target)
-
-        except StaleElementReferenceException as ex:
-            logger.warning('Element is stale')
-            if isinstance(element, ReloadableWebElement):
-                element = element.reload()
-                logger.debug(f'Retrying action after reloading element: {action}')
                 result = self.__execute_on(key, action, element)
+
+        except (StaleElementReferenceException, ElementNotInteractableException) as ex:
+            if isinstance(element, ReloadableWebElement):
+                logger.warning(f'Encountered {ex.__class__.__name__}'
+                               f', will reload element and retry: {action}')
+                try:
+                    result = self.__execute_on(key, action, element.reload())
+                except Exception as ex:
+                    ElementActionHandler.throw_error(ex, action)
             else:
-                raise ex
+                ElementActionHandler.throw_error(ex, action)
+        except Exception as ex:
+            ElementActionHandler.throw_error(ex, action)
 
         if action.is_negation():
             result = result.flip()
+
         return result
 
     def __execute_on(self, key: str, action: Action, element: WebElement) -> ActionResult:
@@ -75,66 +80,52 @@ class ElementActionHandler(BrowserActionHandler):
             self.__print_element_attr(ex, element, 'outerHTML')
             raise ex
 
-    def __do_execute_on(self, key: str, action: Action, element: WebElement) -> ActionResult:
+    def __do_execute_on(
+            self, key: str, action: Action, element: WebElement) -> ActionResult:
         driver = self.get_web_driver()
+        result: any = None
         if key == ElementActionId.CLEAR_TEXT.value:
-            def clear_text(tgt: WebElement):
-                tgt.send_keys(Keys.CONTROL, 'a')
-                tgt.send_keys(Keys.DELETE)
-                tgt.clear()  # May not work under certain conditions, so we try the following
-
-            result = execute_for_result(clear_text, element, action)
+            element.send_keys(Keys.CONTROL, 'a')
+            element.send_keys(Keys.DELETE)
+            element.clear()  # May not work under certain conditions, so we try the following
         elif key == ElementActionId.CLICK.value:
             click_on_element: bool = action.get_first_arg('true') == 'true'
             target: WebElement = element if click_on_element is True else None
-            result = execute_for_result(lambda arg: self.__click(driver, arg), target, action)
+            self.__click(driver, target)
         elif key == ElementActionId.CLICK_AND_HOLD.value:
-            def click_and_hold(tgt: WebElement):
-                ActionChains(driver).click_and_hold(tgt).perform()
-
-            result = execute_for_result(click_and_hold, element, action)
+            ActionChains(driver).click_and_hold(element).perform()
         elif key == ElementActionId.CLICK_AND_HOLD_CURRENT_POSITION.value:
-            def click_and_hold_current_position(_: WebElement):
-                ActionChains(driver).click_and_hold(None).perform()
-
-            result = execute_for_result(click_and_hold_current_position, element, action)
+            ActionChains(driver).click_and_hold(None).perform()
         elif key == ElementActionId.ENTER.value:
-            result = execute_for_result(lambda arg: arg.send_keys(Keys.ENTER), element, action)
+            element.send_keys(Keys.ENTER)
         elif key == ElementActionId.ENTER_TEXT.value:
-            text: str = action.get_arg_str()
-            result = execute_for_result(lambda arg: arg.send_keys(text), element, action)
+            element.send_keys(action.get_arg_str())
+            result = action.get_arg_str()
         elif key == ElementActionId.EXECUTE_SCRIPT_ON.value:
-            result = self.__execute_script_on(self.get_web_driver(), action, element)
+            result = driver.execute_script(action.get_arg_str(), element)
         elif key == ElementActionId.GET_ATTRIBUTE.value:
-            attr_name = action.get_first_arg()
-            result = execute_for_result(lambda arg: element.get_attribute(arg), attr_name, action)
+            result = element.get_attribute(action.get_first_arg())
         elif key == ElementActionId.GET_TEXT.value:
             text = element.text
-            result = ActionResult(action, True, text if not text else text.strip())
+            result = text if not text else text.strip()
         elif key == ElementActionId.IS_DISPLAYED.value:
             success = element.is_displayed()
             result = ActionResult(action, success, success)
         elif key == ElementActionId.MOVE_TO_ELEMENT.value:
-            def move_to_element(tgt: WebElement):
-                ActionChains(driver).move_to_element(tgt).perform()
-
-            result = execute_for_result(move_to_element, element, action)
+            ActionChains(driver).move_to_element(element).perform()
         elif key == ElementActionId.MOVE_TO_ELEMENT_OFFSET.value:
-            result = self.__move_to_element_offset(self.get_web_driver(), action, element)
+            self.__move_to_element_offset(self.get_web_driver(), action, element)
         elif key == ElementActionId.RELEASE.value:
-            def release(on_element: bool):
-                ActionChains(driver).release(element if on_element is True else None).perform()
-            result = execute_for_result(release, bool(action.get_first_arg()), action)
+            on_element: bool = bool(action.get_first_arg())
+            ActionChains(driver).release(element if on_element is True else None).perform()
         elif key == ElementActionId.SEND_KEYS.value:
-            def send_keys(txt: str):
-                for char in txt:
-                    element.send_keys(char)
-                    time.sleep(0.5)
-                return txt
-
-            result = execute_for_result(send_keys, action.get_arg_str(), action)
+            for char in action.get_arg_str():
+                element.send_keys(char)
+                time.sleep(0.5)
+            result = action.get_arg_str()
         else:
             return super()._execute(key, action)  # Success state has already been printed
+        result = result if isinstance(result, ActionResult) else ActionResult.success(action, result)
         logger.debug(f'{result}')
         return result
 
@@ -150,15 +141,12 @@ class ElementActionHandler(BrowserActionHandler):
                 ActionChains(webdriver).click().perform()
             else:
                 element.click()
-        except ElementClickInterceptedException:
+        except ElementClickInterceptedException as ex:
             logger.warning('Element click intercepted. Will try clicking via JavaScript.')
-            webdriver.execute_script("arguments[0].click();", element)
-
-    @staticmethod
-    def __execute_script_on(webdriver, action: Action, element: WebElement) -> ActionResult:
-        def execute_on(script: str):
-            return webdriver.execute_script(script, element)
-        return execute_for_result(execute_on, action.get_arg_str(), action)
+            if element:
+                webdriver.execute_script("arguments[0].click();", element)
+            else:
+                raise ex
 
     @staticmethod
     def __move_to_element_offset(webdriver, action: Action, element: WebElement):
@@ -182,17 +170,7 @@ class ElementActionHandler(BrowserActionHandler):
                      f"offset from center: {offset_from_center}, "
                      f"additional offset: {additional_offset}, "
                      f"total offset from center: ({x}, {y})")
-
-        return ElementActionHandler.__move_to_center_offset(
-            webdriver, element, (x, y), action)
-
-    @staticmethod
-    def __move_to_center_offset(
-            webdriver, element: WebElement, offset: Tuple[int, int], action: Action):
-        def move_to_element_with_offset(tgt: WebElement):
-            ActionChains(webdriver).move_to_element_with_offset(
-                tgt, offset[0], offset[1]).perform()
-        return execute_for_result(move_to_element_with_offset, element, action)
+        ActionChains(webdriver).move_to_element_with_offset(element, x, y).perform()
 
     @staticmethod
     def __compute_offset_relative_to_center(size: dict, start: str) -> Tuple[int, int]:

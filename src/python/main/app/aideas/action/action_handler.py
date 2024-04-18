@@ -3,7 +3,7 @@ import os
 import shutil
 import time
 from enum import Enum, unique
-from typing import Callable, Union
+from typing import Union
 
 from .action import Action
 from .action_result import ActionResult
@@ -16,19 +16,6 @@ DEFAULT_FILE_NAME = "result.txt"
 
 class ActionError(Exception):
     pass
-
-
-def execute_for_result(func: Callable[[any], any],
-                       arg: any,
-                       action: Action) -> ActionResult:
-    try:
-        result = func(arg)
-    except Exception as ex:
-        error_msg = f'Error while executing {action}'
-        logger.error(error_msg, exc_info=ex)
-        raise ActionError(error_msg)
-    else:
-        return ActionResult(action, True, result)
 
 
 class BaseActionId(str, Enum):
@@ -67,12 +54,23 @@ class ActionHandler:
     def to_action_id(action: str) -> BaseActionId:
         return ActionId(action)
 
+    @staticmethod
+    def throw_error(ex: Exception, action: Action):
+        if isinstance(ex, ActionError):
+            raise ex
+        error_msg = f'Error while executing {action}'
+        logger.error(error_msg, exc_info=ex)
+        raise ActionError(error_msg)
+
     def execute(self, action: Action) -> ActionResult:
-        key = action.get_name_without_negation() if action.is_negation() else action.get_name()
-        result = self._execute(key, action)
-        if action.is_negation():
-            result = result.flip()
-        return result
+        try:
+            key = action.get_name_without_negation() if action.is_negation() else action.get_name()
+            result = self._execute(key, action)
+            if action.is_negation():
+                result = result.flip()
+            return result
+        except Exception as ex:
+            self.throw_error(ex, action)
 
     def _execute(self, key: str, action: Action) -> ActionResult:
         if action == Action.none():
@@ -140,19 +138,17 @@ class ActionHandler:
         tgt_dir = ActionHandler.__make_target_dirs_if_need(action)
         tgt = os.path.join(tgt_dir, os.path.basename(src))
         logger.debug(f'Copying {src} to {tgt}')
-        return execute_for_result(lambda arg: shutil.copy2(src, tgt), src, action)
+        shutil.copy2(src, tgt)
+        return ActionResult.success(action)
 
     @staticmethod
     def save_to_file(action: Action) -> ActionResult:
         args: [str] = action.get_args()
-
-        def save_content(content: str):
-            tgt_dir = ActionHandler.__make_target_dirs_if_need(action)
-            tgt = os.path.join(tgt_dir, DEFAULT_FILE_NAME if len(args) < 2 else args[1])
-            logger.debug(f'Writing to {tgt}')
-            return write_content(content, tgt)
-
-        return execute_for_result(save_content, args[0], action)
+        content = args[0]
+        tgt_dir = ActionHandler.__make_target_dirs_if_need(action)
+        tgt = os.path.join(tgt_dir, DEFAULT_FILE_NAME if len(args) < 2 else args[1])
+        logger.debug(f'Writing to {tgt}')
+        return ActionResult.success(action, write_content(content, tgt))
 
     @staticmethod
     def starts_with(action: Action) -> ActionResult:
@@ -180,20 +176,18 @@ class ActionHandler:
 
     @staticmethod
     def eval(action: Action) -> ActionResult:
-        def evaluate(arg: str):
-            exec("import importlib")
-            return eval(arg)
-        return execute_for_result(evaluate, action.get_arg_str(), action)
+        exec("import importlib")
+        result = eval(action.get_arg_str())
+        return ActionResult.success(action, result)
 
     @staticmethod
     def get_file_content(action: Action) -> ActionResult:
         file_path = action.get_first_arg()
-        return execute_for_result(lambda arg: read_content(arg), file_path, action)
+        return ActionResult.success(action, read_content(file_path))
 
     @staticmethod
     def get_files(action: Action) -> ActionResult:
-        return execute_for_result(
-            lambda args: ActionHandler.__get_files(action), action.get_args(), action)
+        return ActionResult.success(action, ActionHandler.__get_files(action))
 
     @staticmethod
     def __get_files(action: Action) -> list[str]:

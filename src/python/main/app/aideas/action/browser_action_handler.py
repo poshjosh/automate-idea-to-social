@@ -11,7 +11,7 @@ from selenium.webdriver.support import expected_conditions as WaitCondition
 from selenium.webdriver.support.wait import WebDriverWait
 
 from ..action.action import Action
-from ..action.action_handler import ActionHandler, execute_for_result, BaseActionId
+from ..action.action_handler import ActionHandler, BaseActionId
 from ..action.action_result import ActionResult
 from ..env import get_cookies_file_path
 from ..web.element_selector import ElementSelector
@@ -96,17 +96,15 @@ class BrowserActionHandler(ActionHandler):
         return ActionResult(action, True)
 
     def __browse_to(self, action: Action) -> ActionResult:
-        return execute_for_result(
-            lambda arg: self.__element_selector.load_page(arg), action.get_arg_str(), action)
+        return ActionResult.success(action, self.__element_selector.load_page(action.get_arg_str()))
 
     def __delete_cookies(self, action: Action) -> ActionResult:
-        def delete_all_cookies(file):
-            self.get_web_driver().delete_all_cookies()
-            if os.path.exists(file):
-                os.remove(file)
-                logger.debug(f"Deleted cookies file: {file}")
-        cookies_file = get_cookies_file_path(action.get_agent_name())
-        return execute_for_result(delete_all_cookies, cookies_file, action)
+        file = get_cookies_file_path(action.get_agent_name())
+        self.get_web_driver().delete_all_cookies()
+        if os.path.exists(file):
+            os.remove(file)
+            logger.debug(f"Deleted cookies file: {file}")
+        return ActionResult.success(action)
 
     def __disable_cursor(self, action: Action) -> ActionResult:
         # This is a hack.
@@ -120,11 +118,8 @@ class BrowserActionHandler(ActionHandler):
         
                 disableCursor();
         """
-
-        def execute(script: str):
-            self.get_web_driver().execute_script(script)
-
-        return execute_for_result(execute, disable_cursor, action)
+        result = self.get_web_driver().execute_script(disable_cursor)
+        return ActionResult.success(action, result)
 
     def __enable_cursor(self, action: Action) -> ActionResult:
         # This is a hack.
@@ -153,25 +148,19 @@ class BrowserActionHandler(ActionHandler):
         
                 enableCursor();
         """
-
-        def execute(script: str):
-            self.get_web_driver().execute_script(script)
-
-        return execute_for_result(execute, enable_cursor, action)
+        result = self.get_web_driver().execute_script(enable_cursor)
+        return ActionResult.success(action, result)
 
     def __execute_script(self, action: Action) -> ActionResult:
-        def execute(script: str):
-            return self.get_web_driver().execute_script(script)
-
-        return execute_for_result(execute, action.get_arg_str(), action)
+        result = self.get_web_driver().execute_script(action.get_arg_str())
+        return ActionResult.success(action, result)
 
     def __move_by_offset(self, action: Action) -> ActionResult:
-        def move_by_offset(offset: tuple[int, int]):
-            ActionChains(self.get_web_driver()).move_by_offset(offset[0], offset[1]).perform()
         args = action.get_args()
         x: int = 0 if len(args) == 0 else int(args[0])
         y: int = 0 if len(args) < 2 else int(args[1])
-        return execute_for_result(move_by_offset, (x, y), action)
+        ActionChains(self.get_web_driver()).move_by_offset(x, y).perform()
+        return ActionResult.success(action)
 
     def __refresh(self, action: Action) -> ActionResult:
         self.get_web_driver().refresh()
