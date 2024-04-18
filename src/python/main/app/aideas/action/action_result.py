@@ -9,6 +9,14 @@ class ActionResult:
     def none() -> 'ActionResult':
         return NONE
 
+    @staticmethod
+    def success(action: Action, result: any = None) -> 'ActionResult':
+        return ActionResult(action, True, result)
+
+    @staticmethod
+    def failure(action: Action, result: any = None) -> 'ActionResult':
+        return ActionResult(action, False, result)
+
     def __init__(self, action: Action, success: bool, result: any = None):
         self.__action = action
         self.__result = result
@@ -35,4 +43,4 @@ class ActionResult:
         return f'ActionResult(success={self.__success}, {self.__action}, result={self.__result})'
 
 
-NONE = ActionResult(Action.none(), True)
+NONE = ActionResult.success(Action.none())
