@@ -5,7 +5,7 @@ import shutil
 
 import webvtt
 
-from .subtitles import grouping_subtitle, subtitle_read, subtitle_save, mix_subtitles
+from .subtitles import grouping_subtitle, subtitle_read, subtitle_save
 from .translator import Translator
 from ..agent import Agent
 from ...agent.agent_name import AgentName
@@ -107,13 +107,6 @@ class TranslationAgent(Agent):
         subtitle_save(filename_out, grouped_list)
 
         logger.debug(f'{to_lang} translated to: {filename_out}, from: {filename_in}')
-
-    def __mix_subtitles(self,
-                        subtitles_list_1: list[webvtt.Caption],
-                        subtitles_list_2: list[webvtt.Caption]) -> list[webvtt.Caption]:
-        dual_lang_subtitles = mix_subtitles(subtitles_list_1, subtitles_list_2)
-        self.__print_subtitles_if_verbose(dual_lang_subtitles)
-        return dual_lang_subtitles
 
     def __print_subtitles_if_verbose(self, subtitles_list: list[webvtt.Caption], title: str = ""):
         if self.__verbose is not True:
