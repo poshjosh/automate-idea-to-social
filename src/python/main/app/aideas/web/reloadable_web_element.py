@@ -23,7 +23,7 @@ class ReloadableWebElement(WebElement):
         return self.__delegate
 
     def reload(self) -> WebElement:
-        logger.warning('Reloading element')
+        logger.debug('Reloading element')
         return ReloadableWebElement.__run_till_success(self.__reload, self.__timeout)
 
     @staticmethod
