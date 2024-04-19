@@ -55,6 +55,7 @@ run_tests_in_dir () {
 
     if [ "$failed" -gt 0 ]; then
         if [ "${ON_ERROR}" = "exit" ]; then
+            printf '\n%s\n!!! THERE WERE FAILED TESTS !!!\n%s\n' "$LINE" "$LINE"
             exit "$failed"
         fi
     fi
@@ -63,3 +64,5 @@ run_tests_in_dir () {
 cd "/Users/chinomso/dev_chinomso/automate-idea-to-social/src" || exit 1
 
 run_tests_in_dir .
+
+printf '\n%s\n!!! COMPLETED ALL TESTS SUCCESSFULLY !!!\n%s\n' "$LINE" "$LINE"
