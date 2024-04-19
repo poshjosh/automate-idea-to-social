@@ -94,7 +94,7 @@ class ElementActionHandler(BrowserActionHandler):
             element.send_keys(Keys.DELETE)
             element.clear()  # May not work under certain conditions, so we try the following
         elif key == ElementActionId.CLICK.value:
-            click_on_element: bool = action.get_first_arg('true') == 'true'
+            click_on_element: bool = action.get_arg_bool(True)
             target: WebElement = element if click_on_element is True else None
             self.__click(driver, target)
         elif key == ElementActionId.CLICK_AND_HOLD.value:
@@ -109,7 +109,7 @@ class ElementActionHandler(BrowserActionHandler):
         elif key == ElementActionId.EXECUTE_SCRIPT_ON.value:
             result = driver.execute_script(action.get_arg_str(), element)
         elif key == ElementActionId.GET_ATTRIBUTE.value:
-            result = element.get_attribute(action.get_first_arg())
+            result = element.get_attribute(action.get_arg_str())
         elif key == ElementActionId.GET_TEXT.value:
             text = element.text
             result = text if not text else text.strip()
@@ -121,7 +121,7 @@ class ElementActionHandler(BrowserActionHandler):
         elif key == ElementActionId.MOVE_TO_ELEMENT_OFFSET.value:
             self.__move_to_element_offset(self.get_web_driver(), action, element)
         elif key == ElementActionId.RELEASE.value:
-            on_element: bool = bool(action.get_first_arg())
+            on_element: bool = action.get_arg_bool(True)
             ActionChains(driver).release(element if on_element is True else None).perform()
         elif key == ElementActionId.SEND_KEYS.value:
             for char in action.get_arg_str():
@@ -155,7 +155,7 @@ class ElementActionHandler(BrowserActionHandler):
 
     @staticmethod
     def __move_to_element_offset(webdriver, action: Action, element: WebElement):
-        start: str = action.get_first_arg()
+        start: str = action.get_first_arg_as_str()
         if not start:
             raise ValueError("No start point provided for move_to_element_offset")
 
@@ -164,8 +164,9 @@ class ElementActionHandler(BrowserActionHandler):
         offset_from_center: Tuple[int, int] = (0, 0) if start == 'center' \
             else ElementActionHandler.__compute_offset_relative_to_center(element_size, start)
 
+        args: list[str] = action.get_args_as_str_list()
         additional_offset: Tuple[int, int] = (
-            ElementActionHandler.__compute_additional_offset(element_size, action.get_args()[1:]))
+            ElementActionHandler.__compute_additional_offset(element_size, args[1:]))
 
         # We add the offset provided by the user
         x = offset_from_center[0] + additional_offset[0]

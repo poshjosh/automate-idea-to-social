@@ -34,6 +34,7 @@ class BaseActionId(str, Enum):
 @unique
 class ActionId(BaseActionId):
     EVAL = 'eval'
+    EXEC = 'exec'
     GET_FILE_CONTENT = 'get_file_content'
     GET_FILES = 'get_files'
     GET_FIRST_FILE = 'get_first_file'
@@ -80,6 +81,8 @@ class ActionHandler:
             result = ActionResult.none()
         elif key == ActionId.EVAL.value:
             result: ActionResult = self.eval(action)
+        elif key == ActionId.EXEC.value:
+            result: ActionResult = self.exec(action)
         elif key == ActionId.GET_FILE_CONTENT.value:
             result: ActionResult = self.get_file_content(action)
         elif key == ActionId.GET_FILES.value:
@@ -107,7 +110,7 @@ class ActionHandler:
 
     @staticmethod
     def wait(action: Action) -> ActionResult:
-        arg: str = action.require_first_arg()
+        arg: str = action.require_first_arg_as_str()
         timeout: float = float(arg)
         if timeout < 0:
             raise ValueError(f'Invalid wait timeout: {timeout}')
@@ -119,8 +122,8 @@ class ActionHandler:
 
     @staticmethod
     def get_newest_file_in_dir(action: Action) -> ActionResult:
-        args: [str] = action.get_args()
-        dir_path: str = action.require_first_arg()
+        args: [str] = action.get_args_as_str_list()
+        dir_path: str = action.require_first_arg_as_str()
         file_type: str = args[1]
         timeout: int = 30 if len(args) < 3 else int(args[2])
         start_time = time.time()
@@ -133,13 +136,13 @@ class ActionHandler:
 
     @staticmethod
     def log(action: Action) -> ActionResult:
-        arg_list: [] = action.get_args()
+        arg_list: [] = action.get_args_as_str_list()
         logger.log(logging.getLevelName(arg_list[0]), ' '.join(arg_list[1:]))
         return ActionResult(action, True)
 
     @staticmethod
     def save_file(action: Action) -> ActionResult:
-        src = action.require_first_arg()
+        src = action.require_first_arg_as_str()
         tgt_dir = ActionHandler.__make_target_dirs_if_need(action)
         tgt = os.path.join(tgt_dir, os.path.basename(src))
         logger.debug(f'Copying {src} to {tgt}')
@@ -148,7 +151,7 @@ class ActionHandler:
 
     @staticmethod
     def save_to_file(action: Action) -> ActionResult:
-        args: [str] = action.get_args()
+        args: [str] = action.get_args_as_str_list()
         content = args[0]
         tgt_dir = ActionHandler.__make_target_dirs_if_need(action)
         tgt = os.path.join(tgt_dir, DEFAULT_FILE_NAME if len(args) < 2 else args[1])
@@ -170,7 +173,7 @@ class ActionHandler:
 
     @staticmethod
     def __starts_with(action: Action) -> tuple[bool, str or None]:
-        args: [str] = action.get_args()
+        args: [str] = action.get_args_as_str_list()
         value: str = args[0]
         prefixes: [str] = args[1:]
         for prefix in prefixes:
@@ -194,8 +197,13 @@ class ActionHandler:
         return ActionResult.success(action, result)
 
     @staticmethod
+    def exec(action: Action) -> ActionResult:
+        exec(action.get_arg_str())
+        return ActionResult.success(action)
+
+    @staticmethod
     def get_file_content(action: Action) -> ActionResult:
-        file_path = action.get_first_arg()
+        file_path = action.get_first_arg_as_str()
         return ActionResult.success(action, read_content(file_path))
 
     @staticmethod
@@ -204,7 +212,7 @@ class ActionHandler:
 
     @staticmethod
     def __get_files(action: Action) -> list[str]:
-        args: [] = action.get_args()
+        args: [] = action.get_args_as_str_list()
         dir_path: str = args[0]
         file_type: str = args[1]
         files: [] = []

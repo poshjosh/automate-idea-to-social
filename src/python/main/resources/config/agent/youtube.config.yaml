@@ -199,3 +199,77 @@ stages:
         actions:
           - get_text
           - save_to_file $results.me[0]
+  subtitles:
+    iteration:
+      index_variable: youtube-subtitles-idx
+      end: 10
+    events:
+      onerror: continue
+    stage-items:
+      subtitles-link:
+        actions:
+          - get_file_content ${OUTPUT_DIR}/agent/youtube/results/wait-for-video-link/save-video-link/result.txt
+          - eval importlib.import_module('urllib.parse').urlparse('${results.me[0]}').path
+          - eval importlib.import_module('os').path.basename('${results.me[1]}')
+          - set_context_values youtube-edit-subtitles-link=https://studio.youtube.com/video/${results.me[2]}/translations
+          - eval ${context.youtube.subtitles.languages}[${context.youtube-subtitles-idx}]
+          - eval ${results.me[4]}['code']
+          - eval ${results.me[4]}['name']
+          - set_context_values youtube-edit-subtitles-code=${results.me[5]}
+          - set_context_values youtube-edit-subtitles-name=${results.me[6]}
+      open-page:
+        actions: browse_to $context.youtube-edit-subtitles-link
+      click-add-language-button:
+        search-for: //*[@id="add-translations-button"]/div[text()="Add language"]
+      select-subtitles-language:
+        search-for: //*[@id="paper-list"]//*[@test-id="${context.youtube-edit-subtitles-code}"]
+      hover-over-edit-icon:
+        search-for:
+          # id="row-container" and contains an element at any depth containing the text "German"
+          - //*[@id="row-container" and contains(.//*, "${context.youtube-edit-subtitles-name}")]//*[@id="status-with-icon-container"]
+        actions:
+          - move_to_element
+          - wait 2
+      click-edit-icon:
+        search-for:
+          # id="row-container" and contains an element at any depth containing the text "German"
+          - //*[@id="row-container" and contains(.//*, "${context.youtube-edit-subtitles-name}")]//*[@id="captions-add"]
+      # The file dialog is displayed, only when we click this button
+      click-upload-file:
+        search-for: //*[@id="choose-upload-file"]
+      # We want to click the cancel button, but it has no size and location
+      # even though it is visible. Since the button is visible on screen,
+      # we decide to click on its position. We tried getting to the button's
+      # position using our inbuilt `move_to_element`. This did not work as the
+      # button does not have size and location. So we plot the position of the
+      # cancel button relative to the continue button. The continue button is
+      # locatable while the cancel button is not, despite both buttons being
+      # adjacent to each other. When we get to the position, we click.
+      # Other more logical ways, did not work, before we settled for this.
+      cancel-filetype-options:
+        # This is not the button we will eventually click. It is just
+        # a reference button we use the plot the position to click.
+        search-for: //*[@id="dialog-buttons"]//*[@id="confirm-button"]/div[text()="Continue"]
+        actions:
+          - enable_cursor
+          - execute_script_on arguments[0].scrollIntoView(true);
+          - execute_script_on arguments[0].focus();
+          - move_to_element_offset top-left -48 12
+          - click false
+          - wait 10
+      add-subtitles-file:
+        # There are many file inputs, so we differentiate as much as possible
+        search-for: //*[@id="captions-file-loader" and @type="file" and @class="style-scope ytve-captions-editor-upload-dialog"]
+        actions:
+          # Use the first result from translation agent
+          - get_first_file ${OUTPUT_DIR}/agent/translation/results ${context.youtube-edit-subtitles-code}.vtt
+          - execute_script_on arguments[0].focus();
+          - enter_text $results.me[0]
+          - wait 10
+      publish-subtitles:
+        search-for:
+          - //*[@id="publish-button"]/div[text()="Publish"]
+          - //*[@id="publish-button"]
+        actions:
+          - click
+          - wait 3

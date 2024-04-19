@@ -112,6 +112,9 @@ class RunContext:
         self.__values[key] = value
         return result
 
+    def remove(self, key: str) -> Union[any or None]:
+        return self.__values.pop(key, None)
+
     def set_current_url(self, value: str) -> 'RunContext':
         self.__values[CURRENT_URL] = value
         return self

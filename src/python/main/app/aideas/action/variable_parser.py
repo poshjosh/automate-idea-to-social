@@ -2,6 +2,7 @@ import copy
 import logging
 from typing import Union, Tuple, Callable
 
+from ..config import STAGES_KEY, STAGE_ITEMS_KEY
 from ..env import Env
 
 """
@@ -27,7 +28,9 @@ VARIABLE_ANCHOR = '$'
 logger = logging.getLogger(__name__)
 
 
-def is_variable(value: str) -> bool:
+def is_variable(value: any) -> bool:
+    if not isinstance(value, str):
+        return False
     if VARIABLE_ANCHOR in value:
         return True
     s = VARIABLE_ANCHOR + '{'
@@ -36,7 +39,9 @@ def is_variable(value: str) -> bool:
     return False
 
 
-def is_action_variable(value: str) -> bool:
+def is_action_variable(value: any) -> bool:
+    if not isinstance(value, str):
+        return False
     """Action variables are only available while the actions are being run"""
     return (__is_variable_with_prefix(value, RESULTS_KEY)
             or __is_variable_with_prefix(value, CONTEXT_KEY))
@@ -142,7 +147,7 @@ def parse_run_arg(curr_path: [str], arg: str, run_context: 'RunContext' = None) 
     return replacement
 
 
-def __parse_variables(target: str, replace: Callable[[str], any]) -> str:
+def __parse_variables(target: str, replace: Callable[[str], any]) -> any:
     if not is_variable(target):
         return target
     result = target
@@ -159,29 +164,32 @@ def __parse_variables(target: str, replace: Callable[[str], any]) -> str:
         if replacement is None:
             pos = end
             continue
-        result = result[0:start] + replacement + result[end:]
-        pos = start + len(replacement)
+        if start == 0 and end == len(result):
+            return replacement
+        replacement_str = str(replacement)
+        result = result[0:start] + replacement_str + result[end:]
+        pos = start + len(replacement_str)
     return result
 
 
 def __get_run_arg_value(curr_path: [str],
                         name: str,
                         run_context: 'RunContext' = None,
-                        result_if_none: Union[str, None] = None) -> Union[str, None]:
+                        result_if_none: Union[str, None] = None) -> Union[any, None]:
     replacement = None if run_context is None else run_context.get_arg(name)
     if replacement is None:
         replacement = __get_scoped_value_for_name_having_prefix(
             curr_path, name, CONTEXT_KEY, run_context)
         if replacement is None:
             replacement = __get_results_value(curr_path, name, run_context)
-    return result_if_none if replacement is None else str(replacement)
+    return result_if_none if replacement is None else replacement
 
 
 def __get_scoped_value_for_name_having_prefix(
         curr_path: [str],
         name: str,
         prefix: str,
-        context: Union['RunContext', dict] = None) -> Union[str, None]:
+        context: Union['RunContext', dict] = None) -> Union[any, None]:
     def get_value(values_scope: any, key: str) -> any:
         if values_scope is None:
             return None if context is None else context.get(key, None)
@@ -193,7 +201,7 @@ def __get_scoped_value_for_name_having_prefix(
 
 def __get_results_value(curr_path: [str],
                         name: str,
-                        run_context: 'RunContext' = None) -> Union[str, None]:
+                        run_context: 'RunContext' = None) -> Union[any, None]:
     def get_value(scope: any, key: str) -> any:
         if scope is None:
             return None if run_context is None else run_context.get_stage_results(key, None)
@@ -201,11 +209,18 @@ def __get_results_value(curr_path: [str],
             return scope.get(key, None)
 
     value = __get_scoped_value(curr_path, name, RESULTS_KEY, get_value)
+    return __get_result(value)
+
+
+def __get_result(value):
+    if value is None:
+        return None
     try:
-        return None if value is None else value.get_result()
+        if isinstance(value, list):
+            return [e.get_result() for e in value]
+        return value.get_result()
     except Exception:
         return value
-
 
 def __get_scoped_value(curr_path: [str],
                        name: str,
@@ -218,17 +233,30 @@ def __get_scoped_value(curr_path: [str],
 
     parts = __expand_me(curr_path, parts)
 
+    extras = [STAGES_KEY, STAGE_ITEMS_KEY]
+
     scope = None
     for k in parts:
         try:
-            scope = get_value(scope, k)
+
+            v = get_value(scope, k)
+
+            if v is None and len(extras) > 0:
+                extra = extras[0]
+                v = get_value(scope, extra)
+                if v is not None:
+                    extras.pop(0)
+                    v = get_value(v, k)
+
         except Exception as ex:
             raise ValueError(f'Value not found for: {k} of {name} in {scope}') from ex
-        if scope is None:
+        if v is None:
             raise ValueError(f'Value not found for: {k} of {name} in {scope}')
 
+        scope = v
+
     try:
-        return scope[index] if isinstance(scope, list) else scope
+        return scope[index] if index > -1 and isinstance(scope, list) else scope
     except IndexError as ex:
         raise IndexError(
             f'Invalid index: {index}, for variable: {name}, in scope: {scope}') from ex
@@ -256,7 +284,7 @@ def __parse_index_part(value: str) -> tuple[[str], int]:
     parts: [str] = value.split('.')
     last = parts[len(parts) - 1] if '.' in value else value
     if not last.endswith(']'):
-        return parts, 0
+        return parts, -1
     try:
         start: int = last.index('[')
         index_str: str = last[start + 1:len(last) - 1]

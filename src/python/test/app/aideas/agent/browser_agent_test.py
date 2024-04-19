@@ -30,10 +30,10 @@ stages:
     stage-items:
       wait-stage:
         actions: wait 1
-      conditional-stage:  
+      conditional-stage:
         when:
           search-for: //test-xpath
-          actions: not is_displayed 
+          actions: not is_displayed
         actions: log DEBUG This should not be logged; as the condition above should not pass
         """
         agent_config = load_yaml_str(yaml)

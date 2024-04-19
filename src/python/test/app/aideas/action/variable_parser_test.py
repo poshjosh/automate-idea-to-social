@@ -29,16 +29,16 @@ class VariableParserTest(unittest.TestCase):
         self.app_config = get_config_loader().load_app_config()
 
     def test_parse_run_arg_without_index(self):
-        expected = 'test-result-0'
-        run_context = self.__given_run_context_with_results([expected])
+        expected = ['test-result-0']
+        run_context = self.__given_run_context_with_results(expected)
         result = parse_run_arg(curr_path, to_results_variable(curr_path), run_context)
-        self.assertEqual(expected, result)
+        self.assertListEqual(expected, result)
 
     def test_parse_run_arg_with_me_reference_and_without_index(self):
-        expected = 'test-result-0'
-        run_context = self.__given_run_context_with_results([expected])
+        expected = ['test-result-0']
+        run_context = self.__given_run_context_with_results(expected)
         result = parse_run_arg(curr_path, to_results_variable(['me']), run_context)
-        self.assertEqual(expected, result)
+        self.assertListEqual(expected, result)
 
     def test_parse_run_arg_with_index(self):
         expected = 'test-result-1'

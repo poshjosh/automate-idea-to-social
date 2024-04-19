@@ -13,6 +13,7 @@ from ..action.action_result import ActionResult
 from ..action.action_signatures import element_action_signatures
 from ..action.action_handler import ActionError
 from ..action.element_action_handler import ElementActionHandler
+from ..action.variable_parser import parse_run_arg
 from ..config import (AgentConfig, ConfigPath, Name, SearchConfigs,
                       TIMEOUT_KEY, WHEN_KEY, ON_START, merge_configs)
 from ..result.result_set import ElementResultSet
@@ -187,7 +188,7 @@ class BrowserAutomator:
 
             timeout: float = self.__get_timeout(target_config)
 
-            element: WebElement = self.__select_element(target_config)
+            element: WebElement = self.__select_element(target_config, config_path, run_context)
 
             run_context.set_current_element(element)
 
@@ -225,7 +226,7 @@ class BrowserAutomator:
         if not expected:
             return
 
-        selected = self.__select_element(expected, timeout)
+        selected = self.__select_element(expected, config_path, run_context, timeout)
         element = element if not selected else selected
 
         expectation_actions: list[str] = config.get_expectation_actions(config_path)
@@ -241,11 +242,18 @@ class BrowserAutomator:
 
     def __select_element(self,
                          target_config: dict[str, any],
+                         config_path: ConfigPath,
+                         run_context: RunContext,
                          timeout: float = None) -> WebElement:
         if not timeout:
             timeout = self.__get_timeout(target_config)
 
-        search_configs: SearchConfigs = SearchConfigs.of(target_config)
+        path: list[str] = config_path.agent_str_path_simplified(self.get_agent_name())
+
+        def transform(text: str) -> str:
+            return text if not path else str(parse_run_arg(path, text, run_context))
+
+        search_configs: SearchConfigs = SearchConfigs.of(target_config).transform(transform)
 
         return None if not search_configs or not search_configs.search_for() \
             else self.__element_selector.with_timeout(timeout).select_element(search_configs)

@@ -8,6 +8,7 @@ from .....main.app.aideas.action.action_handler import ActionId, BaseActionId
 from .....main.app.aideas.action.element_action_handler import ElementActionHandler
 from .....main.app.aideas.env import Env
 from .....main.app.aideas.run_context import RunContext
+from .....main.app.aideas.action.browser_action_handler import BrowserActionId
 
 
 class TestElementActionHandler(ElementActionHandler):
@@ -29,7 +30,20 @@ class TestElementActionHandler(ElementActionHandler):
             file_type = os.environ[Env.VIDEO_OUTPUT_TYPE.value]
             return ActionResult(action, True,
                                 f'test-downloaded-video.{file_type}' if result_producing else None)
-        if key == ActionId.LOG.value:
+
+        if (key == ActionId.LOG.value
+                or key == ActionId.EVAL.value
+                or key == ActionId.EXEC.value
+                or key == ActionId.SET_CONTEXT_VALUES.value):
+            return super()._execute(run_context, action, key)
+
+        if (key == BrowserActionId.BROWSE_TO.value
+                or key == BrowserActionId.DELETE_COOKIES.value
+                or key == BrowserActionId.DISABLE_CURSOR.value
+                or key == BrowserActionId.ENABLE_CURSOR.value
+                or key == BrowserActionId.EXECUTE_SCRIPT.value
+                or key == BrowserActionId.MOVE_BY_OFFSET.value
+                or key == BrowserActionId.REFRESH.value):
             return super()._execute(run_context, action, key)
 
         return ActionResult(action, True,

@@ -79,7 +79,7 @@ class BrowserActionHandler(ActionHandler):
 
     def __handle_alert(self, action: Action) -> ActionResult:
         how: str = action.get_name().split("_")[0]  # accept|dismiss
-        value: str = action.get_first_arg('')
+        value: str = action.get_first_arg_as_str('')
         timeout = self.__wait_timeout_seconds if (value is None or value == '') else float(value)
         try:
             WebDriverWait(self.get_web_driver(), timeout).until(
@@ -158,8 +158,8 @@ class BrowserActionHandler(ActionHandler):
 
     def __move_by_offset(self, action: Action) -> ActionResult:
         args = action.get_args()
-        x: int = 0 if len(args) == 0 else int(args[0])
-        y: int = 0 if len(args) < 2 else int(args[1])
+        x: int = 0 if len(args) == 0 else args[0]
+        y: int = 0 if len(args) < 2 else args[1]
         ActionChains(self.get_web_driver()).move_by_offset(x, y).perform()
         return ActionResult.success(action)
 

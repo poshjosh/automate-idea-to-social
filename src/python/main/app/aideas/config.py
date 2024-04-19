@@ -158,6 +158,17 @@ class ConfigPath(tuple[Name]):
         path.append(Name.of(stage_item))
         return ConfigPath(path)
 
+    def agent_str_path_simplified(self, agent: str, default: list[str] = None) -> list[str]:
+        if self.is_stage_item() is False:
+            return default
+        path = [agent]
+        path.extend(self.str_path_simplified())
+        if len(path) < 3:
+            return default
+        if len(path) > 3:
+            return path[0:3]
+        return path
+
     def join(self, name: Union[str, Name]) -> 'ConfigPath':
         return ConfigPath([e for e in self] + [Name.of(name)])
 
@@ -176,8 +187,20 @@ class ConfigPath(tuple[Name]):
     def name(self) -> Name:
         return self[-1]
 
+    def str_path_simplified(self) -> list[str]:
+        path: list[str] = self.str_path()
+        result: list[str] = []
+        for e in path:
+            if e == STAGES_KEY or e == STAGE_ITEMS_KEY:
+                continue
+            result.append(e)
+        return result
+
+    def str_path(self) -> list[str]:
+        return [str(e) for e in self]
+
     def __str__(self) -> str:
-        return f'@{".".join([str(e) for e in self])}'
+        return f'@{".".join(self.str_path())}'
 
 
 SEARCH_CONFIG_PARENT = TypeVar("SEARCH_CONFIG_PARENT", bound=dict[str, any])
@@ -228,6 +251,13 @@ class SearchConfig:
         self.__queries = [queries] if isinstance(queries, str) else queries
         self.__updated: bool = False
 
+    def transform(self, transform: Callable[[str], str]) -> 'SearchConfig':
+        result = []
+        for query in self.__queries:
+            query = transform(query)
+            result.append(query)
+        return SearchConfig(self.__search_by, result)
+
     def get_queries(self) -> [str]:
         return self.__queries
 
@@ -258,6 +288,12 @@ class SearchConfigs:
     def __init__(self, search_for: SearchConfig, search_from: Union[SearchConfig, None] = None):
         self.__search_from = search_from
         self.__search_for = search_for
+
+    def transform(self, transform: Callable[[str], str]) -> 'SearchConfigs':
+        search_for = self.search_for()
+        search_from = self.search_from()
+        return SearchConfigs(None if search_for is None else search_for.transform(transform),
+                             None if search_from is None else search_from.transform(transform))
 
     def search_from(self) -> Union[SearchConfig, None]:
         return self.__search_from
@@ -355,9 +391,37 @@ class AgentConfig:
         return None
 
     def events(self, config_path: ConfigPath, default: dict = None) -> dict[str, any]:
-        parent: dict = self.get(config_path, {})
-        check_for_typo(parent, EVENTS)
-        return parent.get(EVENTS, default)
+        return self.get(config_path, {}).get(EVENTS, default)
+
+    def get_iteration_index_variable(self, config_path: ConfigPath, default: str = 'index') -> str:
+        iteration: dict = self.iteration(config_path, {})
+        result = iteration.get('index_variable', default)
+        # The . character is used to separate path elements in the config
+        # $context.<stage>.<stage-item> Has a meaning made possible by the . character
+        if '.' in result:
+            raise ValueError(f'Invalid character `.` in index variable: {result}')
+        return result
+
+    @staticmethod
+    def get_default_iteration_index_variable(config_path: ConfigPath) -> str:
+        index_path = config_path.str_path_simplified()
+        index_path.extend(['iteration', 'index'])
+        return ".".join(index_path)
+
+    def get_iteration_start(self, config_path: ConfigPath, default: int = 0) -> int:
+        iteration: dict = self.iteration(config_path, {})
+        return iteration.get('start', default)
+
+    def get_iteration_step(self, config_path: ConfigPath, default: int = 1) -> int:
+        iteration: dict = self.iteration(config_path, {})
+        return iteration.get('step', default)
+
+    def get_iteration_end(self, config_path: ConfigPath, default: int = 1) -> int:
+        iteration: dict = self.iteration(config_path, {})
+        return iteration.get('end', default)
+
+    def iteration(self, config_path: ConfigPath, default: dict = None) -> dict[str, any]:
+        return self.get(config_path, {}).get("iteration", default)
 
     def get_event_actions(self, config_path: ConfigPath, event_name: str) -> Union[str, list]:
         default_action: str = 'fail' if event_name == ON_ERROR else 'continue'
@@ -452,14 +516,6 @@ class AgentConfig:
 
 
 def tokenize(value: str, separator: str = ' ') -> list[str]:
-    """
-    Converts a string to a dictionary of attributes.
-    Input: key_0=value_0 key_1="value with spaces"
-    Output: {key_0: value_0, key_1: value with spaces}
-    :param value: The value to parse into a dictionary.
-    :param separator: The separator between the attributes.
-    :return: The dictionary of attributes.
-    """
     quote = '"'
     parts = value.split(separator)
     result = []

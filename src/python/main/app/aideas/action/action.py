@@ -81,11 +81,15 @@ class Action:
         name: str = self.get_name()
         return name.split(' ')[1] if self.is_negation() else name
 
-    def require_first_arg(self) -> str:
-        arg: str = self.get_first_arg()
+    def require_first_arg_as_str(self) -> str:
+        arg: any = self.get_first_arg()
         if not arg:
             raise ValueError(f'No argument provided for: {self}')
-        return arg
+        return str(arg)
+
+    def get_first_arg_as_str(self, default: any = None) -> str:
+        arg: any = self.get_first_arg(default)
+        return None if arg is None else str(arg)
 
     def get_first_arg(self, default: any = None) -> any:
         arg = None if len(self.__args) == 0 else self.__args[0]
@@ -94,8 +98,15 @@ class Action:
     def get_args(self) -> list:
         return self.__args
 
-    def get_arg_str(self) -> str:
-        return ' '.join(self.__args)
+    def get_arg_bool(self, default: bool = False) -> bool:
+        arg: str = self.get_arg_str('')
+        return default if arg == '' else arg == 'true'
+
+    def get_arg_str(self, default: str = '') -> str:
+        return default if not self.__args else ' '.join(self.get_args_as_str_list())
+
+    def get_args_as_str_list(self) -> list[str]:
+        return [str(e) for e in self.__args]
 
     @staticmethod
     def __split_into_name_and_args(parts: list[str]) -> tuple[str, [str]]:

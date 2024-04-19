@@ -1,19 +1,44 @@
+variables:
+  - Zero
+  - One
+  - Two
+  - Three
 stages:
-  open-home-page:
+  stage-1:
     url: https://www.google.com/
     stage-items:
       item-1:
-        actions: log INFO ||||||| Stage 1 Item 1
+        actions: log INFO ||||||| stage-1.item-1
       item-2:
-        actions: log INFO ||||||| Stage 1 Item 2
+        actions: log INFO ||||||| stage-1.item-2
   run-other-stage-with-different-config:
     stage-items:
       item-1:
 #        events:
 #          onstart: run_stages open-home-page
         actions:
-          - log INFO ||||||| Stage 1 Item 1
           - eval importlib.import_module('urllib.parse').urlparse('https://test.com/abc/def?k=v').path
-          - eval importlib.import_module('os').path.basename('${results.me[1]}')
+          - eval importlib.import_module('os').path.basename('${results.me[0]}')
+          - log INFO ||||||| ${results.me[1]}
+  test-iteration:
+    iteration:
+      index_variable: idx
+      start: 1
+      step: 2
+      end: 5
+    stage-items:
+      item-1:
+        actions:
+          - eval ${context.test-agent.variables}
+          - eval ${results.me[0]}[${context.idx}]
+          - log INFO ||||||| Number at ${context.idx} is ${results.me[1]}
+          - set_context_values number=${results.me[1]}
+          - log INFO ||||||| Number from context ${context.number}
+# Logs INFO ||||||| Number at ['Zero', 'One', 'Two', 'Three'][3]
+#          - log INFO ||||||| Number at ${context.test-agent.variables}[${context.idx}]
+# Variable parsing will fail. We don't support nested variables at the moment,
+#          - log INFO ||||||| Number at ${context.test-agent.variables[${context.idx}]}
+
+
 
 

@@ -3,7 +3,7 @@ import os.path
 import shutil
 from collections import OrderedDict
 
-from ..config import AgentConfig, Name
+from ..config import AgentConfig, ConfigPath, Name
 from ..env import get_agent_output_dir, get_agent_results_dir
 from ..result.result_set import ElementResultSet, StageResultSet
 from ..run_context import RunContext
@@ -78,15 +78,34 @@ class Agent:
 
     def _run_stages(self, run_context: RunContext, stages: [Name]) -> StageResultSet:
         """Run specified stages of the agent and return True if successful, False otherwise."""
+
+        config: AgentConfig = self.get_config()
+
         for stage in stages:
 
-            result = self.run_stage(run_context, stage)
-            logger.debug(f"Stage: {stage}, result: {result}")
+            config_path: ConfigPath = ConfigPath.of(stage)
+            index_var_key: str = config.get_iteration_index_variable(config_path)
+            start: int = config.get_iteration_start(config_path)
+            step: int = config.get_iteration_step(config_path)
+            end: int = config.get_iteration_end(config_path)
 
-            # We raise an exception if we want to stop the process
-            # so no need to do this.
-            # if not result_set.is_successful():
-            #     break
+            for index in range(start, end, step):
+                # To avoid overriding previous results we qualify the stage id with the index
+                # We do not qualify when the index is 0, to ensure the original stage id is used
+                # Without iteration: stage_id
+                #    With iteration: stage_id, stage_id1, stage_id2, ...stage_idN
+                if index > 0:
+                    stage = Name.of(stage.get_value(), f'{stage.get_id()}{index}')
+                try:
+                    run_context.set(index_var_key, index)
+                    result = self.run_stage(run_context, stage)
+                finally:
+                    run_context.remove(index_var_key)
+                logger.debug(f"Stage: {stage}, result: {result}")
+                # We raise an exception if we want to stop the process
+                # so no need to do this here.
+                # if not result.is_successful():
+                #     break
 
         # We do not close the result set here because a stage could be run within another stage
         # In that case, this point is not the end of the run stages process.
