@@ -86,7 +86,7 @@ def delete_saved_files(result_set: ElementResultSet, test: Callable[[str], bool]
 def __delete_file_results(result_list: list[ActionResult], test: Callable[[str], bool] = None):
     for r in result_list:
         file = r.get_result()
-        if file is None or os.path.sep not in file or '/' not in file:
+        if file is None or not isinstance(file, str) or os.path.sep not in file or '/' not in file:
             continue
         may_proceed = True if test is None else test(file)
         if not may_proceed:

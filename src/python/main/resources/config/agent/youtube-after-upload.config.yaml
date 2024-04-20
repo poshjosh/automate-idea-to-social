@@ -12,29 +12,6 @@ browser:
         - start-maximized
 depends-on:
   - youtube
-subtitles:
-  #"ar", "bn", "de", "es", "fr", "hi", "it", "ja", "ko", "ru", "zh", "zh-TW"
-  languages:
-    - code: de
-      name: German
-    - code: fr
-      name: French
-    - code: es
-      name: Spanish
-    - code: it
-      name: Italian
-    - code: ru
-      name: Russian
-    - code: ja
-      name: Japanese
-    - code: ko
-      name: Korean
-    - code: zh
-      name: Chinese
-    - code: ar
-      name: Arabic
-    - code: hi
-      name: Hindi
 stages:
   login:
     events:
