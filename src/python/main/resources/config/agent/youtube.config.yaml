@@ -82,8 +82,8 @@ stages:
       add-video:
         wait-timeout-seconds: 0  # Signal not to use webdriver wait and its conditions
         search-for:
-          - //input[@type="file"]
           - //*[@id="content"]/input[@type="file"]
+          - //input[@type="file"]
         actions:
           # Use the first result from the specified pictory download stage
           - get_first_file ${OUTPUT_DIR}/agent/pictory/results/download-video-layout-2/save-file $VIDEO_OUTPUT_TYPE
