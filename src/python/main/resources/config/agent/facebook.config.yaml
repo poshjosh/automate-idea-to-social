@@ -47,9 +47,6 @@ stages:
           - //*[starts-with(@id, "mount_0_0_")]//form//*[@aria-label="Photo/video"]
           - //*[starts-with(@id, "mount_0_0_")]//*[@aria-label="Photo/video"]
       add-video-or-cover-photo:
-        expected:
-          search-for: ${self.post-dialog}
-          actions: not is_displayed
         search-for:
           - ${self.post-dialog}//form//input[@type="file"]
           - ${self.post-dialog}//input[@type="file"]
