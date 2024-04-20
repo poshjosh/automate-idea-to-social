@@ -42,7 +42,7 @@ class BlogAgent(Agent):
     def run_stage(self,
                   run_context: RunContext,
                   stage: Name) -> ElementResultSet:
-        stage_id: str = stage.get_id()
+        stage_id: str = stage.id
         action = Action.of_generic(AgentName.BLOG, stage_id)
         return self.__run_stage(action, run_context, stage)
 
@@ -50,7 +50,7 @@ class BlogAgent(Agent):
                     action: Action,
                     run_context: RunContext,
                     stage: Name) -> ElementResultSet:
-        stage_id = stage.get_id()
+        stage_id = stage.id
 
         if stage_id == AgentName.BlogUpdaterStage.DOWNLOAD_APP:
             result: ActionResult = self.download_app(action)

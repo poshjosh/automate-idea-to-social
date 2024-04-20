@@ -55,7 +55,7 @@ def parse_agent_to_stages(action_signature: [str],
     for target in agent_stages:
         agent_name = calling_agent if '.' not in target else target.split('.')[0]
         stage_name = target if '.' not in target else target.split('.')[1]
-        stage_alias = calling_stage.get_id()  # if '.' not in target else target.split('.')[1]
+        stage_alias = calling_stage.id  # if '.' not in target else target.split('.')[1]
         stage = Name.of(stage_name, stage_alias)
         stages = agent_to_stages.get(agent_name, [])
         stages.append(stage)

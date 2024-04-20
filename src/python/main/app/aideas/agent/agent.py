@@ -95,7 +95,7 @@ class Agent:
                 # Without iteration: stage_id
                 #    With iteration: stage_id, stage_id1, stage_id2, ...stage_idN
                 if index > 0:
-                    stage = Name.of(stage.get_value(), f'{stage.get_id()}{index}')
+                    stage = Name.of(stage.value, f'{stage.id}{index}')
                 try:
                     run_context.set(index_var_key, index)
                     result = self.run_stage(run_context, stage)

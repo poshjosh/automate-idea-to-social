@@ -66,8 +66,8 @@ class EventHandler:
 
         action_signature_list = config.get_event_actions(config_path, event_name)
 
-        stage_id = config_path.stage().get_id()
-        target_id = config_path.name().get_id()
+        stage_id = config_path.stage().id
+        target_id = config_path.name().id
 
         index: int = -1
         for action_signature in action_signature_list:

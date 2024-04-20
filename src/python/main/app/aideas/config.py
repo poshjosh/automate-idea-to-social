@@ -132,10 +132,12 @@ class Name:
     def matches(self, text: str) -> bool:
         return self.__value == text or self.__id == text
 
-    def get_id(self) -> str:
+    @property
+    def id(self) -> str:
         return self.__id
 
-    def get_value(self) -> str:
+    @property
+    def value(self) -> str:
         return self.__value
 
     def __eq__(self, other) -> bool:
@@ -251,12 +253,8 @@ class SearchConfig:
         self.__queries = [queries] if isinstance(queries, str) else queries
         self.__updated: bool = False
 
-    def transform(self, transform: Callable[[str], str]) -> 'SearchConfig':
-        result = []
-        for query in self.__queries:
-            query = transform(query)
-            result.append(query)
-        return SearchConfig(self.__search_by, result)
+    def transform_queries(self, transform: Callable[[str], str]) -> 'SearchConfig':
+        return SearchConfig(self.__search_by, [transform(query) for query in self.__queries])
 
     def get_queries(self) -> [str]:
         return self.__queries
@@ -289,11 +287,12 @@ class SearchConfigs:
         self.__search_from = search_from
         self.__search_for = search_for
 
-    def transform(self, transform: Callable[[str], str]) -> 'SearchConfigs':
+    def transform_queries(self, transform: Callable[[str], str]) -> 'SearchConfigs':
         search_for = self.search_for()
         search_from = self.search_from()
-        return SearchConfigs(None if search_for is None else search_for.transform(transform),
-                             None if search_from is None else search_from.transform(transform))
+        return SearchConfigs(
+            None if search_for is None else search_for.transform_queries(transform),
+            None if search_from is None else search_from.transform_queries(transform))
 
     def search_from(self) -> Union[SearchConfig, None]:
         return self.__search_from
@@ -512,7 +511,7 @@ class AgentConfig:
 
     @staticmethod
     def __value(name: Union[str, Name]) -> Union[str, None]:
-        return None if name is None else Name.of(name).get_value()
+        return None if name is None else Name.of(name).value
 
 
 def tokenize(value: str, separator: str = ' ') -> list[str]:

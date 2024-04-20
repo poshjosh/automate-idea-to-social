@@ -52,10 +52,9 @@ class TranslationAgent(Agent):
             tgt_file = os.path.join(results_dir, os.path.basename(src_file))
             shutil.copy2(src_file, tgt_file)
             logger.debug(f"Copied to: {tgt_file} from: {src_file}")
-            self.__translate_all(
-                stage.get_id(), tgt_file, target_language_codes, run_context)
+            self.__translate_all(stage.id, tgt_file, target_language_codes, run_context)
 
-        return run_context.get_element_results(self.get_name(), stage.get_id())
+        return run_context.get_element_results(self.get_name(), stage.id)
 
     def __translate_all(self,
                         stage_id: str,

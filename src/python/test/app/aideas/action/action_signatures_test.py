@@ -13,10 +13,10 @@ class ActionSignaturesTest(unittest.TestCase):
             calling_agent, calling_stage)
         self.assertEqual(expected_action, action)
         result = agent_to_stages.get(calling_agent)
-        self.assertEqual("stage_1", result[0].get_value())
-        self.assertEqual(calling_stage, result[0].get_id())
-        self.assertEqual("stage_2", result[1].get_value())
-        self.assertEqual(calling_stage, result[1].get_id())
+        self.assertEqual("stage_1", result[0].value)
+        self.assertEqual(calling_stage, result[0].id)
+        self.assertEqual("stage_2", result[1].value)
+        self.assertEqual(calling_stage, result[1].id)
 
     def test_parse_agent_to_stages_given_called_agent_specified(self):
         expected_action = "action"
@@ -30,12 +30,12 @@ class ActionSignaturesTest(unittest.TestCase):
         self.assertEqual(expected_action, action)
 
         result = agent_to_stages.get(called_agent)
-        self.assertEqual(called_stage, result[0].get_value())
-        self.assertEqual(calling_stage, result[0].get_id())
+        self.assertEqual(called_stage, result[0].value)
+        self.assertEqual(calling_stage, result[0].id)
 
         result = agent_to_stages.get(calling_agent)
-        self.assertEqual("stage-a_1", result[0].get_value())
-        self.assertEqual(calling_stage, result[0].get_id())
+        self.assertEqual("stage-a_1", result[0].value)
+        self.assertEqual(calling_stage, result[0].id)
 
 
 if __name__ == '__main__':

@@ -115,7 +115,7 @@ class BrowserAutomator:
 
             self.__act_on_element(config, config_path, run_context)
 
-        return run_context.get_element_results(self.__agent_name, stage.get_id())
+        return run_context.get_element_results(self.__agent_name, stage.id)
 
     def stage_may_proceed(self,
                           config: AgentConfig,
@@ -214,7 +214,7 @@ class BrowserAutomator:
     def __get_actions(config: AgentConfig, config_path: ConfigPath) -> list[str]:
         target_parent_config = config.get(config_path[:-1])
         return [] if not target_parent_config \
-            else element_action_signatures(target_parent_config, config_path.name().get_value())
+            else element_action_signatures(target_parent_config, config_path.name().value)
 
     def __check_expectations(self,
                              config: AgentConfig,
@@ -253,7 +253,7 @@ class BrowserAutomator:
         def transform(text: str) -> str:
             return text if not path else str(parse_run_arg(path, text, run_context))
 
-        search_configs: SearchConfigs = SearchConfigs.of(target_config).transform(transform)
+        search_configs: SearchConfigs = SearchConfigs.of(target_config).transform_queries(transform)
 
         return None if not search_configs or not search_configs.search_for() \
             else self.__element_selector.with_timeout(timeout).select_element(search_configs)
@@ -268,8 +268,8 @@ class BrowserAutomator:
                               wait_timeout_secs: float,
                               action_signatures: list[str],
                               run_context: RunContext) -> ElementResultSet:
-        stage_id: str = config_path.stage().get_id()
-        target_id: str = config_path.name().get_id()
+        stage_id: str = config_path.stage().id
+        target_id: str = config_path.name().id
         action_handler = self.__action_handler.with_timeout(wait_timeout_secs)
 
         result_set: ElementResultSet = ElementResultSet()
