@@ -230,15 +230,17 @@ class BrowserAutomator:
         element = element if not selected else selected
 
         expectation_actions: list[str] = config.get_expectation_actions(config_path)
-        logger.debug(f"Checking expectations: {expectation_actions}")
+        logger.debug(f"Checking expectations: {expectation_actions} of {config_path}")
         if expectation_actions:
             # Since we use the same config_path as above, the
             # results of the expectation will be added to the
             # above results. This means if there is a failure
             # of expectation, the result set will also contain
             # the failure.
-            self.__execute_all_actions(
+            result = self.__execute_all_actions(
                 config_path, element, timeout, expectation_actions, run_context)
+            if result.is_failure():
+                logger.warning(f"Expectation failed. {expectation_actions} of {config_path}")
 
     def __select_element(self,
                          target_config: dict[str, any],
