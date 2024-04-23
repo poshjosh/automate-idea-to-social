@@ -119,14 +119,13 @@ stages:
   approve-post:
     url: https://www.reddit.com/r/mod/
     events:
-      onstart: run_stages reddit.login
       onerror: log WARNING \n= = = = = = = FAILED TO APPROVE POST (Please do it manually) = = = = = = =\n
     stage-items:
       click-approve-button:
         search-for:
           - //*[@data-testid="post-container"]/*[contains(text(), "${VIDEO_TITLE}")]//button[text()="approve"]
-          - //*[@data-testid="post-container"]/*[contains(text(), "${VIDEO_TITLE}")]//button[starts-with(@id, "ModToolsFlatlist-Approvet3_1b")]
-          - //*[starts-with(@id, "t3_1b")]/div[3]/div[4]/div[2]/div[2]//button
+          - //*[@data-testid="post-container"]/*[contains(text(), "${VIDEO_TITLE}")]//button[starts-with(@id, "ModToolsFlatlist-Approve")]
+          - //*[starts-with(@id, "t3_1")]/div[3]/div[4]/div[2]/div[2]//button
         actions:
           - click
           - wait 2
