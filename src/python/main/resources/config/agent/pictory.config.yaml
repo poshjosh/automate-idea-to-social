@@ -232,7 +232,7 @@ stages:
           - wait 1
           - execute_script_on arguments[0].click();
           - wait 5
-  # The text style was only successfully applied when I move this stage after the branding stage.
+  # The text style was only successfully applied when I moved this stage after the branding stage.
   text-style:
     url: https://app.pictory.ai/storyboard/scripttovideo
     events:
@@ -261,12 +261,6 @@ stages:
           - wait 7
   download-video:
     stage-items:
-      expand-download-options:
-        search-for: //*[@id="generate-button-dropdown"]/a
-        actions:
-          - wait 7 # Sometimes the voiceover is not applied, this is a shot in the dark
-          - move_to_element
-          - *default_wait
       select-video-download:
         events:
           onerror:
@@ -278,6 +272,7 @@ stages:
         search-for:
           - /html/body//div[@role="dialog"]//button[contains(text(), "Download")]
         actions:
+          - wait 7 # Sometimes the voiceover is not applied, this is a shot in the dark
           - click
           - *default_wait
       close-download-notice:
