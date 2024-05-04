@@ -34,7 +34,7 @@ stages:
     url: https://www.reddit.com/r/${REDDIT_COMMUNITY_NAME}/submit
     stage-items:
       reject-non-essential-cookies:
-        wait-timeout-seconds: 10
+        timeout-seconds: 10
         events:
           onerror: continue
         search-for:
@@ -44,12 +44,12 @@ stages:
   dismiss-collection-alert:
     stage-items:
       dismiss-collection-alert-by-clicking-x:
-        wait-timeout-seconds: 10
+        timeout-seconds: 10
         events:
           onerror: continue
         search-for: //*[@id="SHORTCUT_FOCUSABLE_DIV"]//*[name()="svg"]
       dismiss-collection-alert-by-clicking-cancel:
-        wait-timeout-seconds: 5
+        timeout-seconds: 5
         events:
           onerror: continue
         search-for: //*[@id="SHORTCUT_FOCUSABLE_DIV"]/div[4]/div/div/div/footer/div/button[1]

@@ -26,7 +26,7 @@ stages:
       onerror: continue
     stage-items:
       enter-username:
-        wait-timeout-seconds: 120
+        timeout-seconds: 120
         search-for:
           - //*[@id="layers"]/div[1]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[1]/div/div[2]/label/div/div[2]/div/input
           - //*[@id="layers"]/div[2]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[1]/div/div[2]/label/div/div[2]/div/input

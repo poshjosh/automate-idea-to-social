@@ -55,7 +55,7 @@ stages:
       wait-a-bit:
         actions: wait 60
       add-upload-file:
-        #wait-timeout-seconds: 0 # Signal not to use webdriver wait
+        #timeout-seconds: 0 # Signal not to use webdriver wait
         # <input type="file" accept="video/*" multiple="" class="jsx-3397029100" style="display: none;">
         search-for:
           - //*[@id="root"]/div/div/div/div[1]/div/div/div/input
@@ -69,7 +69,7 @@ stages:
           - enter_text $results.me[0]
           - wait 5 # It takes a while but the default wait will cover the rest
       click-upload-button:
-        wait-timeout-seconds: 5
+        timeout-seconds: 5
         search-for:
 #          - //*[@id="root"]/div/div/div/div/div/div/div/div[1]/div/div/div[3]/div/button[2]
           - //*[@id="root"]//*[@data-tt="Sidebar_index_UploadButtonContainer"]//button[contains(text(), "Upload")]

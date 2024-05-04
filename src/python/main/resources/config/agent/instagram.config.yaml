@@ -143,7 +143,7 @@ stages:
           - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[1]/div/div/div/div[3]/div
           - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[1]/div/div/div/div[3]/div/div
       wait-till-posted:
-        wait-timeout-seconds: 120 # Upload of a 34mb 50 seconds video took about 60 seconds
+        timeout-seconds: 120 # Upload of a 34mb 50 seconds video took about 60 seconds
         events:
           onerror: continue
         search-for:

@@ -80,7 +80,7 @@ stages:
     url: https://www.youtube.com/upload
     stage-items:
       add-video:
-        wait-timeout-seconds: 0  # Signal not to use webdriver wait and its conditions
+        timeout-seconds: 0  # Signal not to use webdriver wait and its conditions
         search-for:
           - //*[@id="content"]/input[@type="file"]
           - //input[@type="file"]
@@ -194,7 +194,7 @@ stages:
       onerror: continue
     stage-items:
       save-video-link:
-        wait-timeout-seconds: 60
+        timeout-seconds: 60
         search-for: //*[@id="share-url"]
         actions:
           - get_text

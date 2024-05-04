@@ -29,4 +29,4 @@ stages:
   convert-to-markdown:
   update-blog-content:
   update-blog:
-    wait-timeout-seconds: 1800
+    timeout-seconds: 1800

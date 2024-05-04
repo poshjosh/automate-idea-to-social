@@ -3,7 +3,7 @@ stages:
     url: https://designer.microsoft.com/image-creator
     stage-items:
 #      dismiss-prompt:
-#        wait-timeout-seconds: 7
+#        timeout-seconds: 7
 #        when:
 #          search-for: $self.stages.generate-image.stage-items.dismiss-prompt.search-for
 #          actions: is_displayed

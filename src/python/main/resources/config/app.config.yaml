@@ -8,7 +8,7 @@ browser:
   chrome:
 #    executable_path:
     undetected: false
-    wait-timeout-seconds: 20
+    timeout-seconds: 20
     prefs:
       # prevent credentials based popups (e.g. save password popups)
       credentials_enable_service: false

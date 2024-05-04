@@ -65,7 +65,7 @@ stages:
       close-app-cues:
         # The previous stage takes a while to complete.
         # We add extra 30 seconds wait time here.
-        wait-timeout-seconds: 60
+        timeout-seconds: 60
         search-for:
           - /html/body/appcues/div/a
           - /html/body/appcues//*[@aria-label="Close modal"]
@@ -162,7 +162,7 @@ stages:
         events:
           onerror: continue
         # There will be some default waiting for this element to appear
-        wait-timeout-seconds: 120
+        timeout-seconds: 120
         search-for: //*[contains(text(), "Voiceover applied")]
         actions: wait 2
   select-audio:
@@ -268,7 +268,7 @@ stages:
             - retry 1
         search-for: //*[@id="btnGenerate"]
       begin-download:
-        wait-timeout-seconds: 600
+        timeout-seconds: 600
         search-for:
           - /html/body//div[@role="dialog"]//button[contains(text(), "Download")]
         actions:
@@ -364,7 +364,7 @@ stages:
           onerror:
             - log WARNING \n= = = = = = = FAILED TO DOWNLOAD SUBTITLES (Please do it manually) = = = = = = =\n
             - continue
-        wait-timeout-seconds: 7
+        timeout-seconds: 7
         #search-from: //*[@id="h-tb1"]//div[contains(text(), "${TRANSLATION_FILE_EXTENSION}")]
         #search-for: //*[name()="svg"]
         search-for:
