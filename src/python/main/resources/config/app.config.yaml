@@ -4,11 +4,12 @@
 # minimal prefs e.g: download.default_directory
 app:
   name: aideas
+  agent:
+    timeout-seconds: 20
 browser:
   chrome:
 #    executable_path:
     undetected: false
-    timeout-seconds: 20
     prefs:
       # prevent credentials based popups (e.g. save password popups)
       credentials_enable_service: false

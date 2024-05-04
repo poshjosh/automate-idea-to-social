@@ -3,7 +3,7 @@ import os
 import shutil
 import time
 from enum import Enum, unique
-from typing import Union
+from typing import Union, TypeVar
 
 from .action import Action
 from .action_result import ActionResult
@@ -13,7 +13,7 @@ from ..run_context import RunContext
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_FILE_NAME = "result.txt"
+TARGET = TypeVar("TARGET", bound=Union[any, None])
 
 
 class ActionError(Exception):
@@ -47,6 +47,9 @@ class ActionId(BaseActionId):
     WAIT = ('wait', False)
 
 
+DEFAULT_FILE_NAME = "result.txt"
+
+
 class ActionHandler:
     __ALL_FILE_TYPES = '*'
 
@@ -65,6 +68,14 @@ class ActionHandler:
         error_msg = f'Error while executing {action}'
         logger.error(error_msg, exc_info=ex)
         raise ActionError(error_msg)
+
+    def with_timeout(self, timeout: float) -> 'ActionHandler':
+        # TODO Implement a timeout for this action handler
+        return self
+
+    def execute_on(
+            self, run_context: RunContext, action: Action, target: TARGET = None) -> ActionResult:
+        return self.execute(run_context, action)
 
     def execute(self, run_context: RunContext, action: Action) -> ActionResult:
         try:

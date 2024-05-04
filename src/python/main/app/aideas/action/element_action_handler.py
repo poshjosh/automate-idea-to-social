@@ -8,7 +8,7 @@ from selenium.common import StaleElementReferenceException, ElementClickIntercep
 from selenium.webdriver import ActionChains, Keys
 from selenium.webdriver.remote.webelement import WebElement
 
-from .action_handler import BaseActionId
+from .action_handler import BaseActionId, TARGET
 from .browser_action_handler import BrowserActionHandler, WEB_DRIVER
 from ..action.action import Action
 from ..action.action_result import ActionResult
@@ -44,24 +44,29 @@ class ElementActionHandler(BrowserActionHandler):
         except ValueError:
             return ElementActionId(action)
 
-    def execute_on(self, run_context: RunContext, action: Action, element: WebElement) -> ActionResult:
+    def execute_on(
+            self, run_context: RunContext, action: Action, target: TARGET = None) -> ActionResult:
         result: ActionResult = ActionResult.none()
         key = action.get_name_without_negation() if action.is_negation() else action.get_name()
         try:
-            if isinstance(element, ReloadableWebElement):
+            if isinstance(target, ReloadableWebElement):
                 # We use the actual web element for the action
                 # When we used the ReloadableWebElement, the action fails with message:
                 # TypeError: Object of type ReloadableWebElement is not JSON serializable
-                result = self.__execute_on(run_context, action, key, element.load())
+                result = self.__execute_on(run_context, action, key, target.load())
+            elif isinstance(target, WebElement):
+                result = self.__execute_on(run_context, action, key, target)
+            elif target is None:
+                result = super().execute_on(run_context, action, target)
             else:
-                result = self.__execute_on(run_context, action, key, element)
+                raise ValueError(f"Invalid target type: {type(target)}")
 
         except (StaleElementReferenceException, ElementNotInteractableException) as ex:
-            if isinstance(element, ReloadableWebElement):
+            if isinstance(target, ReloadableWebElement):
                 logger.warning(f'Encountered {ex.__class__.__name__}'
                                f', will reload element and retry: {action}')
                 try:
-                    result = self.__execute_on(run_context, action, key, element.reload())
+                    result = self.__execute_on(run_context, action, key, target.reload())
                 except Exception as ex:
                     ElementActionHandler.throw_error(ex, action)
             else:
@@ -74,8 +79,11 @@ class ElementActionHandler(BrowserActionHandler):
 
         return result
 
-    def __execute_on(
-            self, run_context: RunContext, action: Action, key: str, element: WebElement) -> ActionResult:
+    def __execute_on(self,
+                     run_context: RunContext,
+                     action: Action,
+                     key: str,
+                     element: WebElement) -> ActionResult:
         try:
             return self.__do_execute_on(run_context, action, key, element)
         except Exception as ex:

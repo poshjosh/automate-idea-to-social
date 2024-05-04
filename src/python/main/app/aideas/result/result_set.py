@@ -135,19 +135,19 @@ class ElementResultSet(ResultSet):
         return self
 
     def add(self, result: ActionResult) -> 'ElementResultSet':
-        target_id: str = result.get_action().get_target_id()
-        result_list: list[ActionResult] = self.get(target_id, [])
+        stage_item_id: str = result.get_action().get_stage_item_id()
+        result_list: list[ActionResult] = self.get(stage_item_id, [])
         result_list.append(result)
         # We only set if the list is newly created, otherwise an exception will be thrown
         if len(result_list) == 1:
-            self.set(target_id, result_list)
+            self.set(stage_item_id, result_list)
         return self
 
     def get_action_result(self,
-                          target_id: str,
+                          stage_item_id: str,
                           name: str,
                           result_if_none: Union[ActionResult, None] = None) -> ActionResult:
-        result_list: list[ActionResult] = self.get(target_id)
+        result_list: list[ActionResult] = self.get(stage_item_id)
         if len(result_list) == 0:
             return result_if_none
         for result in result_list:

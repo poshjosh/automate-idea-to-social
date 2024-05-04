@@ -1,10 +1,8 @@
 import os
 
-from selenium.webdriver.remote.webelement import WebElement
-
 from .....main.app.aideas.action.action import Action
 from .....main.app.aideas.action.action_result import ActionResult
-from .....main.app.aideas.action.action_handler import ActionId, BaseActionId
+from .....main.app.aideas.action.action_handler import ActionId, BaseActionId, TARGET
 from .....main.app.aideas.action.element_action_handler import ElementActionHandler
 from .....main.app.aideas.env import Env
 from .....main.app.aideas.run_context import RunContext
@@ -13,7 +11,7 @@ from .....main.app.aideas.action.browser_action_handler import BrowserActionId
 
 class TestElementActionHandler(ElementActionHandler):
     def execute_on(
-            self, run_context: RunContext, action: Action, element: WebElement) -> ActionResult:
+            self, run_context: RunContext, action: Action, target: TARGET = None) -> ActionResult:
         # For tests, we don't implement element based actions.
         result = self.execute(run_context, action)
         if action.is_negation():

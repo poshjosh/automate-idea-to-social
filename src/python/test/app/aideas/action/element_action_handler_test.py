@@ -46,7 +46,7 @@ def _execute_actions(webdriver, run_context: RunContext,
             try:
                 action = Action.of(agent_name, stage_name, target, action)
                 element_selector = ElementSelector.of(webdriver, agent_name, 10)
-                ElementActionHandler(element_selector, 10).execute(run_context, action)
+                ElementActionHandler(element_selector, 10).execute_on(run_context, action)
             except Exception:
                 print('Failed')
                 # print(f'{ex}')
