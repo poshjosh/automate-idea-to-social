@@ -191,3 +191,7 @@ def require_path(env: Union[str, Env]):
 def __explicit(path: str) -> str:
     explicit: bool = path.startswith('/') or path.startswith('.')
     return path if explicit else os.path.join(os.getcwd(), path)
+
+
+def get_content_file_path(file_name: str):
+    return os.path.join(os.path.dirname(get_path(Env.VIDEO_CONTENT_FILE)), file_name)
