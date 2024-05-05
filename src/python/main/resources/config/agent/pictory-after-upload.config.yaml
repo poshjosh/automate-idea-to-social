@@ -1,9 +1,9 @@
 stages:
-  save-downloaded-video:
+  video-landscape:
     stage-items:
       save-portrait-video:
         actions:
-          - get_first_file ${OUTPUT_DIR}/agent/pictory/results/download-video-layout-2/save-file $VIDEO_OUTPUT_TYPE
+          - get_first_file ${OUTPUT_DIR}/agent/pictory/results/video-portrait/save-file $VIDEO_OUTPUT_TYPE
           - eval importlib.import_module('os').path.dirname('${VIDEO_CONTENT_FILE}')
           - eval importlib.import_module('shutil').copy2('${results.me[0]}', '${results.me[1]}/${context.stage-name}.${VIDEO_OUTPUT_TYPE}')
 

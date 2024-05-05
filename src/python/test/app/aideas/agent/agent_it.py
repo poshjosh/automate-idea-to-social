@@ -14,7 +14,7 @@ from .....main.app.aideas.run_context import RunContext
 init_logging(logging.config)
 
 pictory_agent = AgentName.PICTORY
-pictory_stage = AgentName.PictoryStage.SAVE_DOWNLOADED_VIDEO
+pictory_stage = AgentName.PictoryStage.VIDEO_LANDSCAPE
 
 tiktok_stage = 'tiktok-test-stage'
 tiktok_target = 'tiktok-target-id'

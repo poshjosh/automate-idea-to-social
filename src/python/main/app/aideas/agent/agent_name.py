@@ -11,8 +11,8 @@ class AgentName:
     TIKTOK: str = "tiktok"
 
     class PictoryStage:
-        SAVE_DOWNLOADED_VIDEO: str = "save-downloaded-video"
-        DOWNLOAD_VIDEO_LAYOUT_2: str = "download-video-layout-2"
+        VIDEO_LANDSCAPE: str = "video-landscape"
+        VIDEO_PORTRAIT: str = "video-portrait"
 
         class Action:
             GET_FILE: str = "get-file"

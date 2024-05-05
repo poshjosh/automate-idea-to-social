@@ -94,8 +94,8 @@ stages:
           - //input[@type="file"]
         actions:
           # Use the first result from the specified agent.stage.stage-item
-          #- enter_text $results.pictory.download-video-layout-3.save-file[0]
-          - get_first_file ${OUTPUT_DIR}/agent/pictory/results/download-video-layout-3/save-file $VIDEO_OUTPUT_TYPE
+          #- enter_text $results.pictory.video-square.save-file[0]
+          - get_first_file ${OUTPUT_DIR}/agent/pictory/results/video-square/save-file $VIDEO_OUTPUT_TYPE
           - enter_text $results.me[0]
           - wait 7
       dismiss-alert:

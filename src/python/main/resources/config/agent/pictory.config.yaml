@@ -307,13 +307,13 @@ stages:
         actions:
           - click
           - wait 2
-  save-downloaded-video:
+  video-landscape:
     stage-items:
       save-file:
         # By saving the file, other agents may access it from the local disc
         # event when pictory run context is no longer available
         # Will be saved to /pictory-dir/stage/stage-item/original-file-name.extension
-        # E.g. main/resources/agent/pictory/results/save-downloaded-video/save-file/original.mp4
+        # E.g. main/resources/agent/pictory/results/video-landscape/save-file/original.mp4
         actions:
           - wait 10 # Wait to make sure the file is downloaded
           - get_newest_file_in_dir ${OUTPUT_DIR}/agent/pictory $VIDEO_OUTPUT_TYPE 120
@@ -322,9 +322,9 @@ stages:
           # Copy to the same dir as the video content file
           - eval importlib.import_module('os').path.dirname('${VIDEO_CONTENT_FILE}')
           - eval importlib.import_module('shutil').copy2('${results.me[1]}', '${results.me[3]}/${context.stage-id}.${VIDEO_OUTPUT_TYPE}')
-  download-video-layout-2:
+  video-portrait:
     events:
-      onsuccess: run_stages download-video save-downloaded-video
+      onsuccess: run_stages download-video video-landscape
     stage-items:
       expand-layout-2-options:
         events:
@@ -339,14 +339,14 @@ stages:
         actions:
           - click
           - wait 10  # 8mb video took 2 seconds, we add more time 'cos voice wasn't being applied
-  download-video-layout-3:
+  video-square:
     events:
-      onsuccess: run_stages download-video save-downloaded-video
+      onsuccess: run_stages download-video video-landscape
     stage-items:
       expand-layout-3-options:
         events:
           onerror: retry 1
-        search-for: $self.stages.download-video-layout-2.stage-items.expand-layout-2-options.search-for
+        search-for: $self.stages.video-portrait.stage-items.expand-layout-2-options.search-for
       select-layout-3:
         search-for:
           - //*[@id="menu-"]//ul/li[3]

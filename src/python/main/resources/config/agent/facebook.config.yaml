@@ -52,8 +52,8 @@ stages:
           - ${self.post-dialog}//input[@type="file"]
         actions:
           # Use the first result from the specified pictory download stage
-          #- enter_text $results.pictory.save-downloaded-video.save-file[0]
-          - get_first_file ${OUTPUT_DIR}/agent/pictory/results/save-downloaded-video/save-file $VIDEO_OUTPUT_TYPE
+          #- enter_text $results.pictory.video-landscape.save-file[0]
+          - get_first_file ${OUTPUT_DIR}/agent/pictory/results/video-landscape/save-file $VIDEO_OUTPUT_TYPE
           - enter_text $results.me[0]
           - wait 10
       enter-post-text:
