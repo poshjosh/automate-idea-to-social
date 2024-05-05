@@ -163,7 +163,9 @@ stages:
           onerror: continue
         # There will be some default waiting for this element to appear
         timeout-seconds: 120
-        search-for: //*[contains(text(), "Voiceover applied")]
+        search-for:
+          - //*[@id="main-div-step-3"]/div[@role="presentation"]//*[contains(text(), "Voiceover applied")]
+          - //*[contains(text(), "Voiceover applied")]
         actions: wait 2
   select-audio:
     events:

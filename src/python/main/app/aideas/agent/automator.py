@@ -128,7 +128,7 @@ class Automator:
         try:
             success = self.without_events().without_results_update().__act_on_element(
                 config, config_path, run_context).is_successful()
-        except ActionError as ex:
+        except (ActionError, AutomationError) as ex:
             logger.debug(f'Error checking condition for {config_path}, \nCause: {ex}')
             success = False
 
@@ -180,7 +180,7 @@ class Automator:
                 # Handle expectations if present
                 self.__check_expectations(config, config_path, run_context, element, timeout)
 
-        except ActionError as ex:
+        except (ActionError, AutomationError) as ex:
             # Error should be logged with more details at the stage level by browser agent.
             logger.debug(f"Error acting on {config_path} {type(ex)}")
             exception = ex

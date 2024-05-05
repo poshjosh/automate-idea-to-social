@@ -125,10 +125,7 @@ class ElementSelector:
 
         error_msg: str = (f"Failed to select element using: {search_by} = {queries}, "
                           f"current url: {self.current_url()}.")
-        if exception is not None:
-            raise ElementNotFoundError(error_msg) from exception
-        else:
-            raise ElementNotFoundError(error_msg)
+        raise ElementNotFoundError(error_msg) from exception
 
     def __select_page_bodies(self) -> List[WebElement]:
         body_elements: List[WebElement] = self.__webdriver.find_elements(By.TAG_NAME, 'body')

@@ -78,9 +78,7 @@ class EventHandler:
                     logger.exception(exception)
             elif action_signature == 'fail':
                 error_msg: str = f'Error {config_path}, result: {result}'
-                if exception:
-                    logger.error(error_msg, exc_info=exception)
-                raise ActionError(error_msg)
+                raise ActionError(error_msg) from exception
             elif action_signature.startswith('retry'):
                 max_trials: int = self.__max_trials(action_signature)
                 logger.debug(f'Attempted: {trials} of {max_trials} '
@@ -89,9 +87,7 @@ class EventHandler:
                     retry(trials + 1)
                 else:
                     error_msg: str = f'Max retries exceeded {config_path}, result: {result}'
-                    if exception:
-                        logger.error(error_msg, exc_info=exception)
-                    raise ActionError(error_msg)
+                    raise ActionError(error_msg) from exception
             elif action_signature.startswith('run_stages'):
                 _, agent_to_stages = parse_agent_to_stages(
                     action_signature, agent_name, config_path.stage())
@@ -167,9 +163,15 @@ class EventHandler:
             target_cfg_path = config_path.join(target_id)
             if config.is_continue_on_event(target_cfg_path, ON_ERROR):
                 continue
-            for result in result_list:
-                if not result.is_success():
-                    return True
+            if EventHandler.__result_list_has_error(result_list):
+                return True
+        return False
+
+    @staticmethod
+    def __result_list_has_error(result_list) -> bool:
+        for result in result_list:
+            if not result.is_success():
+                return True
         return False
 
     @staticmethod
