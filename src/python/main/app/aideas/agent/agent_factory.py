@@ -25,14 +25,20 @@ class AgentFactory:
                        agent_name: str,
                        agent_config: dict[str, any]) -> Agent:
         if agent_name == AgentName.TRANSLATION:
-            agent = self.create_translation_agent(agent_config)
+            agent = self.create_translation_agent(agent_name, agent_config)
         elif agent_name == AgentName.BLOG:
-            agent = self.create_blog_agent(agent_config)
+            agent = self.create_blog_agent(agent_name, agent_config)
         else:
             agent = self.create_browser_agent(agent_name, agent_config)
 
         self.__add_dependencies(agent)
         return agent
+
+    def create_blog_agent(self,
+                          agent_name: str,
+                          agent_config,
+                          dependencies: Union[dict[str, Agent], None] = None) -> BlogAgent:
+        return BlogAgent.of_config(agent_name, self.__app_config, agent_config, dependencies)
 
     def create_browser_agent(self,
                              agent_name: str,
@@ -40,11 +46,12 @@ class AgentFactory:
                              dependencies: Union[dict[str, Agent], None] = None) -> BrowserAgent:
         return BrowserAgent.of_config(agent_name, self.__app_config, agent_config, dependencies)
 
-    def create_translation_agent(self, agent_config) -> TranslationAgent:
-        return TranslationAgent.of_config(agent_config)
-
-    def create_blog_agent(self, agent_config) -> BlogAgent:
-        return BlogAgent.of_config(agent_config)
+    def create_translation_agent(
+            self,
+            agent_name: str,
+            agent_config,
+            dependencies: Union[dict[str, Agent], None] = None) -> TranslationAgent:
+        return TranslationAgent.of_config(agent_name, self.__app_config, agent_config, dependencies)
 
     def __add_dependencies(self, author: Union[Agent, None]):
         author_name = author.get_name()
@@ -57,7 +64,7 @@ class AgentFactory:
                 # dependencies will be detected by the recursive call involved.
                 raise ValueError(f'Circular dependency detected: '
                                  f'{author_name} depends on {dep_name} and vice-versa')
-            dep = self.__create_dependency(author, dep_config, None)
+            dep = self.__create_dependency(author, dep_config)
 
             if dep is None:
                 continue
@@ -69,18 +76,14 @@ class AgentFactory:
             author.add_dependency(dep_name, dep)
 
     @staticmethod
-    def __create_dependency(author: Agent,
-                            dep_config: dict[str, any],
-                            result_if_none: Union[Agent, None] = None) -> Agent:
-        if isinstance(author, BrowserAgent):
-            # We create browser agent dependency using the author's browser agent.
-            # We do this so that browser agents and their dependencies
-            # share the same browser
-            #
-            # NOTE: Dependency is created with the author's name
-            #
-            return author.create_dependency(author.get_name(), dep_config)
-        return result_if_none
+    def __create_dependency(author: Agent, dep_config: dict[str, any]) -> Agent:
+        # We create the agent's dependency using the author's agent.
+        # We do this so that agents and their dependencies share the same resources.
+        # For example, browser agents and their dependencies share the same webdriver.
+        #
+        # NOTE: Dependency is created with the author's name
+        #
+        return author.create_dependency(author.get_name(), dep_config)
 
     def get_app_config(self) -> dict[str, any]:
         return self.__app_config

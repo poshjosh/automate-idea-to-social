@@ -6,15 +6,15 @@ from typing import Callable
 
 from selenium.webdriver.remote.webelement import WebElement
 
-from .element_selector import ElementSelector
+from .element_selector import ElementSelector, ElementNotFoundError
 from .webdriver_creator import WEB_DRIVER, WebDriverCreator
 from ..action.action_handler import ActionHandler
 from ..action.element_action_handler import ElementActionHandler
 from ..action.variable_parser import parse_run_arg
-from ..agent.automator import Automator
+from ..agent.automator import Automator, AutomationError
+from ..agent.event_handler import EventHandler
 from ..config import AgentConfig, ConfigPath, Name, SearchConfigs, merge_configs
 from ..result.result_set import ElementResultSet
-from ..event.event_handler import EventHandler
 from ..run_context import RunContext
 
 logger = logging.getLogger(__name__)
@@ -71,7 +71,6 @@ class BrowserAutomator(Automator):
                         config: AgentConfig,
                         stage: Name,
                         run_context: RunContext) -> ElementResultSet:
-
         self.__load_page(config, stage, run_context)
 
         return super().act_on_elements(config, stage, run_context)
@@ -96,6 +95,16 @@ class BrowserAutomator(Automator):
                        config_path: ConfigPath,
                        run_context: RunContext,
                        timeout: float = None) -> WebElement:
+        try:
+            return self._do_select_target(target_config, config_path, run_context, timeout)
+        except ElementNotFoundError as ex:
+            raise AutomationError from ex
+
+    def _do_select_target(self,
+                          target_config: dict[str, any],
+                          config_path: ConfigPath,
+                          run_context: RunContext,
+                          timeout: float = None) -> WebElement:
         if not timeout:
             timeout = self._get_timeout(target_config)
 

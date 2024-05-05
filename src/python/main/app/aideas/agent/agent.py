@@ -1,9 +1,13 @@
 import logging
 import os.path
 import shutil
+import time
 from collections import OrderedDict
 
-from ..config import AgentConfig, ConfigPath, Name
+from .automator import Automator, AutomationError
+from ..action.action_handler import ActionError
+from ..agent.event_handler import EventHandler
+from ..config import AgentConfig, ConfigPath, Name, ON_START
 from ..env import get_agent_output_dir, get_agent_results_dir
 from ..result.result_set import ElementResultSet, StageResultSet
 from ..run_context import RunContext
@@ -11,18 +15,47 @@ from ..run_context import RunContext
 logger = logging.getLogger(__name__)
 
 
-class AgentError(Exception):
-    pass
+INTERVAL_KEY = 'interval-seconds'
 
 
 class Agent:
+    @classmethod
+    def of_config(cls,
+                  agent_name: str,
+                  app_config: dict[str, any],
+                  agent_config: dict[str, any],
+                  dependencies: dict[str, 'Agent'] = None) -> 'Agent':
+        automator = Automator.of(app_config, agent_name, agent_config)
+        interval_seconds: int = agent_config.get(INTERVAL_KEY, 0)
+        return cls(agent_name, agent_config, dependencies, automator, interval_seconds)
+
     def __init__(self,
                  name: str,
                  agent_config: dict[str, any],
-                 dependencies: dict[str, 'Agent'] = None):
+                 dependencies: dict[str, 'Agent'] = None,
+                 automator: Automator = None,
+                 interval_seconds: int = 0):
         self.__name = name
         self.__config = AgentConfig(agent_config)
         self.__dependencies = {} if dependencies is None else dependencies
+        self.__automator = None if automator is None \
+            else automator.with_stage_runner(self._run_stages_without_events)
+        self.__event_handler = EventHandler.noop() if automator is None \
+            else automator.get_event_handler()
+        self.__interval_seconds = interval_seconds
+
+    def close(self):
+        self.__automator.quit()
+
+    def without_events(self) -> 'Agent':
+        clone: Agent = self.clone()
+        clone.__automator = self.__automator.without_events()
+        return clone
+
+    def with_automator(self, automator: Automator) -> 'Agent':
+        clone: Agent = self.clone()
+        clone.__automator = automator
+        return clone
 
     def with_config(self, config: dict[str, any]) -> 'Agent':
         clone: Agent = self.clone()
@@ -30,7 +63,8 @@ class Agent:
         return clone
 
     def clone(self) -> 'Agent':
-        return self.__class__(self.get_name(), self.get_config().root(), self._get_dependencies())
+        return self.__class__(self.get_name(), self.get_config().root(), self._get_dependencies(),
+                              self.__automator, self.__interval_seconds)
 
     def add_dependency(self, agent_name: str, agent: 'Agent') -> 'Agent':
         if agent is None:
@@ -39,6 +73,9 @@ class Agent:
             raise ValueError(f'Agent {agent_name} is already a dependency of {self.__name}')
         self.__dependencies[agent_name] = agent
         return self
+
+    def create_dependency(self, name: str, config: dict[str, any]) -> 'Agent':
+        return self.__class__(name, config, None, self.__automator, self.__interval_seconds)
 
     def run(self, run_context: RunContext) -> StageResultSet:
         """Run all the stages of the agent and return True if successful, False otherwise."""
@@ -61,10 +98,6 @@ class Agent:
                 logger.warning(f"Error closing agent: {self.__name}. {ex}")
             logger.debug(f"Agent: {self.get_name()}, "
                          f"results:\n{run_context.get_stage_results(self.get_name())}")
-
-    def close(self):
-        """Subclasses should implement this method as needed"""
-        pass
 
     def _run_agent_stages(self,
                           run_context: RunContext,
@@ -98,9 +131,13 @@ class Agent:
                     stage = Name.of(stage.value, f'{stage.id}{index}')
                 try:
                     run_context.set(index_var_key, index)
+                    run_context.set('stage-name', stage.value)
+                    run_context.set('stage-id', stage.id)
                     result = self.run_stage(run_context, stage)
                 finally:
                     run_context.remove(index_var_key)
+                    run_context.remove('stage-name')
+                    run_context.remove('stage-id')
                 logger.debug(f"Stage: {stage}, result: {result}")
                 # We raise an exception if we want to stop the process
                 # so no need to do this here.
@@ -114,9 +151,64 @@ class Agent:
 
     def run_stage(self,
                   run_context: RunContext,
-                  stage_name: Name) -> ElementResultSet:
-        """Run named stage of the agent and return True if successful, False otherwise."""
-        raise NotImplementedError("Subclasses must implement this method")
+                  stage: Name) -> ElementResultSet:
+        result = self.__run_stage(run_context, stage, 1)
+        self.__sleep()
+        return result
+
+    def __run_stage(self,
+                    run_context: RunContext,
+                    stage: Name,
+                    trials) -> ElementResultSet:
+
+        config: AgentConfig = self.get_config()
+        config_path: ConfigPath = ConfigPath.of(stage)
+
+        logger.debug(f"Executing stage {config_path}")
+
+        if config.get_actions(config_path):
+            raise ValueError(f"actions are not supported at stage level. "
+                             f"Current stage: {config_path}")
+
+        def do_retry(_trials: int) -> ElementResultSet:
+            logger.debug(f"Retrying {config_path}")
+            return self.__run_stage(run_context, stage, _trials)
+
+        exception = None
+        result = ElementResultSet.none()
+        try:
+
+            to_proceed = self.__automator.stage_may_proceed(config, stage, run_context)
+
+            if to_proceed is False:
+                return result
+
+            self.__event_handler.handle_event(
+                self.get_name(), config, config_path,
+                ON_START, run_context, self._run_stages_without_events)
+
+            result: ElementResultSet = self.__automator.act_on_elements(config, stage, run_context)
+
+        except (ActionError, AutomationError) as ex:
+            logger.debug(f"Error acting on {config_path}\n{str(ex)}")
+            exception = ex
+
+        result = self.__event_handler.handle_result_event(
+            self.get_name(), config, config_path, run_context,
+            self._run_stages_without_events, do_retry, exception, result, trials)
+
+        return ElementResultSet.none() if result is None else result
+
+    def _run_stages_without_events(
+            self, context: RunContext, agent_to_stages: OrderedDict[str, [Name]]):
+        logger.debug(f"Running stages {agent_to_stages}")
+        # We don't want an infinite loop, so we run this event without events.
+        self.without_events()._run_agent_stages(context, agent_to_stages)
+
+    def __sleep(self):
+        if self.__interval_seconds <= 0:
+            return
+        time.sleep(self.__interval_seconds)
 
     def get_name(self) -> str:
         return self.__name
@@ -129,6 +221,12 @@ class Agent:
 
     def get_dependency(self, agent_name: str) -> 'Agent':
         return self.__dependencies[agent_name]
+
+    def get_automator(self) -> Automator:
+        return self.__automator
+
+    def get_interval_seconds(self) -> int:
+        return self.__interval_seconds
 
     def get_results_dir(self, agent_name: str = None):
         if not agent_name:

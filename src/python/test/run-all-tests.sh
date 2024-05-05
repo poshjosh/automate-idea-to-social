@@ -40,7 +40,14 @@ run_tests_in_dir () {
         if [ -d "$filepath" ]; then
             run_tests_in_dir "$filepath"
         else
+#            filename_with_ext=$(basename "$filepath")
+#            if [[ "$filename_with_ext" = "$2" ]]; then
+#                printf '\nMatched: %s\n' "$filename_with_ext"
+#                total=$((total + 1))
+#                run_unit_test "$filepath" && passed=$((passed + 1))
+#            fi
             case "$filepath" in *_test.py)
+#                printf '\nMatched: %s\n' "$filepath"
                 total=$((total + 1))
                 run_unit_test "$filepath" && passed=$((passed + 1))
             esac

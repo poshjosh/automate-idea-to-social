@@ -7,7 +7,7 @@ import webvtt
 
 from .subtitles import grouping_subtitle, subtitle_read, subtitle_save
 from .translator import Translator
-from ..agent import Agent
+from ..agent import Agent, Automator
 from ...agent.agent_name import AgentName
 from ...action.action import Action
 from ...action.action_result import ActionResult
@@ -16,28 +16,36 @@ from ...result.result_set import ElementResultSet
 from ...env import Env
 from ...run_context import RunContext
 
-
 logger = logging.getLogger(__name__)
+
+DEFAULT_STAGE = Name.of("translate-subtitles")
 
 
 class TranslationAgent(Agent):
     __verbose = False
 
-    @classmethod
-    def of_config(cls, agent_config: dict[str, any]) -> 'TranslationAgent':
-        return cls(agent_config, Translator.of_config(agent_config))
+    @staticmethod
+    def create_translator(agent_config: dict[str, any]) -> Translator:
+        return Translator.of_config(agent_config)
 
-    def __init__(self, agent_config: dict[str, any], translator: Translator):
-        super().__init__(AgentName.TRANSLATION, agent_config)
+    def __init__(self,
+                 name: str,
+                 agent_config: dict[str, any],
+                 dependencies: dict[str, 'Agent'] = None,
+                 automator: Automator = None,
+                 interval_seconds: int = 0):
+        super().__init__(name, agent_config, dependencies, automator, interval_seconds)
+        self.__translator = self.__class__.create_translator(agent_config)
         self.__from_lang = "en"
-        self.__translator = translator
 
-    def with_config(self, config: dict[str, any]) -> 'TranslationAgent':
-        return self.__class__(config, self.__translator)
+    def run_stage(self, run_context: RunContext, stage: Name) -> ElementResultSet:
+        if stage == DEFAULT_STAGE:
+            return self.__translate_subtitles(run_context)
+        else:
+            return super().run_stage(run_context, stage)
 
-    def run_stage(self,
-                  run_context: RunContext,
-                  stage: Name) -> ElementResultSet:
+    def __translate_subtitles(self, run_context: RunContext) -> ElementResultSet:
+        stage = DEFAULT_STAGE
         file_type = run_context.get_env(Env.TRANSLATION_FILE_EXTENSION)
         pictory_output_dir: str = self.get_output_dir(AgentName.PICTORY)
         src_files = [f for f in glob.glob(f'{pictory_output_dir}/*.{file_type}')]

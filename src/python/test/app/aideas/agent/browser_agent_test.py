@@ -40,7 +40,7 @@ stages:
         agent = TestBrowserAgent.of_config(agent_name, self.app_config, agent_config)
 
         # We use a ElementActionHandler, rather than TestElementActionHandler
-        automator = agent.get_browser_automator()
+        automator = agent.get_automator()
         automator = automator.with_action_handler(
             ElementActionHandler(automator.get_element_selector(), 10))
 

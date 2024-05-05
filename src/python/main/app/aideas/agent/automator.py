@@ -9,12 +9,16 @@ from ..action.action import Action
 from ..action.action_result import ActionResult
 from ..action.action_signatures import element_action_signatures
 from ..action.action_handler import ActionError, ActionHandler, TARGET
+from ..agent.event_handler import EventHandler
 from ..config import AgentConfig, ConfigPath, Name, TIMEOUT_KEY, WHEN_KEY, ON_START
 from ..result.result_set import ElementResultSet
-from ..event.event_handler import EventHandler
 from ..run_context import RunContext
 
 logger = logging.getLogger(__name__)
+
+
+class AutomationError(Exception):
+    pass
 
 
 class Automator:

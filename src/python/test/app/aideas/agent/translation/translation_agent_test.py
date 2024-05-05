@@ -16,7 +16,7 @@ class TranslationAgentTest(unittest.TestCase):
         app_config = get_config_loader().load_app_config()
         agent_config = get_config_loader().load_agent_config(agent_name)
 
-        agent = TestTranslationAgent.of_config(agent_config)
+        agent = TestTranslationAgent.of_config(agent_name, app_config, agent_config)
         run_context: RunContext = RunContext.of_config(app_config, agent_name)
 
         result_set: StageResultSet = StageResultSet.none()

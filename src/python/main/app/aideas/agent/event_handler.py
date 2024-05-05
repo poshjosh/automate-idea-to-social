@@ -3,9 +3,8 @@ import logging
 from typing import Callable
 
 from ..action.action import Action
-from ..action.action_handler import ActionHandler
+from ..action.action_handler import ActionHandler, ActionError
 from ..action.action_signatures import parse_agent_to_stages
-from ..agent.agent import AgentError
 from ..config import AgentConfig, ConfigPath, Name, ON_ERROR, ON_SUCCESS
 from ..result.result_set import ElementResultSet
 from ..run_context import RunContext
@@ -81,7 +80,7 @@ class EventHandler:
                 error_msg: str = f'Error {config_path}, result: {result}'
                 if exception:
                     logger.error(error_msg, exc_info=exception)
-                raise AgentError(error_msg)
+                raise ActionError(error_msg)
             elif action_signature.startswith('retry'):
                 max_trials: int = self.__max_trials(action_signature)
                 logger.debug(f'Attempted: {trials} of {max_trials} '
@@ -92,7 +91,7 @@ class EventHandler:
                     error_msg: str = f'Max retries exceeded {config_path}, result: {result}'
                     if exception:
                         logger.error(error_msg, exc_info=exception)
-                    raise AgentError(error_msg)
+                    raise ActionError(error_msg)
             elif action_signature.startswith('run_stages'):
                 _, agent_to_stages = parse_agent_to_stages(
                     action_signature, agent_name, config_path.stage())

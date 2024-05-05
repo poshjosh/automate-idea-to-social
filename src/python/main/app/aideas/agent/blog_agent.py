@@ -23,34 +23,18 @@ logger = logging.getLogger(__name__)
 
 
 class BlogAgent(Agent):
-    @classmethod
-    def of_config(cls, agent_config: dict[str, any]) -> 'BlogAgent':
-        return cls(agent_config)
-
-    def __init__(self, agent_config: dict[str, any]):
-        super().__init__(AgentName.BLOG, agent_config)
-
     def close(self):
+        super().close()
         # Rather than git pull, we are using git clone for each run.
         # For future git clones to succeed we need to remove the existing directory.
         # TODO - Implement git pull, if the directory already exists.
         self.__delete_blog_related_dirs_if_exists()
-
-    def with_config(self, config: dict[str, any]) -> 'BlogAgent':
-        return self.__class__(config)
 
     def run_stage(self,
                   run_context: RunContext,
                   stage: Name) -> ElementResultSet:
         stage_id: str = stage.id
         action = Action.of_generic(AgentName.BLOG, stage_id)
-        return self.__run_stage(action, run_context, stage)
-
-    def __run_stage(self,
-                    action: Action,
-                    run_context: RunContext,
-                    stage: Name) -> ElementResultSet:
-        stage_id = stage.id
 
         if stage_id == AgentName.BlogUpdaterStage.DOWNLOAD_APP:
             result: ActionResult = self.download_app(action)
@@ -63,7 +47,7 @@ class BlogAgent(Agent):
         elif stage_id == AgentName.BlogUpdaterStage.UPDATE_BLOG:
             result: ActionResult = self.update_blog(action, run_context)
         else:
-            raise ValueError(f"Unsupported stage: {stage}")
+            return super().run_stage(run_context, stage)
 
         run_context.add_action_result(self.get_name(), stage_id, result)
 

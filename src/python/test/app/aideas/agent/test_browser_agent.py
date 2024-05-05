@@ -2,7 +2,7 @@ from typing import Union
 
 from ..test_functions import delete_saved_files
 from ..web.test_browser_automator import TestBrowserAutomator
-from .....main.app.aideas.agent.agent import Agent
+from .....main.app.aideas.agent.agent import Agent, INTERVAL_KEY
 from .....main.app.aideas.agent.browser_agent import BrowserAgent
 from .....main.app.aideas.config import Name
 from .....main.app.aideas.result.result_set import ElementResultSet
@@ -17,7 +17,7 @@ class TestBrowserAgent(BrowserAgent):
                   agent_config: dict[str, any],
                   dependencies: Union[dict[str, Agent], None] = None) -> 'BrowserAgent':
         browser_automator = TestBrowserAutomator.of(app_config, agent_name, agent_config)
-        interval_seconds: int = agent_config.get('interval-seconds', 0)
+        interval_seconds: int = agent_config.get(INTERVAL_KEY, 0)
         return cls(agent_name, agent_config, dependencies, browser_automator, interval_seconds)
 
     def run_stage(self,
@@ -29,4 +29,3 @@ class TestBrowserAgent(BrowserAgent):
         finally:
             delete_saved_files(result_set)
         return result_set
-

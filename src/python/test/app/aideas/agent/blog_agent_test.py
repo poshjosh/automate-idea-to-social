@@ -9,13 +9,13 @@ from .....main.app.aideas.run_context import RunContext
 init_logging(logging.config)
 
 
-class BlogAgentIT(unittest.TestCase):
+class BlogAgentTest(unittest.TestCase):
     def test_run(self):
         app_config = get_config_loader().load_app_config()
         agent_name = AgentName.BLOG
         run_context: RunContext = RunContext.of_config(app_config, agent_name)
         agent_config = get_config_loader().load_agent_config(agent_name)
-        agent = TestBlogAgent.of_config(agent_config)
+        agent = TestBlogAgent.of_config(agent_name, app_config, agent_config)
 
         result = agent.run(run_context)
 

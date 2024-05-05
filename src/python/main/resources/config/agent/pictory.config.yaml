@@ -317,7 +317,11 @@ stages:
         actions:
           - wait 10 # Wait to make sure the file is downloaded
           - get_newest_file_in_dir ${OUTPUT_DIR}/agent/pictory $VIDEO_OUTPUT_TYPE 120
+          # Save to default output dir for agent
           - save_file $results.me[1]
+          # Copy to the same dir as the video content file
+          - eval importlib.import_module('os').path.dirname('${VIDEO_CONTENT_FILE}')
+          - eval importlib.import_module('shutil').copy2('${results.me[1]}', '${results.me[3]}/${context.stage-id}.${VIDEO_OUTPUT_TYPE}')
   download-video-layout-2:
     events:
       onsuccess: run_stages download-video save-downloaded-video

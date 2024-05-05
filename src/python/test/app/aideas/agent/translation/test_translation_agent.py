@@ -7,9 +7,9 @@ from ......main.app.aideas.run_context import RunContext
 
 
 class TestTranslationAgent(TranslationAgent):
-    @classmethod
-    def of_config(cls, agent_config: dict[str, any]) -> TranslationAgent:
-        return cls(agent_config, TestTranslator.of_config(agent_config))
+    @staticmethod
+    def create_translator(agent_config: dict[str, any]) -> TestTranslator:
+        return TestTranslator.of_config(agent_config)
 
     def run_stage(self,
                   run_context: RunContext,

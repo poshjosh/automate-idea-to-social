@@ -4,8 +4,8 @@ from typing import Callable
 from ..action.test_element_action_handler import TestElementActionHandler
 from ..web.test_element_selector import TestElementSelector
 from ..test_functions import create_webdriver
+from .....main.app.aideas.agent.event_handler import EventHandler
 from .....main.app.aideas.config import Name
-from .....main.app.aideas.event.event_handler import EventHandler
 from .....main.app.aideas.run_context import RunContext
 from .....main.app.aideas.web.browser_automator import BrowserAutomator
 

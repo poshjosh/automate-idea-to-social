@@ -11,6 +11,12 @@ from .....main.app.aideas.agent.agent_factory import AgentFactory
 
 
 class TestAgentFactory(AgentFactory):
+    def create_blog_agent(self,
+                          agent_name: str,
+                          agent_config,
+                          dependencies: Union[dict[str, Agent], None] = None) -> BlogAgent:
+        return TestBlogAgent.of_config(agent_name, self.get_app_config(), agent_config, dependencies)
+
     def create_browser_agent(self,
                              agent_name: str,
                              agent_config,
@@ -18,8 +24,10 @@ class TestAgentFactory(AgentFactory):
         return TestBrowserAgent.of_config(
             agent_name, self.get_app_config(), agent_config, dependencies)
 
-    def create_translation_agent(self, agent_config) -> TranslationAgent:
-        return TestTranslationAgent.of_config(agent_config)
-
-    def create_blog_agent(self, agent_config) -> BlogAgent:
-        return TestBlogAgent.of_config(agent_config)
+    def create_translation_agent(
+            self,
+            agent_name: str,
+            agent_config,
+            dependencies: Union[dict[str, Agent], None] = None) -> TranslationAgent:
+        return TestTranslationAgent.of_config(
+            agent_name, self.get_app_config(), agent_config, dependencies)
