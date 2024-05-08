@@ -1,10 +1,10 @@
 import logging
 import time
 from enum import unique
-from typing import Tuple
+from typing import Tuple, Union
 
 from selenium.common import StaleElementReferenceException, ElementClickInterceptedException, \
-    ElementNotInteractableException
+    ElementNotInteractableException, WebDriverException
 from selenium.webdriver import ActionChains, Keys
 from selenium.webdriver.remote.webelement import WebElement
 
@@ -54,19 +54,15 @@ class ElementActionHandler(BrowserActionHandler):
                 # When we used the ReloadableWebElement, the action fails with message:
                 # TypeError: Object of type ReloadableWebElement is not JSON serializable
                 result = self.__execute_on(run_context, action, key, target.load())
-            elif isinstance(target, WebElement):
-                result = self.__execute_on(run_context, action, key, target)
-            elif target is None:
-                result = super().execute_on(run_context, action, target)
             else:
-                raise ValueError(f"Invalid target type: {type(target)}")
+                result = self.__execute_on(run_context, action, key, target)
 
         except (StaleElementReferenceException, ElementNotInteractableException) as ex:
             if isinstance(target, ReloadableWebElement):
                 logger.warning(f'Encountered {ex.__class__.__name__}'
                                f', will reload element and retry: {action}')
                 try:
-                    result = self.__execute_on(run_context, action, key, target.reload())
+                    result = self.__execute_on(run_context, action, key, target.reload(), True)
                 except Exception as ex:
                     ElementActionHandler.throw_error(ex, action)
             else:
@@ -83,9 +79,10 @@ class ElementActionHandler(BrowserActionHandler):
                      run_context: RunContext,
                      action: Action,
                      key: str,
-                     element: WebElement) -> ActionResult:
+                     element: Union[WebElement, None],
+                     reloaded: bool = False) -> ActionResult:
         try:
-            return self.__do_execute_on(run_context, action, key, element)
+            return self.__do_execute_on(run_context, action, key, element, reloaded)
         except Exception as ex:
             self.__print_element_attr(ex, element, 'outerHTML')
             raise ex
@@ -94,7 +91,8 @@ class ElementActionHandler(BrowserActionHandler):
                         run_context: RunContext,
                         action: Action,
                         key: str,
-                        element: WebElement) -> ActionResult:
+                        element: Union[WebElement, None],
+                        reloaded: bool = False) -> ActionResult:
         driver = self.get_web_driver()
         result: any = None
         if key == ElementActionId.CLEAR_TEXT.value:
@@ -122,7 +120,13 @@ class ElementActionHandler(BrowserActionHandler):
             text = element.text
             result = text if not text else text.strip()
         elif key == ElementActionId.IS_DISPLAYED.value:
-            success = element.is_displayed()
+            try:
+                success = False if element is None else element.is_displayed()
+            except StaleElementReferenceException as ex:
+                if reloaded is True:
+                    success = False
+                else:
+                    raise ex
             result = ActionResult(action, success, success)
         elif key == ElementActionId.MOVE_TO_ELEMENT.value:
             ActionChains(driver).move_to_element(element).perform()
@@ -249,7 +253,11 @@ class ElementActionHandler(BrowserActionHandler):
     @staticmethod
     def __print_element_attr(exception: Exception, element: WebElement, attribute_name: str):
         if element:
-            logger.debug(f'After {type(exception)}, printing element attribute: {attribute_name}'
-                         f'\n{"="*64}\n{element.get_attribute(attribute_name)}\n{"="*64}')
-            return
+            try:
+                attribute_value = element.get_attribute(attribute_name)
+                logger.debug(f'After {type(exception)}, printing element attribute: {attribute_name}'
+                             f'\n{"="*64}\n{attribute_value}\n{"="*64}')
+                return
+            except WebDriverException:
+                logger.warning(f"Error printing element attribute: {attribute_name}")
         logger.debug(f'After {type(exception)}, printing element: \n{"="*64}\n{element}\n{"="*64}')

@@ -24,10 +24,12 @@ class ReloadableWebElement(WebElement):
 
     def reload(self) -> WebElement:
         logger.debug('Reloading element')
-        return ReloadableWebElement.__run_till_success(self.__reload, self.__timeout)
+        reloaded = ReloadableWebElement.__run_till_success(self.__reload, self.__timeout)
+        return self.__delegate if reloaded is None else reloaded
 
     @staticmethod
-    def __run_till_success(func: Callable[[int], WebElement], timeout: float = 60) -> WebElement:
+    def __run_till_success(func: Callable[[int], WebElement], timeout: float = 60) \
+            -> WebElement or None:
         from datetime import datetime, timedelta
         start = datetime.now()
         max_time = timedelta(seconds=timeout)
@@ -38,4 +40,5 @@ class ReloadableWebElement(WebElement):
                 return func(trials)
             except Exception as ex:
                 if datetime.now() - start > max_time:
-                    raise ex
+                    logger.error(f'Failed to reload element after {trials} trials\n{str(ex)}')
+                    break

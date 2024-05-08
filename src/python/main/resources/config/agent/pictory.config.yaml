@@ -105,7 +105,7 @@ stages:
             - retry 1
         search-for:
           - //*[@id="UploadImageModel"]/div/div/div/div[2]/div[2]/button
-          - //*[@id="UploadImageModel"]/div/div/div/div[2]/div[2]/button[contains(text(), "Save")]
+          - //*[@id="UploadImageModel"]/div/div/div/div[2]/div[2]/*[contains(text(), "Save")]
           - //*[@id="UploadImageModel"]//div[@class="modal-content]//button
           - //*[@id="UploadImageModel"]//*[contains(text(), "Save")]
         actions:
