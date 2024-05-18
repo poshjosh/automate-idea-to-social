@@ -50,6 +50,10 @@ class TranslationAgent(Agent):
         pictory_output_dir: str = self.get_output_dir(AgentName.PICTORY)
         src_files = [f for f in glob.glob(f'{pictory_output_dir}/*.{file_type}')]
 
+        if len(src_files) == 0:
+            logger.warning(f'No translation files found in: {pictory_output_dir}')
+            return run_context.get_element_results(self.get_name(), stage.id)
+
         target_languages_str: str = run_context.get_env(Env.TRANSLATION_OUTPUT_LANGUAGES)
         target_language_codes: [str] = target_languages_str.split(',')
         logger.debug(f'Output languages: {target_language_codes}, '
