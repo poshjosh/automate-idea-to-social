@@ -1,3 +1,7 @@
+# Lots of shadow DOM elements here. When the target element resides
+# within a shadow DOM, XPath will not work.
+# See: https://stackoverflow.com/questions/37384458/how-to-handle-elements-inside-shadow-dom-from-selenium
+# See: https://stackoverflow.com/questions/77636171/i-cant-click-log-in-button-in-reddit-login-screen-with-selenium
 stages:
   login:
     url: https://www.reddit.com/login/
@@ -10,23 +14,19 @@ stages:
         actions:
           - enter_text $REDDIT_USER_PASS
           - wait 2 # The button becomes clickable after both are entered
-      # The target element resides within a shadow DOM, XPath will not work.
-      # See: https://stackoverflow.com/questions/37384458/how-to-handle-elements-inside-shadow-dom-from-selenium
-      # See: https://stackoverflow.com/questions/77636171/i-cant-click-log-in-button-in-reddit-login-screen-with-selenium
       submit-login:
         search-for:
           shadow-attributes: slot=primaryButton
         actions:
           - click
-          - wait 8 # Login takes a while
+          - wait 7 # Login takes a while
   cookies:
     stage-items:
       reject-non-essential-cookies:
         events:
           onerror: continue
-        search-from:
+        search-for:
           shadow-attributes: id=reject-nonessential-cookies-button
-        search-for: /button[contains(text(), "Reject")]
         actions:
           - click
           - wait 2
@@ -41,26 +41,12 @@ stages:
           - //*[@id="SHORTCUT_FOCUSABLE_DIV"]/div[3]/div/section/div/section[2]/section[2]/form/button
           - //*[@id="SHORTCUT_FOCUSABLE_DIV"]//form/button[contains(text(), "Reject")]
           - //button[contains(text(), "Reject non-essential")]
-  dismiss-collection-alert:
-    stage-items:
-      dismiss-collection-alert-by-clicking-x:
-        timeout-seconds: 10
-        events:
-          onerror: continue
-        search-for: //*[@id="SHORTCUT_FOCUSABLE_DIV"]//*[name()="svg"]
-      dismiss-collection-alert-by-clicking-cancel:
-        timeout-seconds: 5
-        events:
-          onerror: continue
-        search-for: //*[@id="SHORTCUT_FOCUSABLE_DIV"]/div[4]/div/div/div/footer/div/button[1]
   title:
     url: https://www.reddit.com/r/${REDDIT_COMMUNITY_NAME}/submit
     stage-items:
       enter-title:
         search-for:
-          - //*[@id="AppRouter-main-content"]//textarea[@placeholder="Title"]
-          - //*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[2]/div[3]/div[2]/div[1]/div/textarea
-          - //*[@id="AppRouter-main-content"]//textarea[@rows="1"]
+          shadow-attributes: id=innerTextArea
         actions: enter_text $VIDEO_TITLE
   cover-image:
     events:
@@ -68,20 +54,14 @@ stages:
     stage-items:
       add-cover-image:
         search-for:
-          - //*[@id="AppRouter-main-content"]//button[contains(@aria-label, "image")]/input[@type="file"]
-          - //*[@id="AppRouter-main-content"]//button/input[@type="file"]
-          - //*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[2]/div[3]/div[2]/div[2]/div/div/div[1]/div[1]/div/span[16]/button/input[@type="file"]
+#          - //*[@id="post-composer_bodytext"]/shreddit-composer/rte-toolbar-button-image//input
+          shadow-attributes: type=file data-media-type=image
         actions:
           - enter_text $VIDEO_COVER_IMAGE
           - wait 5
       enter-cover-image-caption:
         search-for:
-          # //*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[2]/div[3]/div[2]/div[2]/div/div/div[3]/div/div[1]/div/div/div/div/div[2]/div/div/span
-          - //*[@id="AppRouter-main-content"]//div[contains(@style, "Add caption")]
-          - //*[@id="AppRouter-main-content"]//*[contains(@style, "Add caption")]
-          - //*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[2]/div[3]/div[2]/div[2]/div/div/div[3]/div/div[1]/div/div/div/div/div[2]
-          - //*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[2]/div[3]/div[2]/div[2]/div/div/div[3]/div/div[1]/div/div/div/div/div[2]/div
-          - //*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[2]/div[3]/div[2]/div[2]/div/div/div[3]/div/div[1]/div/div/div/div/div[2]/div/div
+          shadow-attributes: type=text placeholder="Add a caption"
         actions:
           - enter_text $VIDEO_TITLE
           - wait 2
@@ -89,12 +69,7 @@ stages:
     stage-items:
       enter-content:
         search-for:
-          # //*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[2]/div[3]/div[2]/div[2]/div/div/div[3]/div/div[1]/div/div/div/div/div/div[1]/div
-          - //*[@id="AppRouter-main-content"]//div[@class="DraftEditor-root"]//div[@role="textbox"]
-          - //*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[2]/div[3]/div[2]/div[2]/div/div/div[3]/div/div[1]/div/div/div/div
-          - //*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[2]/div[3]/div[2]/div[2]/div/div/div[3]/div/div[1]/div/div/div/div/div
-          - //*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[2]/div[3]/div[2]/div[2]/div/div/div[3]/div/div[1]/div/div/div/div/div/div[1]
-          - //*[@id="AppRouter-main-content"]//div[@role="textbox"]
+          shadow-attributes: name=body contenteditable=true role=textbox
         actions:
           - move_to_element
           - enter
@@ -104,11 +79,7 @@ stages:
     stage-items:
       post-content:
         search-for:
-          - //*[@id="AppRouter-main-content"]/div/div/div[2]/div[3]/div[1]/div[2]/div[3]/div[3]/div[2]/div/div/div[1]/button[1]
-          # This led us to another button
-          #- //*[@id="AppRouter-main-content"]//button[contains(text(), "Post")]
-          # This did not find anything
-          #- //*[@id="AppRouter-main-content"]//button[@role="button" and tabindex="0" and text()="Post"]
+          shadow-attributes: id=inner-post-submit-button type=button
         actions:
           # This is necessary, because the button is usually not visible, after pasting the content
           # move_to_element should scroll the element into view
@@ -119,6 +90,7 @@ stages:
   approve-post:
     url: https://www.reddit.com/r/mod/
     events:
+      onstart: run_stages dismiss-cookie-alert
       onerror: log WARNING \n= = = = = = = FAILED TO APPROVE POST (Please do it manually) = = = = = = =\n
     stage-items:
       click-approve-button:

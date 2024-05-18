@@ -17,10 +17,11 @@ class BrowserCookieStore:
             os.makedirs(dir_path)
         self.__webdriver = webdriver
         self.__cookie_path = file
+        self.__debug = False
 
     def save(self):
         cookies: list[dict] = self.__webdriver.get_cookies()
-        logger.debug(f"Saving {0 if not cookies else len(cookies)} cookies to {self.__cookie_path}")
+        self.__log(f"Saving {0 if not cookies else len(cookies)} cookies to {self.__cookie_path}")
         if len(cookies) == 0:
             return
         with open(self.__cookie_path, 'wb') as file:
@@ -33,15 +34,15 @@ class BrowserCookieStore:
         try:
             with open(self.__cookie_path, 'rb') as file:
                 cookies = pickle.load(file)
-                logger.debug(f'Read {0 if not cookies else len(cookies)} '
-                             f'cookies from {self.__cookie_path}')
+                self.__log(f'Read {0 if not cookies else len(cookies)} '
+                           f'cookies from {self.__cookie_path}')
         except EOFError:
             logger.debug(f"No cookies in file: {self.__cookie_path}")
         try:
             for cookie in cookies:
                 self.__webdriver.add_cookie(cookie)
-            logger.debug(f'Added {0 if not cookies else len(cookies)} '
-                         f'cookies for {self.current_url()}')
+            self.__log(f'Added {0 if not cookies else len(cookies)} '
+                       f'cookies for {self.current_url()}')
         except InvalidCookieDomainException:
             logger.warning(f'Cookies do not match domain: {self.current_url()}')
         except UnableToSetCookieException:
@@ -52,3 +53,7 @@ class BrowserCookieStore:
             return self.__webdriver.current_url
         except NoSuchWindowException:
             return result_if_none
+
+    def __log(self, msg: str):
+        if self.__debug is True:
+            logger.debug(msg)

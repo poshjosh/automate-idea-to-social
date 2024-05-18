@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from enum import Enum, unique
 from typing import Union
 
@@ -142,10 +143,33 @@ def is_docker() -> bool:
     return 'docker' in os.environ.get('PROFILES', '')
 
 
-def get_cached_results_dir(agent_name: str) -> str:
+def get_cached_results_file(agent_name: str, filename: str = None) -> str:
     if not agent_name:
         raise ValueError('agent name required')
-    return os.path.join(get_value(Env.OUTPUT_DIR), 'results', agent_name)
+
+    now = datetime.now()
+
+    if filename:
+        filename = f'-{filename}'
+    else:
+        filename = ''
+
+    dir_path: str = os.path.join(get_path(Env.OUTPUT_DIR),
+                                 'results',
+                                 agent_name,
+                                 now.strftime("%Y"),
+                                 now.strftime("%m"))
+    name_and_ext = os.path.splitext(filename)
+    name = name_and_ext[0]
+    suffix = ''
+    ext = '' if len(name_and_ext) == 1 or not name_and_ext[1] else name_and_ext[1]
+    for i in range(1000):
+        if i > 0:
+            suffix = f'-{i}'
+        filepath = os.path.join(dir_path, f"{now.strftime('%Y-%m-%dT%H-%M-%S')}{name}{suffix}{ext}")
+        if not os.path.exists(filepath):
+            return filepath
+    raise FileExistsError(f"File already exists: {os.path.join(dir_path, filename)}")
 
 
 def get_agent_results_dir(agent_name: str) -> str:

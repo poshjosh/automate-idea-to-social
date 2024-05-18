@@ -82,8 +82,8 @@ class ElementSelector:
         # Then we save cookies, if the page is newly loaded.
         try:
             self.__select_page_bodies()
-        except Exception:
-            logger.warning(f'Error selecting body elements of page: {link}')
+        except Exception as ex:
+            logger.warning(f'Error selecting body elements of page: {link}, {ex}')
 
         self.__browser_cookie_store.save()
         return True
@@ -151,7 +151,6 @@ class ElementSelector:
                                       root,
                                       attributes: dict[str, str],
                                       timeout_seconds: float) -> WebElement:
-        collection: list = []
 
         def has_attribute(element: WebElement, name: str, value: str) -> bool:
             candidate = element.get_attribute(name)
@@ -163,46 +162,57 @@ class ElementSelector:
                     return False
             return True
 
-        def collect(element) -> bool:
+        def test(element) -> bool:
             try:
                 if has_attributes(element, attributes):
-                    logger.debug(f"Found shadow element having attributes: {attributes}")
-                    collection.append(element)
                     return True
                 return False
             except Exception:
                 return False
 
-        ElementSelector.__collect_shadows(webdriver, root, timeout_seconds, collect)
+        found = ElementSelector.__select_first_element_or_shadow(
+            webdriver, root, timeout_seconds, test)
 
-        if len(collection) == 0:
+        if not found:
             raise NoSuchElementException(f"No shadow element found by attributes: {attributes}")
 
-        return collection[0]
+        return found
 
     # Adapted from here:
     # https://stackoverflow.com/questions/37384458/how-to-handle-elements-inside-shadow-dom-from-selenium
     @staticmethod
-    def __collect_shadows(webdriver,
-                          root,
-                          timeout_seconds: float,
-                          collect: Callable[[WebElement], bool]) -> None:
-
-        def visit_all_elements(driver, elements):
-            for element in elements:
-                shadow_root = driver.execute_script('return arguments[0].shadowRoot', element)
-                if shadow_root:
-                    shadow_elements = driver.execute_script(
-                        'return arguments[0].shadowRoot.querySelectorAll("*")', element)
-                    visit_all_elements(driver, shadow_elements)
-                else:
-                    if collect(element):
-                        break
+    def __select_first_element_or_shadow(webdriver,
+                                         root,
+                                         timeout_seconds: float,
+                                         test: Callable[[WebElement], bool]) -> WebElement or None:
 
         all_elements = WebDriverWait(root, timeout_seconds).until(
-                WaitCondition.presence_of_all_elements_located((By.CSS_SELECTOR, '*')))
+            WaitCondition.presence_of_all_elements_located((By.CSS_SELECTOR, '*')))
 
-        visit_all_elements(webdriver, all_elements)
+        return ElementSelector.__find_first_element_or_shadow(webdriver, all_elements, test)
+
+    @staticmethod
+    def __find_first_element_or_shadow(webdriver,
+                                       elements,
+                                       test: Callable[[WebElement], bool]) -> WebElement or None:
+        for element in elements:
+            try:
+                if test(element):
+                    return element
+                shadow_root = webdriver.execute_script('return arguments[0].shadowRoot', element)
+                if shadow_root:
+                    shadow_elements = webdriver.execute_script(
+                        'return arguments[0].shadowRoot.querySelectorAll("*")', element)
+                    found = ElementSelector.__find_first_element_or_shadow(
+                        webdriver, shadow_elements, test)
+                    if found is not None:
+                        return found
+                else:
+                    if test(element):
+                        return element
+            except StaleElementReferenceException:
+                logger.debug(f"Stale element: {element}")
+        return None
 
     @staticmethod
     def __select_element_by_xpath(root: D,

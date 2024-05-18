@@ -8,7 +8,9 @@ from selenium.webdriver.remote.webelement import WebElement
 
 from .element_selector import ElementSelector, ElementNotFoundError
 from .webdriver_creator import WEB_DRIVER, WebDriverCreator
+from ..action.action import Action
 from ..action.action_handler import ActionHandler
+from ..action.browser_action_handler import BrowserActionId
 from ..action.element_action_handler import ElementActionHandler
 from ..action.variable_parser import parse_run_arg
 from ..agent.automator import Automator, AutomationError
@@ -98,7 +100,9 @@ class BrowserAutomator(Automator):
         try:
             return self._do_select_target(target_config, config_path, run_context, timeout)
         except ElementNotFoundError as ex:
-            raise AutomationError from ex
+            self._save_screenshot(config_path, run_context)
+            raise AutomationError(f"Failed to select target of {config_path}. "
+                                  f"Caused by: {str(ex)}") from ex
 
     def _do_select_target(self,
                           target_config: dict[str, any],
@@ -117,6 +121,16 @@ class BrowserAutomator(Automator):
 
         return None if not search_configs or not search_configs.search_for() \
             else self.__element_selector.with_timeout(timeout).select_element(search_configs)
+
+    def _save_screenshot(self, config_path: ConfigPath, run_context: RunContext):
+        try:
+            save_screenshot = Action.of(self.get_agent_name(),
+                                        config_path.stage().id,
+                                        config_path.stage_item().id,
+                                        BrowserActionId.SAVE_SCREENSHOT.value)
+            self.get_action_handler().execute(run_context, save_screenshot)
+        except Exception as ex:
+            logger.error(ex)
 
     def get_element_selector(self) -> ElementSelector:
         return self.__element_selector

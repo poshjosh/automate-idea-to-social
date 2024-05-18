@@ -71,7 +71,7 @@ def find_parent_dir(path: str,
 
 
 def visit_dirs(action: Callable[[str, str], None],
-               root_src_dir: str,
+               root_src_dir: str = '.',
                root_dst_dir: str = None,
                test: Union[Callable[[str, str], bool], None] = None):
     """

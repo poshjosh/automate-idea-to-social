@@ -1,15 +1,12 @@
 import pickle
 import shutil
-import uuid
-from datetime import datetime
 import logging
-import os
 import sys
 from enum import Enum, unique
 from typing import Union, Callable, TypeVar
 
 from .agent.agent_factory import AgentFactory
-from .env import Env, get_cached_results_dir, get_value
+from .env import Env, get_cached_results_file, get_value
 from .io.file import create_file
 from .result.result_set import AgentResultSet, StageResultSet
 from .config_loader import ConfigLoader
@@ -60,11 +57,8 @@ class App:
         :param result_set: The result to be saved.
         :return: None
         """
-        now = datetime.now()
-        object_path: str = os.path.join(get_cached_results_dir(agent_name),
-                                        now.strftime("%Y"),
-                                        now.strftime("%m"),
-                                        f"{now.strftime('%d_%H-%M-%S')}-{uuid.uuid4().hex}.pkl")
+        name: str = "result-set"
+        object_path: str = get_cached_results_file(agent_name, f'{name}.pkl')
 
         create_file(object_path)
         with open(object_path, 'wb') as file:
@@ -77,7 +71,7 @@ class App:
 
         config_loader: ConfigLoader = self.__agent_factory.get_config_loader()
         config_path = config_loader.get_agent_config_path(agent_name)
-        shutil.copy2(config_path, object_path.replace('.pkl', '.config.yaml'))
+        shutil.copy2(config_path, f'{object_path[:object_path.index(name)]}config.yaml')
 
 
 """
