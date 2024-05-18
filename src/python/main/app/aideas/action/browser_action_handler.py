@@ -14,6 +14,7 @@ from ..action.action import Action
 from ..action.action_handler import ActionHandler, BaseActionId
 from ..action.action_result import ActionResult
 from ..env import get_cookies_file_path, get_cached_results_file
+from ..io.file import write_content
 from ..run_context import RunContext
 from ..web.element_selector import ElementSelector
 
@@ -35,6 +36,7 @@ class BrowserActionId(BaseActionId):
     MOVE_BY_OFFSET = ('move_by_offset', False)
     REFRESH = ('refresh', False)
     SAVE_SCREENSHOT = ('save_screenshot', True)
+    SAVE_WEBPAGE = ('save_webpage', True)
 
 
 class BrowserActionHandler(ActionHandler):
@@ -75,6 +77,8 @@ class BrowserActionHandler(ActionHandler):
             result = self.__refresh(action)
         elif key == BrowserActionId.SAVE_SCREENSHOT.value:
             result = self.__save_screenshot(action)
+        elif key == BrowserActionId.SAVE_WEBPAGE.value:
+            result = self.__save_webpage(action)
         else:
             return super()._execute(run_context, action, key)
         logger.debug(f'{result}')
@@ -171,12 +175,22 @@ class BrowserActionHandler(ActionHandler):
         return ActionResult.success(action)
 
     def __save_screenshot(self, action: Action) -> ActionResult:
-        filename = (f'{action.get_agent_name()}.{action.get_stage_id()}'
-                    f'.{action.get_stage_item_id()}-screenshot.png')  # Must be png
-        filepath = get_cached_results_file(action.get_agent_name(), filename)
+        filepath = self.__get_results_file(action, '-screenshot.png')  # Must be png
         self.get_web_driver().save_screenshot(filepath)
         logger.debug(f"Saved screenshot to: {filepath}")
         return ActionResult.success(action, filepath)
+
+    def __save_webpage(self, action: Action) -> ActionResult:
+        filepath = self.__get_results_file(action, '-webpage.html')
+        write_content(self.get_web_driver().page_source, filepath)
+        logger.debug(f"Saved webpage to: {filepath}")
+        return ActionResult.success(action, filepath)
+
+    @staticmethod
+    def __get_results_file(action: Action, suffix: str) -> str:
+        filename = (f'{action.get_agent_name()}.{action.get_stage_id()}'
+                    f'.{action.get_stage_item_id()}{suffix}')
+        return get_cached_results_file(action.get_agent_name(), filename)
 
     def get_web_driver(self) -> WEB_DRIVER:
         return self.__element_selector.get_webdriver()

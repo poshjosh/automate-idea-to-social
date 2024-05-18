@@ -227,11 +227,11 @@ class ElementSelector:
                     WaitCondition.element_to_be_clickable((search_by, xpath)))
             except TimeoutException:
                 # Element exists but, we timed-out waiting for the above condition
-                logger.debug(f"Selecting element directly, "
-                             f"despite timeout: {timeout_seconds} using: {xpath}")
+                logger.debug(f"Selecting element directly "
+                             f"(despite timeout: {timeout_seconds}) using: {xpath}")
                 return root.find_element(search_by, xpath)
             except StaleElementReferenceException:
-                logger.debug(f"Selecting element directly, despite staleness using: {xpath}")
+                logger.debug(f"Selecting element directly (despite staleness) using: {xpath}")
                 return root.find_element(search_by, xpath)
 
     @staticmethod

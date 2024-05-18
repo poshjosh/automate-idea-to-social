@@ -100,7 +100,8 @@ class BrowserAutomator(Automator):
         try:
             return self._do_select_target(target_config, config_path, run_context, timeout)
         except ElementNotFoundError as ex:
-            self._save_screenshot(config_path, run_context)
+            self.__save_screenshot(config_path, run_context)
+            self.__save_webpage(config_path, run_context)
             raise AutomationError(f"Failed to select target of {config_path}. "
                                   f"Caused by: {str(ex)}") from ex
 
@@ -122,15 +123,23 @@ class BrowserAutomator(Automator):
         return None if not search_configs or not search_configs.search_for() \
             else self.__element_selector.with_timeout(timeout).select_element(search_configs)
 
-    def _save_screenshot(self, config_path: ConfigPath, run_context: RunContext):
+    def __save_screenshot(self, config_path: ConfigPath, run_context: RunContext):
         try:
-            save_screenshot = Action.of(self.get_agent_name(),
-                                        config_path.stage().id,
-                                        config_path.stage_item().id,
-                                        BrowserActionId.SAVE_SCREENSHOT.value)
-            self.get_action_handler().execute(run_context, save_screenshot)
+            action = self.__create_action(config_path, BrowserActionId.SAVE_SCREENSHOT.value)
+            self.get_action_handler().execute(run_context, action)
         except Exception as ex:
             logger.error(ex)
+
+    def __save_webpage(self, config_path: ConfigPath, run_context: RunContext):
+        try:
+            action = self.__create_action(config_path, BrowserActionId.SAVE_WEBPAGE.value)
+            self.get_action_handler().execute(run_context, action)
+        except Exception as ex:
+            logger.error(ex)
+
+    def __create_action(self, config_path: ConfigPath, signature: str) -> Action:
+        return Action.of(self.get_agent_name(), config_path.stage().id,
+                         config_path.stage_item().id, signature)
 
     def get_element_selector(self) -> ElementSelector:
         return self.__element_selector

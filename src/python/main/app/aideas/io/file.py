@@ -2,7 +2,7 @@ import logging
 import os
 import shutil
 import zipfile
-from typing import Any, Callable, Union
+from typing import Any, Callable, Union, AnyStr
 
 from ruamel.yaml import YAML
 
@@ -100,7 +100,7 @@ def read_content(file_path: str):
         return text_file.read()
 
 
-def write_content(content: str, file_path: str):
+def write_content(content: AnyStr, file_path: str):
     with open(file_path, 'w+') as text_file:
         text_file.write(content)
 
