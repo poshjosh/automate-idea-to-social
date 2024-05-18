@@ -368,8 +368,8 @@ stages:
       download-subtitles-file:
         events:
           onerror:
-            - log WARNING \n= = = = = = = FAILED TO DOWNLOAD SUBTITLES (Please do it manually) = = = = = = =\n
-            - continue
+            - log WARNING \n= = = = = = = FAILED TO DOWNLOAD SUBTITLES (Will retry) = = = = = = =\n
+            - retry 1
         timeout-seconds: 7
         #search-from: //*[@id="h-tb1"]//div[contains(text(), "${TRANSLATION_FILE_EXTENSION}")]
         #search-for: //*[name()="svg"]
