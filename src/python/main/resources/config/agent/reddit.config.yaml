@@ -101,9 +101,3 @@ stages:
         actions:
           - click
           - wait 2
-
-
-
-
-
-

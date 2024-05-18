@@ -74,7 +74,8 @@ stages:
     stage-items:
       dismiss-account-update-option:
         search-for:
-          - //*[@id="yDmH0d"]/c-wiz[2]/div/div/div/div[2]/div[4]/div[1]/button
+          # <span jsname="V67aGc" class="VfPpkd-vQzf8d">Not now</span>
+          - //*[@id="yDmH0d"]/div[1]/div[1]/div[2]/div/div/div[3]/div/div[2]/div/div/button
           - //*[@id="yDmH0d"]//button[contains(text(), "Not now")]
   add-video-details:
     url: https://www.youtube.com/upload
