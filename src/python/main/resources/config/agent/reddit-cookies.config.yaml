@@ -1,0 +1,12 @@
+stages:
+  cookies:
+    url: https://www.reddit.com/
+    stage-items:
+      reject-non-essential-cookies:
+        events:
+          onerror: continue
+        search-for:
+          shadow-attributes: id=reject-nonessential-cookies-button
+        actions:
+          - click
+          - wait 2
