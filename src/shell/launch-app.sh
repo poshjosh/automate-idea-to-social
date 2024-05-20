@@ -23,18 +23,6 @@ done
 
 [ "${VERBOSE}" = "true" ] || [ "$VERBOSE" = true ] && set -o xtrace
 
-function changeToScriptDir() {
-  local script_path="${BASH_SOURCE[0]}"
-  local script_dir;
-  while [ -L "${script_path}" ]; do
-    script_dir="$(cd -P "$(dirname "${script_path}")" >/dev/null 2>&1 && pwd)"
-    script_path="$(readlink "${script_path}")"
-    [[ ${script_path} != /* ]] && script_path="${script_dir}/${script_path}"
-  done
-  script_path="$(readlink -f "${script_path}")"
-  cd -P "$(dirname -- "${script_path}")" >/dev/null 2>&1 && pwd
-}
-
 printf "\nExporting environment\n"
 
 set -a
