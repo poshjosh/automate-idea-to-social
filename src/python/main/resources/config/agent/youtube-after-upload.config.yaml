@@ -12,8 +12,15 @@ browser:
         - start-maximized
 depends-on:
   - youtube
+clear-output-dir: false
 stages:
   login:
     events:
       onstart: run_stages youtube.login
+      onerror: log ERROR Failed to login to YouTube
       onsuccess: log INFO Logged in to YouTube
+#  subtitles:
+#    events:
+#      onstart: run_stages youtube.subtitles
+#      onerror: log ERROR Failed to add subtitles to YouTube video
+#      onsuccess: log INFO Subtitles added to YouTube video
