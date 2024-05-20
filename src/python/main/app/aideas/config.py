@@ -440,6 +440,9 @@ class AgentConfig:
     def get_depends_on(self) -> [str]:
         return self.__config.get('depends-on', [])
 
+    def is_clear_output_dir(self) -> bool:
+        return self.__config.get('clear-output-dir', True)
+
     def get_wait_timeout(self,
                          path: Union[str, list[str], list[Name], tuple[Name]],
                          default: float = None) -> float:

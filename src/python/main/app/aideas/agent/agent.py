@@ -82,10 +82,13 @@ class Agent:
         logger.debug(f"Starting agent: {self.get_name()}")
         try:
 
-            self.__clear_dirs()
-
             self.__config = AgentConfig(
                 run_context.replace_variables(self.__name, self.__config.root()))
+
+            if self.__config.is_clear_output_dir() is True:
+                self.__clear_dirs()
+
+            self.__make_dirs()
 
             stages: [Name] = self.__config.get_stage_names()
 
@@ -239,10 +242,11 @@ class Agent:
         return get_agent_output_dir(agent_name)
 
     def __clear_dirs(self):
-        # Results dir is a sub-dir of the output dir
         if os.path.exists(self.get_output_dir()):
             shutil.rmtree(self.get_output_dir())
             logger.debug(f"Successfully removed dir: {self.get_output_dir()}")
+
+    def __make_dirs(self):
         if not os.path.exists(self.get_results_dir()):
             os.makedirs(self.get_results_dir())
             logger.debug(f"Successfully created dir: {self.get_results_dir()}")
