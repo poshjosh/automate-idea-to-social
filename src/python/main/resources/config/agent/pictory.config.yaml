@@ -270,11 +270,10 @@ stages:
             - retry 1
         search-for: //*[@id="btnGenerate"]
       begin-download:
-        timeout-seconds: 600
+        timeout-seconds: 1200
         search-for:
           - /html/body//div[@role="dialog"]//button[contains(text(), "Download")]
         actions:
-          - wait 7 # Sometimes the voiceover is not applied, this is a shot in the dark
           - click
           - *default_wait
       close-download-notice:
