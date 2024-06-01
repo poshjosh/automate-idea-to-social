@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
-###############################################################################
-# Run this script so that the `aideas` package is available for test modules. #
-###############################################################################
+set -euo pipefail
 
-cd .. && source .venv/bin/activate || exit 1
+cd ..
 
-python3 -m pip install --upgrade pip
+printf "\nActivating virtual environment\n"
+source .venv/bin/activate
 
+# Make main modules accessible to test modules
 python3 -m pip install -e .

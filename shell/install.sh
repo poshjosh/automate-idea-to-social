@@ -2,20 +2,25 @@
 
 set -euo pipefail
 
-#@echo off
+VIRTUAL_ENV_DIR=".venv"
 
-cd .. || exit 1
+cd ..
 
-printf "\nCreating virtual environment\n"
-python3 -m venv .venv
+if [ ! -d "$VIRTUAL_ENV_DIR" ]; then
+  printf "\nCreating virtual environment: %s\n" "$VIRTUAL_ENV_DIR"
+  python3 -m venv "$VIRTUAL_ENV_DIR"
+fi
 
-printf "\nActivating virtual environment\n"
-source .venv/bin/activate
+printf "\nActivating virtual environment: %s\n" "$VIRTUAL_ENV_DIR"
 
-cd "src/aideas" || exit 1
+source "${VIRTUAL_ENV_DIR}/bin/activate"
 
-printf "\nSaving dependencies to requirements.txt\n"
+python3 -m pip install --upgrade pip
+
+cd "src/aideas"
+
+printf "\nCompiling dependencies to requirements.txt\n"
 pip-compile requirements.in > requirements.txt
 
-printf "\nInstalling dependencies\n"
+printf "\nInstalling dependencies from requirements.txt\n"
 python3 -m pip install -r requirements.txt
