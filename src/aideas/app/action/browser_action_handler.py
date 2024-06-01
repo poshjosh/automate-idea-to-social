@@ -14,7 +14,7 @@ from ..action.action import Action
 from ..action.action_handler import ActionHandler, BaseActionId
 from ..action.action_result import ActionResult
 from ..env import get_cookies_file_path, get_cached_results_file
-from ..io.file import write_content
+from pyu.io.file import write_content
 from ..run_context import RunContext
 from ..web.element_selector import ElementSelector
 

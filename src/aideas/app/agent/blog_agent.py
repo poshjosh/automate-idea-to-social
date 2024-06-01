@@ -13,9 +13,9 @@ from ..action.action import Action
 from ..action.action_result import ActionResult
 from ..config import Name
 from ..env import Env, is_docker
-from ..io.shell import execute_command, run_command, run_commands_from_dir, run_script
+from pyu.io.shell import execute_command, run_command, run_commands_from_dir, run_script
 from ..io.net import download_file
-from ..io.file import extract_zip_file, prepend_line, read_content, visit_dirs
+from pyu.io.file import extract_zip_file, prepend_line, read_content, visit_dirs
 from ..result.result_set import ElementResultSet
 from ..run_context import RunContext
 

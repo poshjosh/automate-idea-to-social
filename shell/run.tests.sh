@@ -4,8 +4,6 @@ WORKING_DIR="src"
 
 cd .. && source .venv/bin/activate || exit 1
 
-#printf "\nWorking from: %s\n" "$(pwd)"
-
 printf "\nExporting environment\n"
 
 set -a

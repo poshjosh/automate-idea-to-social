@@ -12,7 +12,7 @@ from ..action.action import Action
 from ..action.action_handler import ActionHandler
 from ..action.browser_action_handler import BrowserActionId
 from ..action.element_action_handler import ElementActionHandler
-from ..action.variable_parser import parse_run_arg
+from ..action.variable_parser import get_run_arg_replacement
 from ..agent.automator import Automator, AutomationError
 from ..agent.event_handler import EventHandler
 from ..config import AgentConfig, ConfigPath, Name, SearchConfigs, merge_configs
@@ -116,7 +116,7 @@ class BrowserAutomator(Automator):
         path: list[str] = config_path.agent_str_path_simplified(self.get_agent_name())
 
         def transform(text: str) -> str:
-            return text if not path else str(parse_run_arg(path, text, run_context))
+            return text if not path else str(get_run_arg_replacement(path, text, run_context))
 
         search_configs: SearchConfigs = SearchConfigs.of(target_config).transform_queries(transform)
 

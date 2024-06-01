@@ -3,7 +3,7 @@ import os
 import uuid
 from typing import Union
 
-from .variable_parser import parse_run_arg
+from .variable_parser import get_run_arg_replacement
 from ..config import tokenize
 from ..env import get_agent_results_dir
 
@@ -41,7 +41,7 @@ class Action:
         name, args = Action.__split_into_name_and_args(parts)
 
         for i in range(len(args)):
-            args[i] = parse_run_arg(
+            args[i] = get_run_arg_replacement(
                 [agent_name, stage_id, stage_item_id], args[i], run_context)
 
         return Action(agent_name, stage_id, stage_item_id, name, args)

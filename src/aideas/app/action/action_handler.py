@@ -8,7 +8,7 @@ from typing import Union, TypeVar
 from .action import Action
 from .action_result import ActionResult
 from ..config import parse_query
-from ..io.file import read_content, write_content
+from pyu.io.file import read_content, write_content
 from ..run_context import RunContext
 
 logger = logging.getLogger(__name__)
