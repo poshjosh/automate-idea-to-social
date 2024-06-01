@@ -1,5 +1,0 @@
-ruamel.yaml
-selenium
-requests>=2.0.0
-webvtt-py>=0.4.6
-undetected-chromedriver
