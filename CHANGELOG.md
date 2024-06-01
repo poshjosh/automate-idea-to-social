@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Dependency to [pyu v0.1.3](https://github.com/poshjosh/pyu/tree/v0.1.3)
+
 ## [0.0.7] - 2024-06-01
 
 ### Added
