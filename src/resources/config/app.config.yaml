@@ -11,6 +11,7 @@ browser:
 #    executable_path:
     undetected: false
     prefs:
+      intl.accept_languages: en-GB
       # prevent credentials based popups (e.g. save password popups)
       credentials_enable_service: false
       profile.password_manager_enabled: false
@@ -22,6 +23,7 @@ browser:
       safebrowsing.enabled: false
     options:
       args:
+        - lang=en-GB
         - no-sandbox
         - disable-setuid-sandbox
         - disable-application-cache
