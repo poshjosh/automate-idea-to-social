@@ -1,7 +1,7 @@
 import unittest
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as WaitCondition
+from selenium.webdriver.support import expected_conditions as wait_condition
 
 from test_functions import create_webdriver
 
@@ -31,11 +31,11 @@ class XPathTest(unittest.TestCase):
     #     webdriver = create_webdriver()
     #     webdriver.get('https://app.pictory.ai/login')
     #     username_input = WebDriverWait(webdriver, timeout).until(
-    #         WaitCondition.presence_of_element_located(
+    #         wait_condition.presence_of_element_located(
     #             (By.XPATH, "//*[@id=\"mui-1\"]")))
     #     print("Found username_input id: ", username_input.get_attribute("id"))
     #     password_input = WebDriverWait(webdriver, timeout).until(
-    #         WaitCondition.presence_of_element_located(
+    #         wait_condition.presence_of_element_located(
     #             (By.XPATH, "//*[@id=\"outlined-adornment-password\"]")))
     #     print("Found password_input id: ", password_input.get_attribute("id"))
 
@@ -43,7 +43,7 @@ class XPathTest(unittest.TestCase):
     #     webdriver = create_webdriver()
     #     webdriver.get('https://app.pictory.ai/textinput')
     #     button = WebDriverWait(webdriver, timeout).until(
-    #         WaitCondition.presence_of_element_located(
+    #         wait_condition.presence_of_element_located(
     #             (By.XPATH,
     #              "//*[@id=\"root\"]/div[1]/div[4]/div[1]/div[3]/div[1]/div[1]/div[3]/button")))
     #     print("Found button: ", False if button is None else True)
@@ -55,12 +55,12 @@ class XPathTest(unittest.TestCase):
         # See expected html dom structure above
 
         found = WebDriverWait(webdriver, timeout).until(
-            WaitCondition.presence_of_element_located(
+            wait_condition.presence_of_element_located(
                 (By.XPATH, "//a[contains(text(), 'Modifying')]")))
         print(f"\n\nFound: {found.tag_name} with content:\n{found.text}")
 
         found = WebDriverWait(webdriver, timeout).until(
-            WaitCondition.presence_of_element_located(
+            wait_condition.presence_of_element_located(
                 (By.XPATH, "//*[@id=\"indexSection\" and .//*[contains(text(), 'Modifying')]]//..")))
         print(f"\n\nFound: {found.tag_name} with content:\n{found.text}")
 
@@ -71,18 +71,18 @@ class XPathTest(unittest.TestCase):
     #     # See expected html dom structure above
     #
     #     search_box = WebDriverWait(webdriver, timeout).until(
-    #         WaitCondition.presence_of_element_located(
+    #         wait_condition.presence_of_element_located(
     #             (By.XPATH, "//*[@id=\"search-form_search-box\"]")))
     #     print("Found search_box id: ", search_box.get_attribute("id"))
     #
     #     parent = WebDriverWait(search_box, timeout).until(
-    #         WaitCondition.presence_of_element_located(
+    #         wait_condition.presence_of_element_located(
     #             (By.XPATH, ".//..//..")))
     #     print("Found parent: ", parent.tag_name)
     #     self.assertEqual(parent.tag_name, "form")
     #
     #     parent = WebDriverWait(search_box, timeout).until(
-    #         WaitCondition.presence_of_element_located(
+    #         wait_condition.presence_of_element_located(
     #             (By.XPATH, "./parent::*/parent::*")))
     #     print("Found parent: ", parent.tag_name)
     #     self.assertEqual(parent.tag_name, "form")

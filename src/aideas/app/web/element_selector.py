@@ -4,11 +4,11 @@ from time import sleep
 from typing import List, Callable
 
 from selenium.common import NoSuchWindowException, StaleElementReferenceException, \
-    NoSuchElementException, TimeoutException
+    NoSuchElementException, TimeoutException, WebDriverException
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
-from selenium.webdriver.support import expected_conditions as WaitCondition
+from selenium.webdriver.support import expected_conditions as wait_condition
 from selenium.webdriver.support.wait import WebDriverWait, D
 
 from .browser_cookie_store import BrowserCookieStore
@@ -70,7 +70,6 @@ class ElementSelector:
         self.validate_link(link)
 
         if link == self.current_url():
-            logger.debug(f'Already at: {link}')
             return False
 
         self.__browser_cookie_store.load()
@@ -100,6 +99,8 @@ class ElementSelector:
     def __select_first_element(self, root: D, search_config: SearchConfig) -> WebElement:
         search_by = search_config.get_search_by()
         queries = search_config.get_queries()
+        if len(queries) == 0:
+            raise ValueError(f'No queries found in: {search_config}')
         exception: Exception | None = None
         index: int = -1
         start_time = datetime.now()
@@ -167,7 +168,7 @@ class ElementSelector:
                 if has_attributes(element, attributes):
                     return True
                 return False
-            except Exception:
+            except WebDriverException:
                 return False
 
         found = ElementSelector.__select_first_element_or_shadow(
@@ -187,7 +188,7 @@ class ElementSelector:
                                          test: Callable[[WebElement], bool]) -> WebElement or None:
 
         all_elements = WebDriverWait(root, timeout_seconds).until(
-            WaitCondition.presence_of_all_elements_located((By.CSS_SELECTOR, '*')))
+            wait_condition.presence_of_all_elements_located((By.CSS_SELECTOR, '*')))
 
         return ElementSelector.__find_first_element_or_shadow(webdriver, all_elements, test)
 
@@ -218,13 +219,13 @@ class ElementSelector:
     def __select_element_by_xpath(root: D,
                                   xpath: str,
                                   timeout_seconds: float) -> WebElement:
-        search_by: By = By.XPATH
+        search_by: str = By.XPATH
         if timeout_seconds < 1:
             return root.find_element(search_by, xpath)
         else:
             try:
                 return WebDriverWait(root, timeout_seconds).until(
-                    WaitCondition.element_to_be_clickable((search_by, xpath)))
+                    wait_condition.element_to_be_clickable((search_by, xpath)))
             except TimeoutException:
                 # Element exists but, we timed-out waiting for the above condition
                 logger.debug(f"Selecting element directly "

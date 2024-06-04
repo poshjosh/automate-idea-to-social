@@ -4,10 +4,12 @@ import logging
 from typing import Union, TypeVar, Callable
 
 from ..action.action_result import ActionResult
+from ..config import AgentConfig, ConfigPath, ON_ERROR
 
 logger = logging.getLogger(__name__)
 
 RESULT = TypeVar('RESULT', bound=any)
+
 
 ####################################################################################################
 # DO NOT ARBITRARILY MODIFY THIS CLASS
@@ -28,6 +30,7 @@ class ResultSet:
             self.__results.update(copy.deepcopy(results))
 
     """Returns a copy of the result or the result_if_none if the result is not found."""
+
     def get(self, result_id: str, result_if_none: RESULT = None) -> RESULT:
         return self.__get(result_id, result_if_none)
 
@@ -55,7 +58,7 @@ class ResultSet:
             raise ValueError('Cannot add None')
         if result_id in self.__results:
             raise ValueError(f'Already added: {result_id}')
-        
+
         existing = self.__results.get(result_id, None)
         self.__results[result_id] = value
         return existing
@@ -73,10 +76,10 @@ class ResultSet:
     def size(self) -> int:
         return len(self.__results)
 
-    def is_successful(self):
+    def is_successful(self) -> bool:
         return self.size() > 0 and self.__count_failures() == 0
 
-    def is_failure(self):
+    def is_failure(self) -> bool:
         return not self.is_successful()
 
     def items(self):
@@ -161,6 +164,43 @@ class ElementResultSet(ResultSet):
             if r.is_success() is False:
                 return False
         return True
+
+    def is_path_successful(self, config: AgentConfig, config_path: ConfigPath) -> bool:
+        """
+        Determine if the result set has a failure, excluding stages and stage items
+        which ignore errors.
+
+        For stage items, it is sufficient to simply check if the result set is successful.
+        On the other hand, for stages, we need to exclude stage items which ignore errors.
+        These are stage items, which have `onerror: continue`.
+
+        If a stage-item fails:
+
+        - succeeding stage-items will not be executed, unless
+        `onerror` is set to `continue` for the stage-item.
+
+        - the stage will fail, unless `onerror` is set to
+        `continue` for the stage.
+
+        :param config: The agent configuration
+        :param config_path: The path to the aspect of the configuration which we are handling
+        :return: true if the result set has a failure, false otherwise
+        """
+        if config_path.is_stage_item():
+            return self.is_successful()
+        elif config_path.is_stage():
+            return not self.__has_failure_excluding_ignored(config, config_path)
+        else:
+            raise ValueError(f'Expected path to stage or stage item, got: {config_path}')
+
+    def __has_failure_excluding_ignored(self, config: AgentConfig, config_path: ConfigPath) -> bool:
+        for target_id, result_list in self.items():
+            target_cfg_path = config_path.join(target_id)
+            if config.is_continue_on_event(target_cfg_path, ON_ERROR):
+                continue
+            if ElementResultSet.is_result_successful(result_list) is False:
+                return True
+        return False
 
 
 NOOP_ELEMENT_RESULT_SET: ElementResultSet = ElementResultSet().close()

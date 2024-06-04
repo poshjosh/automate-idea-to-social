@@ -4,6 +4,7 @@ from typing import Callable
 from test.app.action.test_element_action_handler import TestElementActionHandler
 from test.app.web.test_element_selector import TestElementSelector
 from test.app.test_functions import create_webdriver
+from aideas.app.agent.automator import AutomationListener
 from aideas.app.agent.event_handler import EventHandler
 from aideas.app.config import Name
 from aideas.app.run_context import RunContext
@@ -23,5 +24,6 @@ class TestBrowserAutomator(BrowserAutomator):
         element_selector = TestElementSelector.of(web_driver, agent_name, timeout_seconds)
         action_handler = TestElementActionHandler(element_selector, timeout_seconds)
         event_handler = EventHandler(action_handler)
-        return cls(web_driver, timeout_seconds, agent_name,
-                   element_selector, action_handler, event_handler, run_stages)
+        listener = AutomationListener()
+        return cls(web_driver, timeout_seconds, agent_name, element_selector,
+                   action_handler, event_handler, listener, run_stages)

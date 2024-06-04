@@ -7,14 +7,15 @@ from selenium import webdriver
 from selenium.common import TimeoutException
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.alert import Alert
-from selenium.webdriver.support import expected_conditions as WaitCondition
+from selenium.webdriver.support import expected_conditions as wait_condition
 from selenium.webdriver.support.wait import WebDriverWait
+
+from pyu.io.file import create_file, write_content
 
 from ..action.action import Action
 from ..action.action_handler import ActionHandler, BaseActionId
 from ..action.action_result import ActionResult
 from ..env import get_cookies_file_path, get_cached_results_file
-from pyu.io.file import write_content
 from ..run_context import RunContext
 from ..web.element_selector import ElementSelector
 
@@ -90,7 +91,7 @@ class BrowserActionHandler(ActionHandler):
         timeout = self.__wait_timeout_seconds if (value is None or value == '') else float(value)
         try:
             WebDriverWait(self.get_web_driver(), timeout).until(
-                WaitCondition.alert_is_present())
+                wait_condition.alert_is_present())
             alert: Alert = self.get_web_driver().switch_to().alert()
             if how == 'accept':
                 alert.accept()
@@ -177,20 +178,24 @@ class BrowserActionHandler(ActionHandler):
     def __save_screenshot(self, action: Action) -> ActionResult:
         filepath = self.__get_results_file(action, '-screenshot.png')  # Must be png
         self.get_web_driver().save_screenshot(filepath)
-        logger.debug(f"Saved screenshot to: {filepath}")
         return ActionResult.success(action, filepath)
 
     def __save_webpage(self, action: Action) -> ActionResult:
-        filepath = self.__get_results_file(action, '-webpage.html')
+        filepath = self.__get_results_file(action, '-webpage.html', True)
         write_content(self.get_web_driver().page_source, filepath)
-        logger.debug(f"Saved webpage to: {filepath}")
         return ActionResult.success(action, filepath)
 
     @staticmethod
-    def __get_results_file(action: Action, suffix: str) -> str:
-        filename = (f'{action.get_agent_name()}.{action.get_stage_id()}'
-                    f'.{action.get_stage_item_id()}{suffix}')
-        return get_cached_results_file(action.get_agent_name(), filename)
+    def __get_results_file(action: Action, suffix: str, create_file_if_none: bool = False) -> str:
+        file_path = (f'{action.get_agent_name()}.{action.get_stage_id()}'
+                     f'.{action.get_stage_item_id()}{suffix}')
+        file_path = get_cached_results_file(action.get_agent_name(), file_path)
+        if create_file_if_none is True and not os.path.exists(file_path):
+            create_file(file_path)
+        dir_path = os.path.dirname(file_path)
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path)
+        return file_path
 
     def get_web_driver(self) -> WEB_DRIVER:
         return self.__element_selector.get_webdriver()
