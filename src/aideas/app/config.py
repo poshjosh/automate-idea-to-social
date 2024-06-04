@@ -4,8 +4,6 @@ from collections.abc import Iterable
 from enum import Enum
 from typing import Union, TypeVar, Callable
 
-from selenium.webdriver.chrome.options import Options
-
 logger = logging.getLogger(__name__)
 
 
@@ -69,10 +67,6 @@ class BrowserConfig:
     def __init__(self, config: dict[str, any]):
         self.__config = config.get('browser', {})
 
-    def get_chrome_options(self) -> Options:
-        preferences = {} if self.is_undetected() is True else self.prefs()
-        return self.__collect_options(self.get_options(), preferences)
-
     def get_executable_path(self, default: Union[str, None] = None) -> str:
         return self.chrome_config().get('executable_path', default)
 
@@ -90,22 +84,6 @@ class BrowserConfig:
 
     def chrome_config(self) -> dict[str, str]:
         return self.__config.get('chrome', {})
-
-    @staticmethod
-    def __collect_options(option_args: list[str], prefs: dict[str, str]) -> Options:
-        logger.debug(f'Will create browser with\nprefs: {prefs}\noptions: {option_args}')
-        options = Options()
-        if option_args:
-            for arg in option_args:
-                if not arg:
-                    continue
-                options.add_argument("--" + arg)
-
-        if not prefs:
-            return options
-
-        options.add_experimental_option("prefs", prefs)
-        return options
 
 
 class Name:
@@ -275,6 +253,10 @@ class SearchConfig:
         self.__queries = result
         self.__updated = True
         return True
+
+    def __str__(self):
+        return (f"SearchConfig{{search_by={self.__search_by}, queries={self.__queries}, "
+                f"updated={self.__updated}}}")
 
 
 class SearchConfigs:

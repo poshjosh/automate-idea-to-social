@@ -22,7 +22,9 @@ class WebDriverCreator:
 
         WebDriverCreator.__create_dirs_if_need([browser_config.get_download_dir()])
 
-        options: Options = browser_config.get_chrome_options()
+        options: Options = WebDriverCreator.__collect_options(
+            browser_config.get_options(),
+            {} if browser_config.is_undetected() is True else browser_config.prefs())
 
         if "headless" not in options.arguments and get_value(Env.SETUP_DISPLAY, False) is False:
             logger.warning("DISPLAY is not set up. Webdriver may crash.")
@@ -61,3 +63,19 @@ class WebDriverCreator:
                 return
             os.makedirs(to_create)
             logger.debug(f"Created dirs: {to_create}")
+
+    @staticmethod
+    def __collect_options(option_args: list[str], prefs: dict[str, str]) -> Options:
+        logger.debug(f'Will create browser with\nprefs: {prefs}\noptions: {option_args}')
+        options = Options()
+        if option_args:
+            for arg in option_args:
+                if not arg:
+                    continue
+                options.add_argument("--" + arg)
+
+        if not prefs:
+            return options
+
+        options.add_experimental_option("prefs", prefs)
+        return options
