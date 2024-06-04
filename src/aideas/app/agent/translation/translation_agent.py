@@ -12,8 +12,8 @@ from ...agent.agent_name import AgentName
 from ...action.action import Action
 from ...action.action_result import ActionResult
 from ...config import Name
+from ...env import Env, get_content_file_path, get_app_language
 from ...result.result_set import ElementResultSet
-from ...env import Env, get_content_file_path
 from ...run_context import RunContext
 
 logger = logging.getLogger(__name__)
@@ -36,7 +36,7 @@ class TranslationAgent(Agent):
                  interval_seconds: int = 0):
         super().__init__(name, agent_config, dependencies, automator, interval_seconds)
         self.__translator = self.__class__.create_translator(agent_config)
-        self.__from_lang = "en"
+        self.__from_lang = get_app_language(False)
 
     def run_stage(self, run_context: RunContext, stage: Name) -> ElementResultSet:
         if stage == DEFAULT_STAGE:
