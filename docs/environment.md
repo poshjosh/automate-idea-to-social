@@ -11,6 +11,7 @@ The complete list of environment variables that can be used to configure the beh
 # docker
 # default value is: latest
 APP_VERSION=[OPTIONAL]
+APP_LANGUAGE=en-GB
 DOCKER_MOUNT_DIR=
 # This is needed if we want to user undetected chromedriver with display.
 # If we don't set this, we get error: cannot connect to chrome at 127.0.0.1:
