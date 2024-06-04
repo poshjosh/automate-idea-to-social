@@ -16,9 +16,6 @@ _git = 'GIT'
 _blog = 'BLOG'
 _browser_chrome = 'BROWSER_CHROME'
 
-_DEFAULT_OUTPUT_LANGUAGES = [
-    "ar", "bn", "de", "es", "fr", "hi", "it", "ja", "ko", "ru", "zh", "zh-TW"]
-
 
 @unique
 class Env(str, Enum):
@@ -34,6 +31,8 @@ class Env(str, Enum):
 
     def is_path(self) -> bool:
         return self.__path
+
+    APP_LANGUAGE = ('APP_LANGUAGE', True, False)
 
     SETUP_DISPLAY = ('SETUP_DISPLAY', True, False)
 
@@ -91,12 +90,22 @@ class Env(str, Enum):
     BLOG_APP_DIR = (f'{_blog}_APP_DIR', False, True)
 
     @staticmethod
-    def values():
+    def values() -> [str]:
         return [Env(e).value for e in Env]
 
     @staticmethod
+    def set_defaults():
+        for k, v in DEFAULTS.items():
+            Env.set_default(k, v)
+
+    @staticmethod
+    def set_default(k: Union[str, 'Env'], v: str):
+        k = k.value if isinstance(k, Env) else k
+        os.environ[k] = os.environ.get(k, v)
+
+    @staticmethod
     def load(app_name: Union[str, None] = None) -> dict[str, any]:
-        result = {Env.TRANSLATION_OUTPUT_LANGUAGES.value: ','.join(_DEFAULT_OUTPUT_LANGUAGES)}
+        result = {}
 
         if app_name:
             result.update({'app.name': app_name})
@@ -139,6 +148,20 @@ class Env(str, Enum):
         return add_to
 
 
+DEFAULTS: dict[Env, str] = {
+    Env.APP_LANGUAGE: 'en-GB',
+    Env.OUTPUT_DIR: 'resources/output',
+    Env.TRANSLATION_FILE_EXTENSION: 'vtt',
+    Env.TRANSLATION_OUTPUT_LANGUAGES: "ar,bn,de,es,fr,hi,it,ja,ko,ru,zh,zh-TW",
+    Env.VIDEO_OUTPUT_TYPE: 'mp4'
+}
+
+
+def get_app_language(full: bool) -> str:
+    lang = get_value(Env.APP_LANGUAGE, DEFAULTS[Env.APP_LANGUAGE])
+    return lang if full else lang.split('-')[0]
+    
+    
 def is_docker() -> bool:
     return 'docker' in os.environ.get('PROFILES', '')
 
