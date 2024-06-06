@@ -22,14 +22,7 @@ class AutomationError(Exception):
     pass
 
 
-@unique
 class AutomationEvent(str, Enum):
-    SELECT_TARGET = ("SELECT_TARGET", False)
-    STAGE_BEGIN = ("STAGE_BEGIN", False)
-    STAGE_END = ("STAGE_END", False)
-    STAGE_FAIL = ("STAGE_FAIL", True)
-    TARGET_NOT_FOUND = ("TARGET_NOT_FOUND", True)
-
     def __new__(cls, value, error: bool = False):
         obj = str.__new__(cls, [value])
         obj._value_ = value
@@ -43,6 +36,15 @@ class AutomationEvent(str, Enum):
     def description(self) -> str:
         value_prefix: str = "ERROR@" if self.is_error() else "SUCCESS@"
         return f"{value_prefix}{self.name}"
+
+
+@unique
+class BaseAutomationEvent(AutomationEvent):
+    SELECT_TARGET = ("SELECT_TARGET", False)
+    STAGE_BEGIN = ("STAGE_BEGIN", False)
+    STAGE_END = ("STAGE_END", False)
+    STAGE_FAIL = ("STAGE_FAIL", True)
+    TARGET_NOT_FOUND = ("TARGET_NOT_FOUND", True)
 
 
 class AutomationListener:
@@ -154,7 +156,7 @@ class Automator:
 
         config_path: ConfigPath = ConfigPath.of(stage)
 
-        self.__listener.on_event(AutomationEvent.STAGE_BEGIN, config_path, run_context)
+        self.__listener.on_event(BaseAutomationEvent.STAGE_BEGIN, config_path, run_context)
 
         try:
 
@@ -162,13 +164,13 @@ class Automator:
 
             success: bool = False if result_set is None else \
                 result_set.is_path_successful(config, config_path)
-            event = AutomationEvent.STAGE_END if success else AutomationEvent.STAGE_FAIL
+            event = BaseAutomationEvent.STAGE_END if success else BaseAutomationEvent.STAGE_FAIL
             self.__listener.on_result(event, config_path, run_context, result_set)
 
             return result_set
 
         except Exception as ex:
-            self.__listener.on_error(AutomationEvent.STAGE_FAIL, config_path, run_context, ex)
+            self.__listener.on_error(BaseAutomationEvent.STAGE_FAIL, config_path, run_context, ex)
             raise ex
 
     def _act_on_elements(self,
@@ -317,10 +319,11 @@ class Automator:
                         timeout: float = None) -> TARGET:
         try:
             target = self._select_target(target_config, config_path, run_context, timeout)
-            self.__listener.on_event(AutomationEvent.SELECT_TARGET, config_path, run_context)
+            self.__listener.on_event(BaseAutomationEvent.SELECT_TARGET, config_path, run_context)
             return target
         except Exception as ex:
-            self.__listener.on_error(AutomationEvent.TARGET_NOT_FOUND, config_path, run_context, ex)
+            self.__listener.on_error(
+                BaseAutomationEvent.TARGET_NOT_FOUND, config_path, run_context, ex)
             raise AutomationError(f"Failed to select target of {config_path}. "
                                   f"Caused by: {str(ex)}") from ex
 

@@ -1,3 +1,4 @@
+import os
 import unittest
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
@@ -27,6 +28,23 @@ timeout: float = 10
 
 
 class XPathTest(unittest.TestCase):
+    @staticmethod
+    def test_xpath_from_existing_result():
+        dir_path = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+        file_path = os.path.join(dir_path, "resources", "output", "results", "pictory", "2024", "06", "2024-06-06T18-42-06-pictory.download-video.ERROR@STAGE_FAIL-webpage.html")
+        webdriver = create_webdriver()
+        url: str = f"file://{file_path}"
+        webdriver.get(url)
+
+        elements = WebDriverWait(webdriver, timeout).until(
+            wait_condition.presence_of_all_elements_located(
+                (By.XPATH, '/html/body//div[@role="dialog" '
+                           'and descendant::*[contains(text(), "Your video is now ready")]]'
+                           '//*[contains(text(), "Download")]')))
+        for element in elements:
+            print(f"Found element: {element}")
+            print(f"Found element outerHTML:\n{element.get_attribute('outerHTML')}")
+
     # def test_pictory_login_xpath(self):
     #     webdriver = create_webdriver()
     #     webdriver.get('https://app.pictory.ai/login')
@@ -48,7 +66,7 @@ class XPathTest(unittest.TestCase):
     #              "//*[@id=\"root\"]/div[1]/div[4]/div[1]/div[3]/div[1]/div[1]/div[3]/button")))
     #     print("Found button: ", False if button is None else True)
 
-    def test_chinomsoikwuagwu_xpath0(self):
+    def test_chinomsoikwuagwu_xpath(self):
         webdriver = create_webdriver()
         webdriver.get('http://chinomsoikwuagwu.com/')
 

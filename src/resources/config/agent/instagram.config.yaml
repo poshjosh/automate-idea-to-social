@@ -10,6 +10,17 @@ stages:
     events:
       onerror: continue
     stage-items:
+#      expand-language-options:
+#        events:
+#          onerror: continue
+#        search-for:
+#          - /html/body//select[@aria-label="Switch display language"]//..
+#          - /html/body/div[5]/div[1]/div/div[2]/div/div/div/div/div[2]/div/div/div[1]/span
+#      select-language:
+#        events:
+#          onerror: continue
+#        search-for:
+#          - /html/body//select[@aria-label='Switch display language']/option[@value='en']
       decline-optional-cookies:
         events:
           onerror: continue

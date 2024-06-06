@@ -119,6 +119,14 @@ stages:
           - //*[@id="tbinner-3"]//div[@role="rowgroup"]/div[2]/div/div[1]/a
           - //*[@id="tbinner-3"]//div[@role="rowgroup"]/div[2]/div/div[1]/a/div
           - //*[@id="tbinner-3"]//div[@role="rowgroup"]/div[2]/div/div[1]/a/div/img
+  close-visuals-dialog:
+    events:
+      onerror: continue
+    stage-items:
+      close-if-need:
+        search-for:
+          - //*[@type="button" and contains(@class, "MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall")]
+          - //*[@id="step-3-fixed-height"]/div[2]/div[1]/div/div[2]/div[1]/div/div/button
   branding:
     stage-items:
       branding-tab:
@@ -127,7 +135,10 @@ stages:
           - //*[@id="side-navbar"]/ul/li/a/*[contains(text(), "Branding")]//..
           - //*[@id="side-navbar"]//*[contains(text(), "Branding")]//..
       expand-brand-options:
-        search-for: //*[@id="step-3-fixed-height"]/div[1]/div/div[6]/div/div[1]/div[1]/div/div/div
+        search-for:
+          - //*[@id="step-3-fixed-height"]//div[@role="combobox" and @aria-haspopup="listbox"]
+          - //*[@id="step-3-fixed-height"]//div[contains(@class, "brandview MuiBox-root")]/div[1]
+          - //*[@id="step-3-fixed-height"]/div[1]/div/div[6]/div/div[1]/div/div/div/div
       select-brand:
         # We first identify the brand by its name, then we work upwards to the selectable element
         search-for:
@@ -272,7 +283,7 @@ stages:
       begin-download:
         timeout-seconds: 1200
         search-for:
-          - /html/body//div[@role="dialog"]//button[contains(text(), "Download")]
+          - /html/body//div[@role="dialog" and descendant::*[contains(text(), "Your video is now ready")]]//*[contains(text(), "Download")]
         actions:
           - click
           - *default_wait
