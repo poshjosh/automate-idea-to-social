@@ -7,10 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.7] - 2024-06-07
+
 ### Added 
 
-- Add language option.
-- Add automation events.
+- Language option.
+- Automation events.
+
+### Fixed
+
+- Bug which caused blog agent to publish to wrong dir.
 
 ## [0.0.8] - 2024-06-01
 
