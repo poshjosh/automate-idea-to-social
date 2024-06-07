@@ -19,10 +19,8 @@ blog:
   source:
     url: https://github.com/poshjosh/${self.blog.name}.git
   target:
-    dir: ${BLOG_APP_DIR}/blog
-  base:
-    # git clone blog.src.url will create this directory
-    dir: ${BLOG_APP_DIR}/blog/${self.blog.name}
+    # git clone blog.src.url will create and populate this directory
+    dir: ${BLOG_APP_DIR}/blogs/${self.blog.name}
 stages:
   download-app:
   clone-blog:

@@ -64,13 +64,13 @@ class BlogAgent(Agent):
         return ActionResult(action, success, save_to_dir)
 
     def clone_blog(self, action: Action, run_context: RunContext) -> ActionResult:
-        output_dir: str = self.get_blog_tgt_dir()
+        target_dir: str = self.get_blog_tgt_dir()
 
         self.__delete_cloned_blog_if_exists()
 
         git_clone_url: str = self.__get_blog_src_url_with_credentials(run_context)
-        success = self.__clone_git_repo_to_dir(git_clone_url, output_dir)
-        return ActionResult(action, success, output_dir)
+        success = self.__clone_git_repo_to_dir(git_clone_url, target_dir)
+        return ActionResult(action, success, target_dir)
 
     def convert_to_markdown(self, action: Action, run_context: RunContext) -> ActionResult:
         script_path: str = self.get_convert_to_markdown_script()
@@ -90,7 +90,7 @@ class BlogAgent(Agent):
         blog_src_dir: str = self.get_blog_input_dir(run_context)
         if not os.path.exists(blog_src_dir):
             raise ValueError(f"Blog source directory does not exist: {blog_src_dir}")
-        blog_base_dir: str = self.get_blog_base_dir()
+        blog_target_dir: str = self.get_blog_tgt_dir()
 
         moved: [str] = []
 
@@ -102,14 +102,14 @@ class BlogAgent(Agent):
         def may_move(_, dst: str) -> bool:
             return False if os.path.exists(dst) else True
 
-        visit_dirs(move, blog_src_dir, blog_base_dir, may_move)
+        visit_dirs(move, blog_src_dir, blog_target_dir, may_move)
 
         if len(moved) == 0:  # Nothing to update
             return ActionResult(action, True)
 
         commands: list[list[str]] = self._get_update_blog_content_commands(run_context)
 
-        success = run_commands_from_dir(blog_base_dir, commands)
+        success = run_commands_from_dir(blog_target_dir, commands)
 
         return ActionResult(action, success)
 
@@ -299,9 +299,6 @@ class BlogAgent(Agent):
 
     def get_app_tgt_dir(self) -> str:
         return self.__app()['target']['dir']
-
-    def get_blog_base_dir(self) -> str:
-        return self.__blog()['base']['dir']
 
     def get_blog_src_url(self) -> str:
         return self.__blog()['source']['url']

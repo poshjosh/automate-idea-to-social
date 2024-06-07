@@ -19,7 +19,7 @@ class TestBlogAgent(BlogAgent):
     def clone_blog(self, action: Action, run_context: RunContext) -> ActionResult:
         # Rather than clone the blog we create its dir and init a git repo there
         # This way we can call git commands on it
-        working_dir = self.get_blog_base_dir()
+        working_dir = self.get_blog_tgt_dir()
         if not os.path.exists(working_dir):
             os.makedirs(working_dir)
             command = f'cd {working_dir} && git init'
