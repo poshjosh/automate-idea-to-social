@@ -28,10 +28,11 @@ timeout: float = 10
 
 
 class XPathTest(unittest.TestCase):
-    @staticmethod
-    def test_xpath_from_existing_result():
+    def test_xpath_from_existing_result(self):
         dir_path = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-        file_path = os.path.join(dir_path, "resources", "output", "results", "pictory", "2024", "06", "2024-06-06T18-42-06-pictory.download-video.ERROR@STAGE_FAIL-webpage.html")
+        file_path = os.path.join(
+            dir_path, "resources", "output", "results", "pictory", "2024", "06", "06",
+            "2024-06-06T18-42-06-pictory.download-video.ERROR@STAGE_FAIL-webpage.html")
         webdriver = create_webdriver()
         url: str = f"file://{file_path}"
         webdriver.get(url)
@@ -41,9 +42,9 @@ class XPathTest(unittest.TestCase):
                 (By.XPATH, '/html/body//div[@role="dialog" '
                            'and descendant::*[contains(text(), "Your video is now ready")]]'
                            '//*[contains(text(), "Download")]')))
-        for element in elements:
-            print(f"Found element: {element}")
-            print(f"Found element outerHTML:\n{element.get_attribute('outerHTML')}")
+        self.assertEquals(1, len(elements))
+        self.assertIsNotNone(elements[0])
+        print(f"Found element outerHTML:\n{elements[0].get_attribute('outerHTML')}")
 
     # def test_pictory_login_xpath(self):
     #     webdriver = create_webdriver()
@@ -75,12 +76,14 @@ class XPathTest(unittest.TestCase):
         found = WebDriverWait(webdriver, timeout).until(
             wait_condition.presence_of_element_located(
                 (By.XPATH, "//a[contains(text(), 'Modifying')]")))
-        print(f"\n\nFound: {found.tag_name} with content:\n{found.text}")
+        #print(f"\n\nFound: {found.tag_name} with content:\n{found.text}")
+        self.assertIsNotNone(found)
 
         found = WebDriverWait(webdriver, timeout).until(
             wait_condition.presence_of_element_located(
                 (By.XPATH, "//*[@id=\"indexSection\" and .//*[contains(text(), 'Modifying')]]//..")))
-        print(f"\n\nFound: {found.tag_name} with content:\n{found.text}")
+        #print(f"\n\nFound: {found.tag_name} with content:\n{found.text}")
+        self.assertIsNotNone(found)
 
     # def test_chinomsoikwuagwu_xpath(self):
     #     webdriver = create_webdriver()

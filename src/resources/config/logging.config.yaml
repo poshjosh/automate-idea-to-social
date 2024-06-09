@@ -9,11 +9,15 @@ handlers:
     class: logging.StreamHandler
     level: *log_level
     formatter: simple
+    filters:
+      - secrets_masking_filter
     stream: ext://sys.stdout
   file:
     class: logging.handlers.RotatingFileHandler
     level: *log_level
     formatter: simple
+    filters:
+      - secrets_masking_filter
     filename: resources/output/logs/aideas.log
     maxBytes: 409600
     backupCount: 9
@@ -25,3 +29,8 @@ loggers:
 root:
   level: *log_level
   handlers: [console, file]
+filters:
+  secrets_masking_filter:
+    (): pyu.io.logging.SecretsMaskingFilter
+    patterns:
+      - "(pass|key|secret|token|jwt|hash|signature|credential|auth|certificate|connection|pat)"

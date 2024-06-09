@@ -8,7 +8,7 @@ attrs==23.2.0
     # via
     #   outcome
     #   trio
-certifi==2024.2.2
+certifi==2024.6.2
     # via
     #   requests
     #   selenium
@@ -28,7 +28,7 @@ outcome==1.3.0.post0
     # via trio
 pysocks==1.7.1
     # via urllib3
-pyu @ git+https://github.com/poshjosh/pyu.git@v0.1.4
+pyu @ git+https://github.com/poshjosh/pyu.git@v0.1.5
     # via -r requirements.in
 pyyaml==6.0.1
     # via pyu
@@ -54,7 +54,7 @@ trio==0.25.1
     #   trio-websocket
 trio-websocket==0.11.1
     # via selenium
-typing-extensions==4.12.0
+typing-extensions==4.12.2
     # via selenium
 undetected-chromedriver==3.5.5
     # via -r requirements.in

@@ -181,7 +181,8 @@ def get_cached_results_file(agent_name: str, filename: str = None) -> str:
                                  'results',
                                  agent_name,
                                  now.strftime("%Y"),
-                                 now.strftime("%m"))
+                                 now.strftime("%m"),
+                                 now.strftime("%d"))
     name_and_ext = os.path.splitext(filename)
     name = name_and_ext[0]
     suffix = ''
