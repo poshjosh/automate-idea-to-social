@@ -1,5 +1,8 @@
 import logging
 import os
+import platform
+import re
+import subprocess
 from typing import TypeVar, Union
 
 from selenium import webdriver
@@ -8,6 +11,8 @@ import undetected_chromedriver as uc
 
 from ..config import BrowserConfig
 from ..env import Env, get_value
+
+from pyu.io.shell import run_command
 
 logger = logging.getLogger(__name__)
 
@@ -31,10 +36,15 @@ class WebDriverCreator:
 
         if browser_config.is_undetected():
             logger.debug("Undetected ChromeDriver will be used")
+
+            chrome_version: int | None = WebDriverCreator.__get_chrome_version()
+            if chrome_version is not None:
+                logger.debug(f"Target chrome version: {chrome_version}")
+
             # See https://github.com/ultrafunkamsterdam/undetected-chromedriver
-            # TODO - Find out why this takes about 10 minutes to complete
-            # It took about 10 minutes for this next line to complete, at least on local machine
-            driver = uc.Chrome(options=options, use_subprocess=False)
+            # It took about 10 minutes for this next line to complete (at least on local machine)
+            # I think it does some download and update
+            driver = uc.Chrome(options=options, version_main=chrome_version, use_subprocess=False)
             download_dir: str = browser_config.get_download_dir()
             if not download_dir:
                 return driver
@@ -53,6 +63,20 @@ class WebDriverCreator:
 
         service = webdriver.ChromeService(executable_path=browser_config.get_executable_path())
         return webdriver.Chrome(options=options, service=service)
+
+    @staticmethod
+    def __get_chrome_version() -> Union[int, None]:
+        if platform.system() != "Linux":
+            return None
+        try:
+            ps = run_command(["google-chrome --version"], stdout=subprocess.PIPE)
+            version_str = str(ps.stdout.strip())
+            m = re.match(r"Google Chrome (\d+)\.", version_str)
+            return None if m is None else int(m.group(1))
+        except Exception as ex:
+            logger.warning("Could not determine Chrome version")
+            logger.exception(ex)
+            return None
 
     @staticmethod
     def __create_dirs_if_need(dirs: list[str]):
