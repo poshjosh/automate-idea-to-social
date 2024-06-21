@@ -1,10 +1,4 @@
-depends-on:
-  - pictory
 stages:
-  login:
-    events:
-      onstart: run_stages pictory.login
-      onsuccess: log INFO "Logged in to Pictory"
   select-existing-project:
     url: https://app.pictory.ai/myvideos
     stage-items:
