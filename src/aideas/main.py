@@ -9,7 +9,7 @@ if __name__ == "__main__":
 
     Env.set_defaults()
 
-    config_loader = ConfigLoader(os.path.join('resources', 'config'))
+    config_loader = ConfigLoader(os.path.join(os.getcwd(), 'resources', 'config'))
 
     logging.config.dictConfig(config_loader.load_logging_config())
 
