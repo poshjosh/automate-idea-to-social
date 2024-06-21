@@ -10,7 +10,7 @@ services:
     shm_size: '2gb'
     environment:
       PYTHONUNBUFFERED: 1
-      PROFILES: docker
+      APP_PROFILES: docker
     env_file:
       - .env
     volumes:

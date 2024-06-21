@@ -163,7 +163,7 @@ def get_app_language(full: bool) -> str:
     
     
 def is_docker() -> bool:
-    return 'docker' in os.environ.get('PROFILES', '')
+    return 'docker' in os.environ.get('APP_PROFILES', '')
 
 
 def get_cached_results_file(agent_name: str, filename: str = None) -> str:
