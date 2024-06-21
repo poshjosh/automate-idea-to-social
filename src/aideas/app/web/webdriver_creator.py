@@ -44,7 +44,7 @@ class WebDriverCreator:
             # See https://github.com/ultrafunkamsterdam/undetected-chromedriver
             # It took about 10 minutes for this next line to complete (at least on local machine)
             # I think it does some download and update
-            driver = uc.Chrome(options=options, version_main=chrome_version, use_subprocess=False)
+            driver = uc.Chrome(options=options, use_subprocess=False, version_main=chrome_version)
             download_dir: str = browser_config.get_download_dir()
             if not download_dir:
                 return driver
@@ -66,10 +66,18 @@ class WebDriverCreator:
 
     @staticmethod
     def __get_chrome_version() -> Union[int, None]:
-        if platform.system() != "Linux":
+
+        platform_system = platform.system()
+
+        if platform_system == "Linux":
+            version_cmd = "google-chrome --version"
+        elif platform_system == "Darwin":
+            version_cmd = "/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --version"
+        else:
             return None
+
         try:
-            ps = run_command(["google-chrome --version"], stdout=subprocess.PIPE)
+            ps = run_command([version_cmd], stdout=subprocess.PIPE)
             version_str = str(ps.stdout.strip())
             m = re.match(r"Google Chrome (\d+)\.", version_str)
             return None if m is None else int(m.group(1))
