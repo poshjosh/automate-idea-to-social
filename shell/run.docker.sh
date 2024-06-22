@@ -5,6 +5,4 @@ cd .. || exit 1
 # To log output of the build process.
 export BUILDKIT_PROGRESS=plain
 
-export APP_PROFILES=docker,headless
-
 docker-compose -p automate-idea-to-social up -d
