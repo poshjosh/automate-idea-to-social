@@ -24,7 +24,7 @@ stages:
   script-input:
     url: https://app.pictory.ai/textinput
     events:
-      on_error:
+      onerror:
         - *default_wait
         - retry 1
     stage-items:
