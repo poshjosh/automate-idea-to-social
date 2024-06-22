@@ -9,8 +9,8 @@ services:
       dockerfile: ../../Dockerfile
     shm_size: '2gb'
     environment:
-      PYTHONUNBUFFERED: 1
-      APP_PROFILES: docker
+      PYTHONUNBUFFERED: ${PYTHONUNBUFFERED:-1}
+      APP_PROFILES: ${APP_PROFILES:-docker}
     env_file:
       - .env
     volumes:

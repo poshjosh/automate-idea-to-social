@@ -6,12 +6,16 @@ variables:
 stages:
   stage-1:
     url: https://www.google.com/
+    events:
+      onstart: log INFO ||| START
+      error: log INFO ||| ERROR
+      onsuccess: log INFO ||| SUCCESS
     stage-items:
       item-1:
-        actions: log INFO ||||||| stage-1.item-1
+        actions: log INFO ||| stage-1.item-1
       item-2:
-        actions: log INFO ||||||| stage-1.item-2
-  run-other-stage-with-different-config:
+        actions: log INFO ||| stage-1.item-2
+  stage-2_run-other-stage-with-different-config:
     stage-items:
       item-1:
 #        events:
@@ -19,8 +23,8 @@ stages:
         actions:
           - eval importlib.import_module('urllib.parse').urlparse('https://test.com/abc/def?k=v').path
           - eval importlib.import_module('os').path.basename('${results.me[0]}')
-          - log INFO ||||||| ${results.me[1]}
-  test-iteration:
+          - log INFO ||| ${results.me[1]}
+  stage-3_test-iteration:
     iteration:
       index_variable: idx
       start: 1
@@ -31,13 +35,13 @@ stages:
         actions:
           - eval ${context.test-agent.variables}
           - eval ${results.me[0]}[${context.idx}]
-          - log INFO ||||||| Number at ${context.idx} is ${results.me[1]}
+          - log INFO ||| Number at ${context.idx} is ${results.me[1]}
           - set_context_values number=${results.me[1]}
-          - log INFO ||||||| Number from context ${context.number}
-# Logs INFO ||||||| Number at ['Zero', 'One', 'Two', 'Three'][3]
-#          - log INFO ||||||| Number at ${context.test-agent.variables}[${context.idx}]
+          - log INFO ||| Number from context ${context.number}
+# Logs INFO ||| Number at ['Zero', 'One', 'Two', 'Three'][3]
+#          - log INFO ||| Number at ${context.test-agent.variables}[${context.idx}]
 # Variable parsing will fail. We don't support nested variables at the moment,
-#          - log INFO ||||||| Number at ${context.test-agent.variables[${context.idx}]}
+#          - log INFO ||| Number at ${context.test-agent.variables[${context.idx}]}
 
 
 

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- docker compose file to make environment variables overridable.
+
 ## [0.1.1] - 2024-06-21
 
 ### Fixed
