@@ -122,16 +122,18 @@ stages:
           - /html/body//div[@role="dialog"]//*[contains(text(), "Next")]
           - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[1]/div/div/div/div[3]/div
           - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[1]/div/div/div/div[3]/div/div
-      add-cover-photo:
-        events:
-          onerror: continue
-        search-for:
-          - //div[@role="dialog"]//form[@enctype="multipart/form-data"]/input[@type="file"]
-          - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[2]/div[2]/div/div/div/div/div[1]/div[1]/div/div/form/input
-          - //div[@role="dialog"]//form/input[@type="file"]
-        actions:
-          - enter_text $VIDEO_COVER_IMAGE_SQUARE
-          - wait 15
+# The first scene (which is the cover-photo) is used if cover photo is not uploaded
+# We observed that the first scene looked better than when we uploaded a cover photo.
+#      add-cover-photo:
+#        events:
+#          onerror: continue
+#        search-for:
+#          - //div[@role="dialog"]//form[@enctype="multipart/form-data"]/input[@type="file"]
+#          - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[2]/div[2]/div/div/div/div/div[1]/div[1]/div/div/form/input
+#          - //div[@role="dialog"]//form/input[@type="file"]
+#        actions:
+#          - enter_text $VIDEO_COVER_IMAGE_SQUARE
+#          - wait 15
       proceed-to-content:
         search-for:
           - /html/body//div[@role="dialog"]//div[contains(text(), "Next")]
