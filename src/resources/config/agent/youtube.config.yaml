@@ -167,9 +167,6 @@ stages:
           - //*[@id="dialog"]//ytcp-video-pick-dialog-contents//ytcp-entity-card[1]/*[@id="content"]
           - //*[@id="dialog"]//ytcp-entity-card[1]
           - //*[@id="dialog"]//ytcp-entity-card[1]/*[@id="content"]
-  # Only one subtitle can be added
-  # We don't implement for now because we need to confirm if the added subtitles work as expected
-  #subtitles:
   checks:
     events:
       onstart: run_stages proceed
