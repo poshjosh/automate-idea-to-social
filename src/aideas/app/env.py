@@ -34,6 +34,8 @@ class Env(str, Enum):
 
     APP_LANGUAGE = ('APP_LANGUAGE', True, False)
 
+    DOCKER_MOUNT_CONTENT_DIR = ('DOCKER_MOUNT_CONTENT_DIR', False, True)
+
     SETUP_DISPLAY = ('SETUP_DISPLAY', True, False)
 
     AGENTS = ('AGENTS', True, False)

@@ -28,6 +28,8 @@ class AgentFactory:
             agent = self.create_translation_agent(agent_name, agent_config)
         elif agent_name == AgentName.BLOG:
             agent = self.create_blog_agent(agent_name, agent_config)
+        elif "generic" == agent_config.get('agent-type'):
+            agent = self.create_generic_agent(agent_name, agent_config)
         else:
             agent = self.create_browser_agent(agent_name, agent_config)
 
@@ -45,6 +47,13 @@ class AgentFactory:
                              agent_config,
                              dependencies: Union[dict[str, Agent], None] = None) -> BrowserAgent:
         return BrowserAgent.of_config(agent_name, self.__app_config, agent_config, dependencies)
+
+    def create_generic_agent(
+            self,
+            agent_name: str,
+            agent_config,
+            dependencies: Union[dict[str, Agent], None] = None) -> Agent:
+        return Agent.of_config(agent_name, self.__app_config, agent_config, dependencies)
 
     def create_translation_agent(
             self,
