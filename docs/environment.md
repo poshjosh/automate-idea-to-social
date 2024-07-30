@@ -12,7 +12,8 @@ The complete list of environment variables that can be used to configure the beh
 # default value is: latest
 APP_VERSION=[OPTIONAL]
 APP_LANGUAGE=en-GB
-DOCKER_MOUNT_DIR=
+DOCKER_MOUNT_CONTENT_DIR=
+DOCKER_MOUNT_BROWSER_PROFILE_DIR=
 # This is needed if we want to user undetected chromedriver with display.
 # If we don't set this, we get error: cannot connect to chrome at 127.0.0.1:
 # https://github.com/ultrafunkamsterdam/undetected-chromedriver/issues/743#issuecomment-1420119272
