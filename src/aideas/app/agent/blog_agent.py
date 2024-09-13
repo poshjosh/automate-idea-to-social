@@ -23,13 +23,6 @@ logger = logging.getLogger(__name__)
 
 
 class BlogAgent(Agent):
-    def close(self):
-        super().close()
-        # Rather than git pull, we are using git clone for each run.
-        # For future git clones to succeed we need to remove the existing directory.
-        # TODO - Implement git pull, if the directory already exists.
-        self.__delete_blog_related_dirs_if_exists()
-
     def run_stage(self,
                   run_context: RunContext,
                   stage: Name) -> ElementResultSet:
@@ -66,10 +59,15 @@ class BlogAgent(Agent):
     def clone_blog(self, action: Action, run_context: RunContext) -> ActionResult:
         target_dir: str = self.get_blog_tgt_dir()
 
+        # Rather than git pull, we are using git clone for each run.
+        # For future git clones to succeed we need to remove the existing directory.
+        # TODO - Implement git pull, if the directory already exists.
         self.__delete_cloned_blog_if_exists()
 
         git_clone_url: str = self.__get_blog_src_url_with_credentials(run_context)
         success = self.__clone_git_repo_to_dir(git_clone_url, target_dir)
+
+        logger.debug(f"Cloned: {success} to: {target_dir}")  # git_clone_url contains sensitive info
         return ActionResult(action, success, target_dir)
 
     def convert_to_markdown(self, action: Action, run_context: RunContext) -> ActionResult:
@@ -77,7 +75,8 @@ class BlogAgent(Agent):
         input_file: str = self.__get_video_source(run_context)
 
         output_file: str = self.__convert_to_markdown(script_path, input_file, None)
-
+        logger.debug(f"Converted to markdown: {output_file}, from: {input_file}, "
+                     f"using script: {script_path}")
         if output_file is None:
             return ActionResult(action, False, output_file)
 
@@ -105,6 +104,7 @@ class BlogAgent(Agent):
         visit_dirs(move, blog_src_dir, blog_target_dir, may_move)
 
         if len(moved) == 0:  # Nothing to update
+            logger.info(f"Moved {len(moved)} files to: {blog_target_dir} from: {blog_src_dir}")
             return ActionResult(action, True)
 
         commands: list[list[str]] = self._get_update_blog_content_commands(run_context)
@@ -112,6 +112,9 @@ class BlogAgent(Agent):
         success = run_commands_from_dir(blog_target_dir, commands)
 
         return ActionResult(action, success)
+
+    def update_blog(self, action: Action, run_context: RunContext) -> ActionResult:
+        return ActionResult(action, self.__update_blog(run_context))
 
     @staticmethod
     def get_blog_input_dir(run_context: RunContext) -> str:
@@ -121,9 +124,6 @@ class BlogAgent(Agent):
     @staticmethod
     def __get_video_source(run_context: RunContext):
         return run_context.get_env(Env.VIDEO_CONTENT_FILE)
-
-    def update_blog(self, action: Action, run_context: RunContext) -> ActionResult:
-        return ActionResult(action, self.__update_blog(run_context))
 
     def __update_blog(self, run_context: RunContext) -> bool:
 
@@ -156,13 +156,17 @@ class BlogAgent(Agent):
                                           save_to_dir: str) -> bool:
         temp_file = os.path.join(tempfile.gettempdir(), f'{self.get_name()}-{uuid.uuid4().hex}')
         success: bool = download_file(url, temp_file)
+        logger.debug(f"Downloaded: {success}, to: {temp_file}, from: {url}")
         if not success:
             return False
-        return extract_zip_file(temp_file, save_to_dir, True)
+        success: bool = extract_zip_file(temp_file, save_to_dir, True)
+        logger.debug(f"Extracted zip file: {success}, from: {save_to_dir}, from: {temp_file}")
+        return success
 
     def __delete_blog_related_dirs_if_exists(self):
         if os.path.exists(self.get_blog_tgt_dir()):
             shutil.rmtree(self.get_blog_tgt_dir())
+            logger.debug("Deleted blog target dir: %s", self.get_blog_tgt_dir())
 
     def __delete_cloned_blog_if_exists(self):
         # TODO Rather than remove the dir, we could just pull the latest changes
