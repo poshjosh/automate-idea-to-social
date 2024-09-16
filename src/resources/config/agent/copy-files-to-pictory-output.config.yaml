@@ -1,10 +1,11 @@
 agent-type: generic
+output-dir: ${OUTPUT_DIR}/agent/pictory
 stages:
   remove-existing-dir:
     stage-items:
       delete-dir:
         actions:
-          - eval importlib.import_module('shutil').rmtree('${OUTPUT_DIR}/agent/pictory')
+          - eval importlib.import_module('shutil').rmtree('${self.output-dir}')
   copy-subtitles:
     stage-items:
       copy-subtitle:
@@ -12,8 +13,8 @@ stages:
           onerror: continue
         actions:
           - get_first_file ${DOCKER_MOUNT_CONTENT_DIR} $TRANSLATION_FILE_EXTENSION
-          - eval importlib.import_module('os').makedirs('${OUTPUT_DIR}/agent/pictory')
-          - eval importlib.import_module('shutil').copy2('${results.me[0]}', '${OUTPUT_DIR}/agent/pictory/subtitles.${TRANSLATION_FILE_EXTENSION}')
+          - eval importlib.import_module('os').makedirs('${self.output-dir}')
+          - eval importlib.import_module('shutil').copy2('${results.me[0]}', '${self.output-dir}/subtitles.${TRANSLATION_FILE_EXTENSION}')
   copy-files:
     layouts:
       - landscape
@@ -27,10 +28,10 @@ stages:
         actions:
           - eval ${self.stages.copy-files.layouts}[${context.copy-files_idx}]
           - set_context_values copy-files_typ=${results.me[0]}
-          - eval importlib.import_module('os').makedirs('${OUTPUT_DIR}/agent/pictory/results/video-${context.copy-files_typ}/save-file')
+          - eval importlib.import_module('os').makedirs('${self.output-dir}/results/video-${context.copy-files_typ}/save-file')
           - set_context_values copy-files_filename=video-${context.copy-files_typ}.${VIDEO_OUTPUT_TYPE}
           - set_context_values copy-files_src=${DOCKER_MOUNT_CONTENT_DIR}/${context.copy-files_filename}
-          - set_context_values copy-files_tgt=${OUTPUT_DIR}/agent/pictory/results/video-${context.copy-files_typ}/save-file/${context.copy-files_filename}
+          - set_context_values copy-files_tgt=${self.output-dir}/results/video-${context.copy-files_typ}/save-file/${context.copy-files_filename}
           - log INFO source = ${context.copy-files_src}
           - log INFO target = ${context.copy-files_tgt}
           - eval importlib.import_module('shutil').copy2('${context.copy-files_src}', '${context.copy-files_tgt}')
