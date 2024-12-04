@@ -78,10 +78,14 @@ stages:
         actions:
           - click
           - wait 7
+      # At this point we are presented with a button by facebook to Continue to instagram.
+      # We click the button
+      login-via-facebook:
+        search-for:
+          - //*[@id="platformDialogForm"]//button[@name="__CONFIRM__" and @type="submit" and contains(text(), "Continue")]
+          - //*[@id="platformDialogForm"]//*[contains(text(), "Continue")]
   dismiss-notifications-alert:
-    # We need this url here because we are redirected to fb
-    # and if the first attempt fails we retry
-    url: https://www.instagram.com/
+#    url: https://www.instagram.com/
     events:
       onerror: continue
     stage-items:
