@@ -49,6 +49,15 @@ stages:
         actions:
           - click
           - wait 10 # Took a while to log in and arrive at target page
+  cookie-options:
+    events:
+      onerror: continue
+    stage-items:
+      accept-cookies:
+        search-for:
+          - /tiktok-cookie-banner//button[contains(text(), “Decline optional cookies“)]
+          - /tiktok-cookie-banner//*[contains(text(), “Decline optional cookies“)]
+          - /tiktok-cookie-banner//button[1]
   enter-upload-video-details:
     url: https://www.tiktok.com/creator-center/upload?from=upload&lang=en
     stage-items:
@@ -58,10 +67,8 @@ stages:
         #timeout-seconds: 0 # Signal not to use webdriver wait
         # <input type="file" accept="video/*" multiple="" class="jsx-3397029100" style="display: none;">
         search-for:
-          - //*[@id="root"]/div/div/div/div[1]/div/div/div/input
-#          - //*[@id="root"]//*[contains(@class, "upload-container")]//input[@type="file"]
-#          - //*[@id="root"]//input[@type="file"]
-#          - //*[@type="file"]
+          - //*[@id="root"]//input[@type="file" and @accept="video/*"]
+          - //input[@type="file" and @accept="video/*"]
         actions:
           # Use the first result from the specified pictory download stage
           #- enter_text $results.pictory.video-portrait.save-file[0]
@@ -71,7 +78,7 @@ stages:
       click-upload-button:
         timeout-seconds: 5
         search-for:
-#          - //*[@id="root"]/div/div/div/div/div/div/div/div[1]/div/div/div[3]/div/button[2]
+          - /html/body/div[1]/div/div[2]/div[1]/div/div[1]/button
           - //*[@id="root"]//*[@data-tt="Sidebar_index_UploadButtonContainer"]//button[contains(text(), "Upload")]
           - //*[@id="root"]//button[contains(text(), "Upload")]
       enter-video-caption:
@@ -89,6 +96,5 @@ stages:
     stage-items:
       click-submit-video:
         search-for:
-          - //*[@id="root"]//div[contains(@class, "btn-post")]/button
-          - //*[@id="root"]//*[text()="Post"]//..//..//../button
-          - //*[@id="root"]//*[text()="Post"]
+          - //*[@id="root"]//button[contains(text(), “Post”)]
+          - //*[@id="root"]//button[@data-e2e="post_video_button"]
