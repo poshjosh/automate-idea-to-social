@@ -42,7 +42,7 @@ class XPathTest(unittest.TestCase):
                 (By.XPATH, '/html/body//div[@role="dialog" '
                            'and descendant::*[contains(text(), "Your video is now ready")]]'
                            '//*[contains(text(), "Download")]')))
-        self.assertEquals(1, len(elements))
+        self.assertEqual(1, len(elements))
         self.assertIsNotNone(elements[0])
         print(f"Found element outerHTML:\n{elements[0].get_attribute('outerHTML')}")
 
