@@ -5,7 +5,7 @@ from app.app import App, AppArg, get_list_arg_value
 from app.config_loader import ConfigLoader
 from app.env import Env
 
-if __name__ == "__main__":
+if __name__ == '__main__':
 
     Env.set_defaults()
 

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/body.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/automate.css') }}">
+</head>
+<body>
+    <h1>{{ heading }}</h1>
+    <form action="/automate/start" method="post">
+        <p><label for="agents">Select agents: </label></p>
+        <p>
+            <select id="agents" name="agents" multiple>
+                <option value="test-agent">Test Agent</option>
+                <option value="test-log">Test Log</option>
+            </select>
+        </p>
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>

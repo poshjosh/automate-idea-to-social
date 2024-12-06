@@ -1,0 +1,4 @@
+stages:
+  log-test-message:
+    events:
+      onstart: log INFO ||| test-log

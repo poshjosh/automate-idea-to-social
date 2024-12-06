@@ -2,4 +2,4 @@
 
 source ./pre_run.sh
 
-python3 aideas/main.py
+python3 aideas/web.py

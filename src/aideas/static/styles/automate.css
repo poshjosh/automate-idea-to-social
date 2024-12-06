@@ -1,0 +1,10 @@
+form {
+    width: 20rem;
+    font-size: 1.5rem;
+    background-color: #f0f3f6;
+    padding: 1rem;
+    border-radius: 0.5rem; }
+
+form select { width: 20rem; }
+
+form button { font-size: 1.5rem; }
