@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Transform into web app using flask.
 - Mount browser profile dir for use within docker.
 
 ## [0.1.2] - 2024-07-01
