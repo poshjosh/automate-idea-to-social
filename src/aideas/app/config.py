@@ -561,3 +561,4 @@ def parse_query(value: str, separator=' ') -> dict[str, str]:
     value = value.replace('=', separator)
     result: list[str] = tokenize(value, separator)
     return __list_to_dict(result)
+

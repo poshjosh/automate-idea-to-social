@@ -4,6 +4,7 @@
 # minimal prefs e.g: download.default_directory
 app:
   name: aideas
+  title: AIDEAS | Automate posting your ideas to social
   agent:
     timeout-seconds: 20
 browser:

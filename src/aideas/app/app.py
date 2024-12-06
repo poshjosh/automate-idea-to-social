@@ -35,6 +35,10 @@ class App:
         self.__agent_factory = agent_factory
         self.__config = config
 
+    @property
+    def title(self):
+        return self.__config["app"]["title"]
+
     def run(self, agent_names: Union[str, list[str], None] = None) -> AgentResultSet:
 
         run_context: RunContext = RunContext.of_config(self.__config, agent_names)
