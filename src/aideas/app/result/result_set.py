@@ -85,14 +85,13 @@ class ResultSet:
     def items(self):
         return self.__results.items()
 
-    def pretty_str(self, separator: str = "\n", offset: int = 0) -> str:
-        tab = '\t'
+    def pretty_str(self, separator: str = "\n", tab: str = "\t", offset: int = 0) -> str:
         output: str = ''
         for key in self.keys():
             output = f'{output}{separator}{tab * offset}{key}'
             value = self.get(key)
             if isinstance(value, ResultSet):
-                output = f'{output}{value.pretty_str(separator, offset + 1)}'
+                output = f'{output}{value.pretty_str(separator, tab, offset + 1)}'
             elif isinstance(value, dict):
                 for k, v in value.items():
                     output = f'{output}{separator}{tab * (offset + 1)}{k}={v}'

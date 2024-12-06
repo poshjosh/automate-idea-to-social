@@ -27,7 +27,7 @@ def automate():
 def automate_start():
     agents_key = AppArg.AGENTS.env_name.value.lower()
     agents = request.form.getlist(agents_key)
-    return App.of_defaults(config_loader).run(agents).pretty_str("<br/>")
+    return App.of_defaults(config_loader).run(agents).pretty_str("<br/>", "&emsp;")
 
 
 if __name__ == '__main__':
