@@ -99,18 +99,17 @@ class Env(str, Enum):
 
     @staticmethod
     def collect(add_to: dict[str, any] = None, names: [str] = None) -> dict[str, any]:
-        if names is None:
-            names = Env.values()
-            names.extend([e.upper() for e in RunArg.values()])
         if add_to is None:
             add_to = {}
+        if names is None:
+            names = Env.values()
+            names.extend(RunArg.values())
         for k, v in os.environ.items():
             if k in names:
                 env = Env(k)
                 if env.is_path():
                     v = Paths.get_path(v) if env.is_optional() else Paths.require_path(v)
                 add_to[k] = v
-
         return add_to
 
 
@@ -130,6 +129,10 @@ def get_app_language(full: bool) -> str:
     
 def is_docker() -> bool:
     return 'docker' in os.environ.get('APP_PROFILES', '')
+
+
+def is_production() -> bool:
+    return 'prod' in os.environ.get('APP_ENV', '')
 
 
 def get_cached_results_file(agent_name: str, filename: str = None) -> str:
@@ -179,3 +182,18 @@ def get_env_value(name: Union[str, Enum], default: any = None) -> any:
 def get_cookies_file_path(domain: str, file_name: str = "cookies.pkl") -> str:
     dir_path = Paths.get_path(get_env_value(Env.OUTPUT_DIR), "cookies")
     return os.path.join(dir_path, domain, file_name)
+
+
+def get_downloads_file_path(session_id: str, filename: str) -> str:
+    if not session_id:
+        raise ValueError('session id is required')
+    if not filename:
+        raise ValueError('file name is required')
+    now = datetime.now()
+    dir_path: str = os.path.join(Paths.get_path(get_env_value(Env.OUTPUT_DIR)),
+                                 'sessions',
+                                 now.strftime("%Y"),
+                                 now.strftime("%m"),
+                                 now.strftime("%d"),
+                                 session_id)
+    return os.path.join(dir_path, filename)

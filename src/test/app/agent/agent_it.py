@@ -69,7 +69,8 @@ class AgentIT(unittest.TestCase):
             agent_config = format_config(agent_config)
 
         # Not TestBrowserAgent
-        agent = BrowserAgent.of_config(agent_name, run_context.get_app_config(), agent_config, {})
+        agent = BrowserAgent.of_config(
+            agent_name, run_context.get_app_config().to_dict(), agent_config, {})
 
         result = agent.run_stage(run_context, Name.of(stage_name))
         print(f'Completed. Result:\n{result.pretty_str()}')

@@ -3,6 +3,7 @@ from typing import Union
 
 from .action.action_result import ActionResult
 from .action.variable_parser import replace_all_variables
+from .config import AppConfig, RunConfig
 from .env import Env
 from .result.result_set import AgentResultSet, ElementResultSet, StageResultSet
 
@@ -32,8 +33,9 @@ class RunContext:
     def __init__(self,
                  app_config: dict[str, any],
                  run_config: dict[str, any]):
-        self.__app_config: dict[str, any] = app_config
-        self.__agent_names: list[str] = self.__to_list(app_config, run_config.get('agents', None))
+        self.__app_config = AppConfig(app_config)
+        self.__run_config = RunConfig(run_config)
+        self.__agent_names = self.__run_config.get_agents(self.__app_config.get_agents())
         self.__args: dict[str, any] = run_config
         self.__args_formatted = {}
         for k, v in self.__args.items():
@@ -143,18 +145,11 @@ class RunContext:
     def get_result_set(self) -> AgentResultSet:
         return self.__result_set
 
-    def get_app_config(self) -> dict[str, any]:
+    def get_app_config(self) -> AppConfig:
         return self.__app_config
 
-    @staticmethod
-    def __to_list(config: dict[str, any],
-                  agent_names: Union[str, list[str], None] = None) -> list[str]:
-        if agent_names is None or agent_names == '':
-            return config.get('agents', [])
-        elif isinstance(agent_names, list):
-            return config.get('agents', []) if len(agent_names) == 0 else agent_names
-        else:
-            return config.get('agents', []) if len(agent_names) == 0 else [str(agent_names)]
+    def get_run_config(self) -> RunConfig:
+        return self.__run_config
 
 
 NONE = RunContext({}, {})

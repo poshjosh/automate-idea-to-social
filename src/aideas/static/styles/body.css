@@ -1,1 +1,27 @@
-body { padding:1rem; }
+body {
+    font-size: 1.5rem;
+    font-family: 'Roboto', sans-serif;
+    padding:1rem;
+}
+
+body .heading {
+    width: 100%;
+    background-color: #f0f3f6;
+    font-size: 2rem;
+    font-weight: 700;
+    padding: 0.5rem;
+}
+
+body .error {
+    width: 100%;
+    background-color: #db4437;
+    color: white;
+    margin: 0.5rem;
+}
+
+body .info {
+    width: 100%;
+    background-color: white;
+    color: navy;
+    margin: 0.5rem;
+}

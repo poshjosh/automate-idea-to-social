@@ -10,21 +10,21 @@ agents:
 ##################################################################
 # Used for title and description.
 # Used to generate the video.
-video-content-file: "test/resources/test-content/Law and words.txt"
+video-content-file: test/resources/test-content/video.txt
+
+# Optional. Used for suffix to append to the description. If not set, description-suffix will be used
+video-content-suffix-file: test/resources/test-content/video-suffix.txt
 
 # Optional. If not set, the name (without extension) of video.content.file will be used
 #video-title:
 
 # Optional. If not set, the content of video.content.file will be used
-#video-description:
+#video-content:
 
-# Optional. If not set, video.content.file is used
-video-input-file: test/resources/test-content/video.txt
-
-# Optional. If not set, the content of VIDEO_INPUT_FILE will be used
-#video-input-text:
+# Optional. If not set, the content of video-content-suffix-file will be used.
+#video-content-suffix:
 
 video-cover-image: test/resources/test-content/cover.jpg
 
-# Optional. If not set, VIDEO_COVER_IMAGE will be used
+# Optional. If not set, video-cover-image will be used
 video-cover-image-square: test/resources/test-content/cover-square.jpg

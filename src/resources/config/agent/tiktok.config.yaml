@@ -91,7 +91,7 @@ stages:
           - //*[@id="root"]//*[starts-with(@class, "DraftEditor-root")]//*[@data-contents="true"]//span[@data-text="true"]
           - //*[@id="root"]//*[@data-contents="true"]//span[@data-text="true"]
           - //*[@id="root"]//*[@data-text="true"]
-        actions: enter_text $VIDEO_DESCRIPTION
+        actions: enter_text $VIDEO_CONTENT_FULL
   submit-video:
     stage-items:
       click-submit-video:

@@ -61,7 +61,7 @@ stages:
           - ${self.post-dialog}//form//div[@role="textbox"]
           - ${self.post-dialog}//*[@role="textbox"]
         actions:
-          - enter_text $VIDEO_DESCRIPTION
+          - enter_text $VIDEO_CONTENT_FULL
           - wait 10 # Long posts take a while
       submit-post:
         search-for:

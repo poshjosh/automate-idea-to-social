@@ -34,7 +34,7 @@ class ElementResultSetTest(unittest.TestCase):
 
     def test_add_given_no_failure_should_be_success(self):
         result_set = ElementResultSet().add(self.success_0).add(self.success_1)
-        print(result_set)
+        print(result_set.pretty_str())
         self.assertTrue(result_set.is_successful())
 
     def test_add_given_only_failures_should_be_failure(self):

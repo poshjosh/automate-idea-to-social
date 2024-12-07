@@ -73,7 +73,7 @@ stages:
         actions:
           - move_to_element
           - enter
-          - enter_text $VIDEO_DESCRIPTION
+          - enter_text $VIDEO_CONTENT_FULL
           - wait 2
   post:
     stage-items:

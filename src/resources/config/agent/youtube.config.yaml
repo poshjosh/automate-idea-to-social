@@ -103,7 +103,7 @@ stages:
           - //*[@id="description-wrapper"]//*[@id="textbox"]
           - //*[@id="description-wrapper"]//*[@id="description-textarea"]
           #- //*[@id="description-wrapper"]//*[@id="input"]
-        actions: enter_text $VIDEO_DESCRIPTION
+        actions: enter_text $VIDEO_CONTENT_FULL
   add-video-playlist:
     events:
       onerror: continue

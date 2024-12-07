@@ -226,5 +226,5 @@ class AgentResultSet(ResultSet):
         super().__init__(self.is_result_successful, results)
 
     @staticmethod
-    def is_result_successful(result: StageResultSet) -> bool:
+    def is_result_successful(result: ResultSet) -> bool:
         return result.is_successful()

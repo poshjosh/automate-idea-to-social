@@ -34,7 +34,8 @@ stages:
         actions: log DEBUG This should not be logged; as the condition above should not pass
         """
         agent_config = load_yaml_str(yaml)
-        agent = TestBrowserAgent.of_config(agent_name, run_context.get_app_config(), agent_config)
+        agent = TestBrowserAgent.of_config(
+            agent_name, run_context.get_app_config().to_dict(), agent_config)
 
         # We use a ElementActionHandler, rather than TestElementActionHandler
         automator = agent.get_automator()
@@ -63,7 +64,8 @@ stages:
 
         agent_config = load_agent_config(agent_name)
 
-        agent = TestBrowserAgent.of_config(agent_name, run_context.get_app_config(), agent_config)
+        agent = TestBrowserAgent.of_config(
+            agent_name, run_context.get_app_config().to_dict(), agent_config)
 
         self._agent_should_run_successfully(agent, run_context)
 

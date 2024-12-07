@@ -6,6 +6,7 @@ from collections.abc import Iterable
 from enum import Enum, unique
 from typing import Union, TypeVar, Callable
 
+from pyu.io.file import read_content
 from aideas.app.paths import Paths
 
 logger = logging.getLogger(__name__)
@@ -69,10 +70,33 @@ def merge_configs(src: dict[str, any],
 
 class AppConfig:
     def __init__(self, config: dict[str, any]):
-        self.__config = config.get('app', {})
+        self.__config = config if config is not None else {}
+
+    def to_dict(self) -> dict[str, any]:
+        return {**self.__config}
+
+    def app(self) -> dict[str, any]:
+        return self.__config.get('app', {})
 
     def get_title(self, default: Union[str, None] = None) -> str:
-        return self.__config.get('title', default)
+        return self.app().get('title', default)
+
+    def get_agents(self, default: [str] = None) -> [str]:
+        return self.__config.get('agents', [] if default is None else default)
+
+
+class RunConfig:
+    def __init__(self, config: dict[str, any]):
+        self.__config = config if config is not None else {}
+
+    def to_dict(self) -> dict[str, any]:
+        return {**self.__config}
+
+    def get_agents(self, default: [str] = None) -> [str]:
+        return self.__config.get('agents', [] if default is None else default)
+
+    def is_continue_on_error(self, default: bool = False) -> bool:
+        return self.__config.get('continue-on-error', default)
 
 
 class BrowserConfig:
@@ -330,8 +354,8 @@ class AgentConfig:
     def __init__(self, config: dict[str, any]):
         self.__config = check_for_typo(config, STAGES_KEY)
 
-    def root(self) -> dict[str, any]:
-        return self.__config
+    def to_dict(self) -> dict[str, any]:
+        return {**self.__config}
 
     def stages(self, result_if_none=Union[dict[str, any], None]) -> Union[dict[str, any], None]:
         return self.__config.get(STAGES_KEY, result_if_none)
@@ -580,6 +604,9 @@ The following code is used to parse command line arguments.
 """
 T = TypeVar("T", bound=any)
 
+# A concatenation of VIDEO_CONTENT and VIDEO_CONTENT_SUFFIX
+VIDEO_CONTENT_FULL = "VIDEO_CONTENT_FULL"
+
 
 @unique
 class RunArg(str, Enum):
@@ -610,11 +637,12 @@ class RunArg(str, Enum):
         return self.__path
 
     AGENTS = ('agents', 'a', 'list')
-    VIDEO_CONTENT_FILE = ('video-content-file', 'vcf', 'str', False, True)
+    CONTINUE_ON_ERROR = ('continue-on-error', 'coe', 'bool', True, False)
+    VIDEO_CONTENT_FILE = ('video-content-file', 'vcf', 'str', True, True)
+    VIDEO_CONTENT_SUFFIX_FILE = ('video-content-suffix-file', 'vcsf', 'str', True, True)
     VIDEO_TITLE = ('video-title', 'vt', 'str', True, False)
-    VIDEO_DESCRIPTION = ('video-description', 'vd', 'str', True, False)
-    VIDEO_INPUT_FILE = ('video-input-file', 'vif', 'str', True, True)
-    VIDEO_INPUT_TEXT = ('video-input-text', 'vit', 'str', True, False)
+    VIDEO_CONTENT = ('video-content', 'vd', 'str', True, False)
+    VIDEO_CONTENT_SUFFIX = ('video-content-suffix', 'vds', 'str', True, False)
     VIDEO_COVER_IMAGE = ('video-cover-image', 'vci', 'str', False, True)
     VIDEO_COVER_IMAGE_SQUARE = ('video-cover-image-square', 'vcis', 'str', True, True)
 
@@ -623,47 +651,90 @@ class RunArg(str, Enum):
         return [RunArg(e).value for e in RunArg]
 
     @staticmethod
+    def of_dict(source: dict[str, any], target: dict[str, any] = None) -> dict[str, any]:
+        if target is None:
+            target = {}
+        for k, v in source.items():
+            if not v:
+                continue
+            if k in RunArg.values():
+                v = RunArg._parse(RunArg(k), v)
+            target[k] = v
+        return RunArg._update_defaults(target)
+
+    @staticmethod
     def collect(add_to: dict[str, any] = None) -> dict[str, any]:
         if add_to is None:
             add_to = {}
         for e in RunArg:
-            arg = RunArg(e)
-            if arg.type == "list":
-                value = RunArg.get_list_arg_value(arg)
-            else:
-                value = RunArg.get_arg_value(arg)
-            if not value:
+            run_arg = RunArg(e)
+            sval = RunArg.get_sys_argv_value(run_arg)
+            if not sval:
                 continue
-            if arg.is_path:
-                value = Paths.get_path(value) if arg.is_optional else Paths.require_path(value)
-            add_to[arg] = value
-
-        return add_to
+            add_to[run_arg.value] = RunArg._parse(run_arg, sval)
+        return RunArg._update_defaults(add_to)
 
     @staticmethod
-    def get_list_arg_value(arg_name: 'RunArg') -> [str]:
-        return RunArg.__get_formatted_arg(arg_name, lambda x: x.split(','), [])
+    def _update_defaults(result: dict[str, any]) -> dict[str, any]:
+        # If target is empty, then no need update defaults,
+        # To update defaults, we expect some values to be present
+        if not result:
+            return result
+        video_content_path = result.get(RunArg.VIDEO_CONTENT_FILE._value_)
+        video_content = None if not video_content_path else read_content(video_content_path)
+
+        if not result.get(RunArg.VIDEO_TITLE._value_):
+            if not video_content_path:
+                raise ValueError(f"Specify either {RunArg.VIDEO_CONTENT_FILE._value_} "
+                                 f"or {RunArg.VIDEO_TITLE._value_}")
+            result[RunArg.VIDEO_TITLE._value_] = os.path.basename(video_content_path).split('.')[0]
+
+        if not result.get(RunArg.VIDEO_CONTENT._value_):
+            if not video_content_path:
+                raise ValueError(f"Specify either {RunArg.VIDEO_CONTENT_FILE._value_} "
+                                 f"or {RunArg.VIDEO_CONTENT._value_}")
+            result[RunArg.VIDEO_CONTENT._value_] = video_content
+
+        video_content_suffix_path = result.get(RunArg.VIDEO_CONTENT_SUFFIX_FILE._value_)
+
+        if not result.get(RunArg.VIDEO_CONTENT_SUFFIX._value_):
+            if video_content_suffix_path:
+                result[RunArg.VIDEO_CONTENT_SUFFIX._value_] \
+                    = read_content(video_content_suffix_path)
+
+        video_content = result[RunArg.VIDEO_CONTENT._value_]
+        video_content_suffix = result.get(RunArg.VIDEO_CONTENT_SUFFIX._value_)
+        video_content_suffix = '' if not video_content_suffix else f"\n{video_content_suffix}"
+        result[VIDEO_CONTENT_FULL] = f"{video_content}{video_content_suffix}"
+
+        if not result.get(RunArg.VIDEO_COVER_IMAGE_SQUARE._value_):
+            result[RunArg.VIDEO_COVER_IMAGE_SQUARE._value_] \
+                = result[RunArg.VIDEO_COVER_IMAGE._value_]
+        return result
 
     @staticmethod
-    def __get_formatted_arg(arg: 'RunArg',
-                            convert: Callable[[str], T],
-                            result_if_none: Union[T, None] = None) -> T:
-        arg_value = RunArg.get_arg_value(arg, None)
-        return result_if_none if arg_value is None else convert(arg_value)
-
-    @staticmethod
-    def get_arg_value(arg: 'RunArg', result_if_none: Union[any, None] = None) -> any:
+    def get_sys_argv_value(run_arg: 'RunArg', result_if_none: Union[any, None] = None) -> any:
         """
         Get the value of the argument with the given name.
         Arguments have aliases that can be used to refer to them.
         --agents twitter could be written as -a twitter
-        :param arg: The argument.
+        :param run_arg: The run argument.
         :param result_if_none: The result to return if none
         :return: The value of the argument with the given name.
         """
         sys_args: [str] = [e.lower() for e in sys.argv]
-        candidates: [str] = [f'--{arg.value}', f'-{arg.alias}']
+        candidates: [str] = [f'--{run_arg.value}', f'-{run_arg.alias}']
         for candidate in candidates:
             if candidate in sys_args:
                 return sys_args[sys_args.index(candidate) + 1]
-        return result_if_none if not arg.value else os.environ.get(arg.name, result_if_none)
+        return result_if_none
+
+    @staticmethod
+    def _parse(run_arg: 'RunArg', value: str) -> any:
+        if run_arg.type == "bool":
+            value = value == "true"
+        elif run_arg.type == "list":
+            value = value if isinstance(value, list) else str(value).split(',')
+        if run_arg.is_path:
+            value = Paths.get_path(value) if run_arg.is_optional else Paths.require_path(value)
+        return value

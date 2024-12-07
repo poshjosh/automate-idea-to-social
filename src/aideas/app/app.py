@@ -3,6 +3,8 @@ import shutil
 import logging
 from typing import Union
 
+from .action.action import Action
+from .action.action_result import ActionResult
 from .agent.agent_factory import AgentFactory
 from .env import get_cached_results_file
 from .result.result_set import AgentResultSet, StageResultSet
@@ -40,15 +42,28 @@ class App:
     def run(self, run_config: dict[str, any]) -> AgentResultSet:
 
         run_context: RunContext = RunContext.of_config(self.__config, run_config)
+        continue_on_error = run_context.get_run_config().is_continue_on_error() is True
 
-        logger.debug(f"Running agents: {run_context.get_agent_names()}")
+        agent_names = run_context.get_agent_names()
 
-        for agent_name in run_context.get_agent_names():
+        logger.debug(f"Running agents: {agent_names}, continue_on_error: {continue_on_error}")
+
+        for agent_name in agent_names:
             agent = self.__agent_factory.get_agent(agent_name)
 
-            stage_result_set = agent.run(run_context)
-            self.__save_agent_results(agent_name, stage_result_set)
-
+            try:
+                stage_result_set = agent.run(run_context)
+                self.__save_agent_results(agent_name, stage_result_set)
+            except Exception as ex:
+                if continue_on_error:
+                    logger.exception(ex)
+                    result = run_context.get_stage_results(agent_name)
+                    if not result or result.is_empty():
+                        action = Action.of(agent_name, "*", "*", "*", run_context)
+                        run_context.add_action_result(agent_name, action.get_stage_id(),
+                                                      ActionResult.failure(action, "Error"))
+                else:
+                    raise ex
         return run_context.get_result_set().close()
 
     def __save_agent_results(self, agent_name, result_set: StageResultSet):

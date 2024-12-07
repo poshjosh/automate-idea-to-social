@@ -63,7 +63,7 @@ class Agent:
         return clone
 
     def clone(self) -> 'Agent':
-        return self.__class__(self.get_name(), self.get_config().root(), self._get_dependencies(),
+        return self.__class__(self.get_name(), self.get_config().to_dict(), self._get_dependencies(),
                               self.__automator, self.__interval_seconds)
 
     def add_dependency(self, agent_name: str, agent: 'Agent') -> 'Agent':
@@ -83,7 +83,7 @@ class Agent:
         try:
 
             self.__config = AgentConfig(
-                run_context.replace_variables(self.__name, self.__config.root()))
+                run_context.replace_variables(self.__name, self.__config.to_dict()))
 
             if self.__config.is_clear_output_dir() is True:
                 self.__clear_dirs()

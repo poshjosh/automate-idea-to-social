@@ -8,21 +8,20 @@ agents:
 ##################################################################
 # These can be full paths, because we are mounting their directory
 ##################################################################
-# Used for title and description.
-# Used to generate the video.
-video-content-file: 
+# Optional. Used for title and description. Either set this, or provide a title and description
+video-content-file:
+
+# Optional. Used for suffix to append to the description. If not set, description-suffix will be used
+video-content-suffix-file:
 
 # Optional. If not set, the name (without extension) of video-content-file will be used
 video-title:
 
 # Optional. If not set, the content of video-content-file will be used
-video-description:
-
-# Optional. If not set, video.content.file is used
-video-input-file: 
-
-# Optional. If not set, the content of video-input-file will be used
-video-input-text:
+video-content:
+  
+# Optional. If not set, the content of video-content-suffix-file will be used.
+video-content-suffix: 
 
 video-cover-image: 
 
