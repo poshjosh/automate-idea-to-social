@@ -1,4 +1,5 @@
 import logging
+import os
 from typing import Union
 
 from pyu.io.variable_parser import contains_variable, get_scoped_value, \
@@ -6,7 +7,6 @@ from pyu.io.variable_parser import contains_variable, get_scoped_value, \
     replace_variables, VARIABLE_ANCHOR
 
 from ..config import STAGES_KEY, STAGE_ITEMS_KEY
-from ..env import Env
 
 """
 Each run may involve one or more agents. All the agents involved 
@@ -58,7 +58,7 @@ def replace_all_variables(
         target: dict[str, any], source: Union[dict[str, any], None] = None) -> dict[str, any]:
 
     if not source:
-        source = Env.load()
+        source = dict(os.environ)
 
     return replace_all(target, source, _check_replaced, NODES_TO_SKIP)
 

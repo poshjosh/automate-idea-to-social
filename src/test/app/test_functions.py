@@ -4,15 +4,40 @@ from typing import Union, Callable
 from selenium import webdriver
 
 from aideas.app.action.action_result import ActionResult
+from aideas.app.config import RunArg
 from aideas.app.config_loader import ConfigLoader
 from aideas.app.result.result_set import ElementResultSet
+from aideas.app.run_context import RunContext
 from aideas.app.web.webdriver_creator import WebDriverCreator
 
 __TEST_SRC_DIR = f'{os.getcwd()}/test/app'
 
 
-def get_config_loader() -> ConfigLoader:
+def get_main_config_loader() -> ConfigLoader:
     return ConfigLoader(os.path.join("resources", "config"))
+
+
+def get_test_config_loader() -> ConfigLoader:
+    return ConfigLoader(os.path.join("test", "resources", "config"))
+
+
+def load_app_config() -> dict[str, any]:
+    return get_main_config_loader().load_app_config()
+
+
+def load_agent_config(agent_name: str) -> dict[str, any]:
+    return get_main_config_loader().load_agent_config(agent_name)
+
+
+def load_run_config(agent_names: [str] = None) -> dict[str, any]:
+    run_config = get_test_config_loader().load_run_config()
+    if agent_names:
+        run_config[RunArg.AGENTS] = agent_names
+    return run_config
+
+
+def get_run_context(agent_names: [str] = None) -> RunContext:
+    return RunContext.of_config(load_app_config(), load_run_config(agent_names))
 
 
 def init_logging(config):
@@ -31,7 +56,7 @@ def __get_logging_config() -> dict[str, any]:
 
 def create_webdriver(config: Union[dict, None] = None, agent_name: str = None) -> webdriver:
     if config is None:
-        config = get_config_loader().load_app_config()
+        config = get_main_config_loader().load_app_config()
 
     chrome_config = config.get("browser", {}).get("chrome", {})
 

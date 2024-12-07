@@ -2,36 +2,37 @@ from flask import Flask, render_template, request
 import logging.config
 import os.path
 
-from app.app import App, AppArg
+from app.app import App
+from app.config import AppConfig
 from app.config_loader import ConfigLoader
 from app.env import Env
 
 web_app = Flask(__name__)
 
+CONFIG_PATH = os.path.join(os.getcwd(), 'resources', 'config')
+
 Env.set_defaults()
 
-config_loader = ConfigLoader(os.path.join(os.getcwd(), 'resources', 'config'))
+logging.config.dictConfig(ConfigLoader(CONFIG_PATH).load_logging_config())
 
-logging.config.dictConfig(config_loader.load_logging_config())
-
-app = App.of_defaults(config_loader)
+app = AppConfig(ConfigLoader(CONFIG_PATH).load_app_config())
 
 
 @web_app.route('/')
 def index():
-    return render_template('index.html', title=app.title, heading=app.title)
+    return render_template('index.html', title=app.get_title(), heading=app.get_title())
 
 
 @web_app.route('/automate')
 def automate():
-    return render_template('automate.html', title=app.title,
+    return render_template('automate.html', title=app.get_title(),
                            heading="Enter details of post to automatically send")
 
 
 @web_app.route('/automate/start', methods=['POST'])
 def automate_start():
-    agents = request.form.getlist(AppArg.AGENTS.env_name.value.lower())
-    return app.run(agents).pretty_str("<br/>", "&emsp;")
+    config_loader = ConfigLoader(os.path.join(os.getcwd(), 'resources', 'config'), request.form)
+    return App.of_defaults(config_loader).run(request.form).pretty_str("<br/>", "&emsp;")
 
 
 if __name__ == '__main__':

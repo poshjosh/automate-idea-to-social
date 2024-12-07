@@ -1,3 +1,30 @@
+### REDDIT WORKS ON LOCAL MACHINE BUT NOT IN DOCKER
+#copy-files-to-pictory-output,translation
+#image-generator,pictory,translation,youtube,blog,twitter,facebook,instagram,tiktok,reddit
 agents:
   - test-log
-  - test-agent
+
+# video input
+##################################################################
+# These can be full paths, because we are mounting their directory
+##################################################################
+# Used for title and description.
+# Used to generate the video.
+video-content-file: "/Users/chinomso/Desktop/live-above-3D/do-this-to-get-your-prayer-answered/Do this, to get your prayer answered.txt"
+
+# Optional. If not set, the name (without extension) of video-content-file will be used
+#video-title:
+
+# Optional. If not set, the content of video-content-file will be used
+#video-description:
+
+# Optional. If not set, video-content-file is used
+video-input-file: /Users/chinomso/Desktop/live-above-3D/do-this-to-get-your-prayer-answered/video.txt
+
+# Optional. If not set, the content of video-input-file will be used
+#video-input-text:
+
+video-cover-image: /Users/chinomso/Desktop/live-above-3D/do-this-to-get-your-prayer-answered/cover.jpg
+
+# Optional. If not set, video-cover-image will be used
+video-cover-image-square: /Users/chinomso/Desktop/live-above-3D/do-this-to-get-your-prayer-answered/cover-square.jpg

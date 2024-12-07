@@ -5,3 +5,5 @@ source ./pre_run.sh
 printf "\nStarting tests\n\n"
 
 python3 -m unittest discover -s test/app -p "*_test.py"
+#python3 -m unittest discover -s test/app/action -p "*variable_parser_test.py"
+#python3 -m unittest discover -s test/app/agent -p "*blog_agent_test.py"

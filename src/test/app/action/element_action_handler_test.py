@@ -7,7 +7,8 @@ from aideas.app.config import AgentConfig, STAGES_KEY, STAGE_ITEMS_KEY
 from aideas.app.web.element_selector import ElementSelector
 from aideas.app.run_context import RunContext
 
-from test.app.test_functions import create_webdriver, get_agent_resource, get_config_loader
+from test.app.test_functions import create_webdriver, get_agent_resource, get_run_context, \
+    load_agent_config
 
 
 class ElementActionHandlerTest(unittest.TestCase):
@@ -22,10 +23,10 @@ class ElementActionHandlerTest(unittest.TestCase):
         stage_name = 'branding'
         webdriver = create_webdriver(agent_name=agent_name)
         webdriver.get(get_agent_resource(agent_name, 'storyboard_page.html'))
-        config = get_config_loader().load_agent_config(agent_name)
+        config = load_agent_config(agent_name)
         stage_config = config[STAGES_KEY][stage_name]
         targets = stage_config[STAGE_ITEMS_KEY].keys()
-        run_context = RunContext.of_config(get_config_loader().load_app_config())
+        run_context = get_run_context([agent_name])
         for target in targets:
             _execute_actions(
                 webdriver, run_context, agent_name, stage_name, stage_config, target)
@@ -54,7 +55,7 @@ def _execute_actions(webdriver, run_context: RunContext,
 
 
 def _collect_agent_actions(agent: str) -> dict[str, list[str]]:
-    stages_config = get_config_loader().load_agent_config(agent)[STAGES_KEY]
+    stages_config = load_agent_config(agent)[STAGES_KEY]
     stage_actions: dict[str, list[str]] = {}
     for stage_name in stages_config.keys():
         stage_config: dict[str, any] = stages_config[stage_name]

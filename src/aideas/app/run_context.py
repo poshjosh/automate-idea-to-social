@@ -18,16 +18,26 @@ class RunContext:
 
     @staticmethod
     def of_config(app_config: dict[str, any],
-                  agent_names: Union[str, list[str], None] = None) -> 'RunContext':
+                  run_config: dict[str, any]) -> 'RunContext':
         app_name = app_config['app']['name']
-        return RunContext(app_config, agent_names, Env.load(app_name))
+
+        run_opts = {'app.name': app_name}
+
+        Env.collect(run_opts)
+
+        run_opts.update(run_config)
+
+        return RunContext(app_config, run_opts)
 
     def __init__(self,
                  app_config: dict[str, any],
-                 agent_names: Union[str, list[str], None] = None,
-                 args: dict[str, any] = None):
-        self.__agent_names: list[str] = self.__to_list(app_config, agent_names)
-        self.__args: dict[str, any] = args
+                 run_config: dict[str, any]):
+        self.__app_config: dict[str, any] = app_config
+        self.__agent_names: list[str] = self.__to_list(app_config, run_config.get('agents', None))
+        self.__args: dict[str, any] = run_config
+        self.__args_formatted = {}
+        for k, v in self.__args.items():
+            self.__args_formatted[RunContext._format_key(k)] = v
         self.__result_set: AgentResultSet = AgentResultSet()
         self.__values = {}
 
@@ -95,11 +105,15 @@ class RunContext:
     def get_agent_names(self) -> list[str]:
         return [e for e in self.__agent_names]
 
+    @staticmethod
+    def _format_key(key: str):
+        return key if not key else key.replace('_', '').replace('-', '').lower()
+
     def get_env(self, key: Enum, result_if_none: Union[any, None] = None) -> any:
         return self.get_arg(key.value, result_if_none)
 
     def get_arg(self, key: str, result_if_none: Union[any, None] = None) -> any:
-        return self.__args.get(key, result_if_none)
+        return self.__args_formatted.get(RunContext._format_key(key), result_if_none)
 
     def get(self, key: str, result_if_none: Union[any, None] = None) -> any:
         return self.__values.get(key, result_if_none)
@@ -129,6 +143,9 @@ class RunContext:
     def get_result_set(self) -> AgentResultSet:
         return self.__result_set
 
+    def get_app_config(self) -> dict[str, any]:
+        return self.__app_config
+
     @staticmethod
     def __to_list(config: dict[str, any],
                   agent_names: Union[str, list[str], None] = None) -> list[str]:
@@ -140,4 +157,4 @@ class RunContext:
             return config.get('agents', []) if len(agent_names) == 0 else [str(agent_names)]
 
 
-NONE = RunContext({}, [], {})
+NONE = RunContext({}, {})

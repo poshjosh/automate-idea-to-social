@@ -7,15 +7,15 @@ import tempfile
 import uuid
 from typing import Union
 
+from pyu.io.file import extract_zip_file, prepend_line, read_content, visit_dirs
+from pyu.io.shell import execute_command, run_command, run_commands_from_dir, run_script
 from .agent import Agent
 from ..agent.agent_name import AgentName
 from ..action.action import Action
 from ..action.action_result import ActionResult
-from ..config import Name
+from ..config import Name, RunArg
 from ..env import Env, is_docker
-from pyu.io.shell import execute_command, run_command, run_commands_from_dir, run_script
 from ..io.net import download_file
-from pyu.io.file import extract_zip_file, prepend_line, read_content, visit_dirs
 from ..result.result_set import ElementResultSet
 from ..run_context import RunContext
 
@@ -80,7 +80,7 @@ class BlogAgent(Agent):
         if output_file is None:
             return ActionResult(action, False, output_file)
 
-        src_image_path = run_context.get_env(Env.VIDEO_COVER_IMAGE)
+        src_image_path = run_context.get_env(RunArg.VIDEO_COVER_IMAGE)
         self.__prepend_image_link_to_file_content(src_image_path, output_file)
 
         return ActionResult(action, True, output_file)
@@ -123,7 +123,7 @@ class BlogAgent(Agent):
 
     @staticmethod
     def __get_video_source(run_context: RunContext):
-        return run_context.get_env(Env.VIDEO_CONTENT_FILE)
+        return run_context.get_env(RunArg.VIDEO_CONTENT_FILE)
 
     def __update_blog(self, run_context: RunContext) -> bool:
 

@@ -19,7 +19,9 @@ See [Actions](./docs/actions.md)
 
 ### Environment
 
-See for a complete list of environment variables, see: [Environment](./docs/environment.md)
+- For a complete list of environment variables, see: [Environment](./docs/environment.md)
+
+- For a complete list of run options, see [Run Options](docs/run-options.md).
 
 ### Installation
 
@@ -31,7 +33,9 @@ See for a complete list of environment variables, see: [Environment](./docs/envi
 
 2. Set required environment variables: For a full ist of environment variables, see [Environment](docs/environment.md).
 
-3. Run the app by running [shell/run.sh](shell/run.sh) in a command prompt.
+3. Set the required run options: For a full list of run options, see [Run Options](docs/run-options.md). 
+
+4. Run the app by running [shell/run.sh](shell/run.sh) in a command prompt.
 
 ### Development
 

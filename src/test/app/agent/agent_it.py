@@ -4,12 +4,13 @@ import os
 import unittest
 from typing import Callable
 
-from test.app.test_functions import delete_saved_files, get_config_loader, init_logging
-from aideas import AgentName
-from aideas import BrowserAgent
+from test.app.test_functions import delete_saved_files, init_logging, load_agent_config, \
+    get_run_context
+from aideas.app.agent.agent_name import AgentName
+from aideas.app.agent.browser_agent import BrowserAgent
 from aideas.app.config import Name, STAGES_KEY, STAGE_ITEMS_KEY
 from aideas.app.result.result_set import ElementResultSet
-from aideas import RunContext
+from aideas.app.run_context import RunContext
 
 init_logging(logging.config)
 
@@ -21,10 +22,6 @@ tiktok_target = 'tiktok-target-id'
 
 
 class AgentIT(unittest.TestCase):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.app_config = get_config_loader().load_app_config()
-
     @staticmethod
     def format_tiktok_config(config: dict) -> dict:
         config = copy.deepcopy(config)
@@ -35,7 +32,7 @@ class AgentIT(unittest.TestCase):
         return config
 
     def test_pictory_saved_video_is_available_for_other_agents(self):
-        run_context: RunContext = RunContext.of_config(self.app_config, pictory_agent)
+        run_context: RunContext = get_run_context([pictory_agent])
         result: ElementResultSet = self.__run_agent(pictory_agent, pictory_stage, run_context)
 
         def is_stage_result(file_name: str) -> bool:
@@ -67,12 +64,12 @@ class AgentIT(unittest.TestCase):
                     stage_name: str,
                     run_context: RunContext,
                     format_config: Callable[[dict], dict] = None) -> ElementResultSet:
-        agent_config = get_config_loader().load_agent_config(agent_name)
+        agent_config = load_agent_config(agent_name)
         if format_config is not None:
             agent_config = format_config(agent_config)
 
         # Not TestBrowserAgent
-        agent = BrowserAgent.of_config(agent_name, self.app_config, agent_config, {})
+        agent = BrowserAgent.of_config(agent_name, run_context.get_app_config(), agent_config, {})
 
         result = agent.run_stage(run_context, Name.of(stage_name))
         print(f'Completed. Result:\n{result.pretty_str()}')

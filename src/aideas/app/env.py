@@ -3,6 +3,9 @@ from datetime import datetime
 from enum import Enum, unique
 from typing import Union
 
+from .config import RunArg
+from .paths import Paths
+
 _video = 'VIDEO'
 _pictory = 'PICTORY'
 _translation = 'TRANSLATION'
@@ -38,20 +41,9 @@ class Env(str, Enum):
 
     SETUP_DISPLAY = ('SETUP_DISPLAY', True, False)
 
-    AGENTS = ('AGENTS', True, False)
-
     OUTPUT_DIR = ('OUTPUT_DIR', False, True)
 
-    # VIDEO_CONTENT_FILE is used for title and description.
-    VIDEO_CONTENT_FILE = (f'{_video}_CONTENT_FILE', True, True)
-    # VIDEO_INPUT_FILE is used to generate the video.
-    VIDEO_INPUT_FILE = (f'{_video}_INPUT_FILE', False, True)
-    VIDEO_INPUT_TEXT = (f'{_video}_INPUT_TEXT', True)
-    VIDEO_TILE = (f'{_video}_TITLE', True)
-    VIDEO_DESCRIPTION = (f'{_video}_DESCRIPTION', True)
     VIDEO_OUTPUT_TYPE = f'{_video}_OUTPUT_TYPE'
-    VIDEO_COVER_IMAGE = (f'{_video}_COVER_IMAGE', False, True)
-    VIDEO_COVER_IMAGE_SQUARE = (f'{_video}_COVER_IMAGE_SQUARE', True, True)
 
     PICTORY_USER_EMAIL = f'{_pictory}_USER_EMAIL'
     PICTORY_USER_PASS = f'{_pictory}_USER_PASS'
@@ -106,45 +98,17 @@ class Env(str, Enum):
         os.environ[k] = os.environ.get(k, v)
 
     @staticmethod
-    def load(app_name: Union[str, None] = None) -> dict[str, any]:
-        result = {}
-
-        if app_name:
-            result.update({'app.name': app_name})
-
-        def read_file(file_path: str):
-            with open(file_path) as file:
-                return file.read()
-
-        result.update(Env.__collect())
-
-        if not result.get(Env.VIDEO_INPUT_TEXT.value):
-            result[Env.VIDEO_INPUT_TEXT.value] = read_file(require_path(Env.VIDEO_INPUT_FILE))
-
-        video_content_file = get_video_file()
-        result[Env.VIDEO_CONTENT_FILE.value] = video_content_file
-
-        if not result.get(Env.VIDEO_TILE.value):
-            result[Env.VIDEO_TILE.value] = os.path.basename(video_content_file).split('.')[0]
-
-        if not result.get(Env.VIDEO_DESCRIPTION.value):
-            result[Env.VIDEO_DESCRIPTION.value] = read_file(video_content_file)
-
-        if not result.get(Env.VIDEO_COVER_IMAGE_SQUARE.value):
-            result[Env.VIDEO_COVER_IMAGE_SQUARE.value] = result.get(Env.VIDEO_COVER_IMAGE.value)
-
-        return result
-
-    @staticmethod
-    def __collect(add_to: dict[str, any] = None) -> dict[str, any]:
-        all_env_names: [str] = Env.values()
+    def collect(add_to: dict[str, any] = None, names: [str] = None) -> dict[str, any]:
+        if names is None:
+            names = Env.values()
+            names.extend([e.upper() for e in RunArg.values()])
         if add_to is None:
             add_to = {}
         for k, v in os.environ.items():
-            if k in all_env_names:
+            if k in names:
                 env = Env(k)
                 if env.is_path():
-                    v = get_path(k) if env.is_optional() else require_path(k)
+                    v = Paths.get_path(v) if env.is_optional() else Paths.require_path(v)
                 add_to[k] = v
 
         return add_to
@@ -160,7 +124,7 @@ DEFAULTS: dict[Env, str] = {
 
 
 def get_app_language(full: bool) -> str:
-    lang = get_value(Env.APP_LANGUAGE, DEFAULTS[Env.APP_LANGUAGE])
+    lang = get_env_value(Env.APP_LANGUAGE, DEFAULTS[Env.APP_LANGUAGE])
     return lang if full else lang.split('-')[0]
     
     
@@ -179,7 +143,7 @@ def get_cached_results_file(agent_name: str, filename: str = None) -> str:
     else:
         filename = ''
 
-    dir_path: str = os.path.join(get_path(Env.OUTPUT_DIR),
+    dir_path: str = os.path.join(Paths.get_path(get_env_value(Env.OUTPUT_DIR)),
                                  'results',
                                  agent_name,
                                  now.strftime("%Y"),
@@ -205,43 +169,13 @@ def get_agent_results_dir(agent_name: str) -> str:
 def get_agent_output_dir(agent_name: str):
     if not agent_name:
         raise ValueError('agent name required')
-    return os.path.join(get_value(Env.OUTPUT_DIR), 'agent', agent_name)
+    return os.path.join(get_env_value(Env.OUTPUT_DIR), 'agent', agent_name)
 
 
-def get_value(env: Union[str, Env], default: any = None) -> any:
-    return os.environ.get(env.value if isinstance(env, Env) else env, default)
-
-
-def get_video_file() -> str:
-    return get_path(Env.VIDEO_CONTENT_FILE, default=require_path(Env.VIDEO_INPUT_FILE))
+def get_env_value(name: Union[str, Enum], default: any = None) -> any:
+    return os.environ.get(name.value if isinstance(name, Enum) else name, default)
 
 
 def get_cookies_file_path(domain: str, file_name: str = "cookies.pkl") -> str:
-    dir_path = get_path(Env.OUTPUT_DIR, "cookies")
+    dir_path = Paths.get_path(get_env_value(Env.OUTPUT_DIR), "cookies")
     return os.path.join(dir_path, domain, file_name)
-
-
-def get_path(env: Union[str, Env], extra: str = None, default: any = None) -> any:
-    path = get_value(env, default)
-    if not path:
-        return default
-    return __explicit(path) if not extra else os.path.join(__explicit(path), extra)
-
-
-def require_path(env: Union[str, Env]):
-    path = get_value(env)
-    if not path:
-        raise ValueError(f'Value required for: {env}')
-    path = __explicit(path)
-    if not os.path.exists(path):
-        raise FileNotFoundError(f'File not found: {path}')
-    return path
-
-
-def __explicit(path: str) -> str:
-    explicit: bool = path.startswith('/') or path.startswith('.')
-    return path if explicit else os.path.join(os.getcwd(), path)
-
-
-def get_content_file_path(file_name: str):
-    return os.path.join(os.path.dirname(get_path(Env.VIDEO_CONTENT_FILE)), file_name)

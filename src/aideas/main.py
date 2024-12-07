@@ -1,7 +1,8 @@
 import logging.config
 import os.path
 
-from app.app import App, AppArg, get_list_arg_value
+from app.app import App
+from app.config import RunArg
 from app.config_loader import ConfigLoader
 from app.env import Env
 
@@ -13,4 +14,10 @@ if __name__ == '__main__':
 
     logging.config.dictConfig(config_loader.load_logging_config())
 
-    App.of_defaults(config_loader).run(get_list_arg_value(AppArg.AGENTS))
+    run_config = config_loader.load_run_config()
+
+    run_config.update(RunArg.collect())
+
+    App.of_defaults(config_loader).run(run_config)
+
+

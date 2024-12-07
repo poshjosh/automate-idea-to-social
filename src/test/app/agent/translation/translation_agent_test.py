@@ -2,7 +2,8 @@ import logging.config
 import unittest
 
 from test.app.agent.translation.test_translation_agent import TestTranslationAgent
-from test.app.test_functions import delete_saved_files, get_config_loader, init_logging
+from test.app.test_functions import delete_saved_files, init_logging, get_run_context, \
+    load_agent_config
 from aideas.app.result.result_set import StageResultSet
 from aideas.app.agent.agent_name import AgentName
 from aideas.app.run_context import RunContext
@@ -13,11 +14,11 @@ init_logging(logging.config)
 class TranslationAgentTest(unittest.TestCase):
     def test_run(self):
         agent_name: str = AgentName.TRANSLATION
-        app_config = get_config_loader().load_app_config()
-        agent_config = get_config_loader().load_agent_config(agent_name)
+        run_context: RunContext = get_run_context([agent_name])
+        agent_config = load_agent_config(agent_name)
 
-        agent = TestTranslationAgent.of_config(agent_name, app_config, agent_config)
-        run_context: RunContext = RunContext.of_config(app_config, agent_name)
+        agent = TestTranslationAgent.of_config(
+            agent_name, run_context.get_app_config(), agent_config)
 
         result_set: StageResultSet = StageResultSet.none()
         try:

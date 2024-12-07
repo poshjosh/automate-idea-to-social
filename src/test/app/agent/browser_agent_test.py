@@ -2,7 +2,7 @@ import logging.config
 import unittest
 
 from test.app.agent.test_browser_agent import TestBrowserAgent
-from test.app.test_functions import init_logging, get_config_loader
+from test.app.test_functions import init_logging, load_agent_config, get_run_context
 from aideas.app.action.action_handler import ActionId
 from aideas.app.agent.agent_name import AgentName
 from aideas.app.action.action import Action
@@ -17,13 +17,9 @@ init_logging(logging.config)
 
 
 class BrowserAgentTest(unittest.TestCase):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.app_config = get_config_loader().load_app_config()
-
     def test_given_successful_result_when_may_proceed_is_false_result_is_successful(self):
         agent_name: str = "test-agent"
-        run_context: RunContext = RunContext.of_config(self.app_config, agent_name)
+        run_context: RunContext = get_run_context([agent_name])
         yaml = """
 stages:
   test-conditional-does-not-pollute-results:
@@ -38,7 +34,7 @@ stages:
         actions: log DEBUG This should not be logged; as the condition above should not pass
         """
         agent_config = load_yaml_str(yaml)
-        agent = TestBrowserAgent.of_config(agent_name, self.app_config, agent_config)
+        agent = TestBrowserAgent.of_config(agent_name, run_context.get_app_config(), agent_config)
 
         # We use a ElementActionHandler, rather than TestElementActionHandler
         automator = agent.get_automator()
@@ -53,11 +49,10 @@ stages:
 
     def test_agent(self):
         agent_name = "test-agent"
-        run_context: RunContext = RunContext.of_config(self.app_config, agent_name)
-        self._named_agent_should_run_successfully(agent_name, run_context)
+        self._named_agent_should_run_successfully(agent_name, get_run_context([agent_name]))
 
     def test_pictory(self):
-        run_context: RunContext = RunContext.of_config(self.app_config, AgentName.PICTORY)
+        run_context: RunContext = get_run_context([AgentName.PICTORY])
         self._named_agent_should_run_successfully(AgentName.PICTORY, run_context)
 
     def test_tiktok(self):
@@ -66,9 +61,9 @@ stages:
 
     def _named_agent_should_run_successfully(self, agent_name: str, run_context: RunContext):
 
-        agent_config = get_config_loader().load_agent_config(agent_name)
+        agent_config = load_agent_config(agent_name)
 
-        agent = TestBrowserAgent.of_config(agent_name, self.app_config, agent_config)
+        agent = TestBrowserAgent.of_config(agent_name, run_context.get_app_config(), agent_config)
 
         self._agent_should_run_successfully(agent, run_context)
 
@@ -81,8 +76,9 @@ stages:
 
         return result
 
-    def _given_run_context_with_downloaded_file(self, agent_name: str) -> RunContext:
-        run_context: RunContext = RunContext.of_config(self.app_config, agent_name)
+    @staticmethod
+    def _given_run_context_with_downloaded_file(agent_name: str) -> RunContext:
+        run_context: RunContext = get_run_context([agent_name])
         stage = AgentName.PictoryStage
         stage_id = stage.VIDEO_LANDSCAPE
         target_id = stage.Action.GET_FILE

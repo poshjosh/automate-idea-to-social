@@ -11,8 +11,8 @@ from ..agent import Agent, Automator
 from ...agent.agent_name import AgentName
 from ...action.action import Action
 from ...action.action_result import ActionResult
-from ...config import Name
-from ...env import Env, get_content_file_path, get_app_language
+from ...config import Name, RunArg
+from ...env import Env, get_app_language
 from ...result.result_set import ElementResultSet
 from ...run_context import RunContext
 
@@ -74,26 +74,28 @@ class TranslationAgent(Agent):
                         output_language_codes: [str],
                         run_context: RunContext) -> ElementResultSet:
 
-        self.__copy_to_content_dir(filename_in)
+        video_content_file = run_context.get_env(RunArg.VIDEO_CONTENT_FILE)
+        target_dir = os.path.join(os.path.dirname(video_content_file), "subtitles")
+
+        self.__copy_to_content_dir(filename_in, target_dir)
 
         for output_language_code in output_language_codes:
             filename_out = _compose_file_name(filename_in, output_language_code)
             result: ActionResult = self.__translate(
                 stage_id, filename_in, filename_out, output_language_code)
 
-            self.__copy_to_content_dir(filename_out)
+            self.__copy_to_content_dir(filename_out, target_dir)
 
             run_context.add_action_result(AgentName.TRANSLATION, stage_id, result)
 
         return run_context.get_element_results(self.get_name(), stage_id)
 
     @staticmethod
-    def __copy_to_content_dir(src: str):
-        dir_path = get_content_file_path("subtitles")
-        if not os.path.exists(dir_path):
-            os.makedirs(dir_path)
-            logger.debug(f'Created dir: {dir_path}')
-        shutil.copy2(src, os.path.join(dir_path, os.path.basename(src)))
+    def __copy_to_content_dir(src: str, tgt_dir):
+        if not os.path.exists(tgt_dir):
+            os.makedirs(tgt_dir)
+            logger.debug(f'Created dir: {tgt_dir}')
+        shutil.copy2(src, os.path.join(tgt_dir, os.path.basename(src)))
 
     def __translate(self,
                     stage_id: str,

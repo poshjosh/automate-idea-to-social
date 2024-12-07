@@ -1,8 +1,12 @@
 import copy
 import logging
+import os
+import sys
 from collections.abc import Iterable
-from enum import Enum
+from enum import Enum, unique
 from typing import Union, TypeVar, Callable
+
+from aideas.app.paths import Paths
 
 logger = logging.getLogger(__name__)
 
@@ -61,6 +65,14 @@ def merge_configs(src: dict[str, any],
         else:
             output[key] = ref_value
     return output
+
+
+class AppConfig:
+    def __init__(self, config: dict[str, any]):
+        self.__config = config.get('app', {})
+
+    def get_title(self, default: Union[str, None] = None) -> str:
+        return self.__config.get('title', default)
 
 
 class BrowserConfig:
@@ -562,3 +574,96 @@ def parse_query(value: str, separator=' ') -> dict[str, str]:
     result: list[str] = tokenize(value, separator)
     return __list_to_dict(result)
 
+
+"""
+The following code is used to parse command line arguments.
+"""
+T = TypeVar("T", bound=any)
+
+
+@unique
+class RunArg(str, Enum):
+    def __new__(cls, value, alias: str = None, kind: str = 'str',
+                optional: bool = False, path: bool = False):
+        obj = str.__new__(cls, [value])
+        obj._value_ = value
+        obj.__alias = alias
+        obj.__type = kind
+        obj.__optional = optional
+        obj.__path = path
+        return obj
+
+    @property
+    def alias(self) -> str:
+        return self.__alias
+
+    @property
+    def type(self) -> str:
+        return self.__type
+
+    @property
+    def is_optional(self) -> bool:
+        return self.__optional
+
+    @property
+    def is_path(self) -> bool:
+        return self.__path
+
+    AGENTS = ('agents', 'a', 'list')
+    VIDEO_CONTENT_FILE = ('video-content-file', 'vcf', 'str', False, True)
+    VIDEO_TITLE = ('video-title', 'vt', 'str', True, False)
+    VIDEO_DESCRIPTION = ('video-description', 'vd', 'str', True, False)
+    VIDEO_INPUT_FILE = ('video-input-file', 'vif', 'str', True, True)
+    VIDEO_INPUT_TEXT = ('video-input-text', 'vit', 'str', True, False)
+    VIDEO_COVER_IMAGE = ('video-cover-image', 'vci', 'str', False, True)
+    VIDEO_COVER_IMAGE_SQUARE = ('video-cover-image-square', 'vcis', 'str', True, True)
+
+    @staticmethod
+    def values() -> [str]:
+        return [RunArg(e).value for e in RunArg]
+
+    @staticmethod
+    def collect(add_to: dict[str, any] = None) -> dict[str, any]:
+        if add_to is None:
+            add_to = {}
+        for e in RunArg:
+            arg = RunArg(e)
+            if arg.type == "list":
+                value = RunArg.get_list_arg_value(arg)
+            else:
+                value = RunArg.get_arg_value(arg)
+            if not value:
+                continue
+            if arg.is_path:
+                value = Paths.get_path(value) if arg.is_optional else Paths.require_path(value)
+            add_to[arg] = value
+
+        return add_to
+
+    @staticmethod
+    def get_list_arg_value(arg_name: 'RunArg') -> [str]:
+        return RunArg.__get_formatted_arg(arg_name, lambda x: x.split(','), [])
+
+    @staticmethod
+    def __get_formatted_arg(arg: 'RunArg',
+                            convert: Callable[[str], T],
+                            result_if_none: Union[T, None] = None) -> T:
+        arg_value = RunArg.get_arg_value(arg, None)
+        return result_if_none if arg_value is None else convert(arg_value)
+
+    @staticmethod
+    def get_arg_value(arg: 'RunArg', result_if_none: Union[any, None] = None) -> any:
+        """
+        Get the value of the argument with the given name.
+        Arguments have aliases that can be used to refer to them.
+        --agents twitter could be written as -a twitter
+        :param arg: The argument.
+        :param result_if_none: The result to return if none
+        :return: The value of the argument with the given name.
+        """
+        sys_args: [str] = [e.lower() for e in sys.argv]
+        candidates: [str] = [f'--{arg.value}', f'-{arg.alias}']
+        for candidate in candidates:
+            if candidate in sys_args:
+                return sys_args[sys_args.index(candidate) + 1]
+        return result_if_none if not arg.value else os.environ.get(arg.name, result_if_none)

@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add run_config which may be provided via yaml file, `sys.argv` or `request.form`
 - Transform into web app using flask.
 - Mount browser profile dir for use within docker.
 

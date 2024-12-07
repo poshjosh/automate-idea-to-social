@@ -8,8 +8,7 @@ from aideas.app.action.variable_parser import get_run_arg_replacement, replace_a
     to_results_variable
 from aideas.app.agent.agent_name import AgentName
 from aideas.app.run_context import RunContext
-from test.app.test_functions import get_config_loader
-
+from test.app.test_functions import load_app_config, load_agent_config, get_run_context
 
 agent_name: str = AgentName.PICTORY
 stage_name: str = "test-stage"
@@ -24,10 +23,6 @@ def create_action_result(result: any) -> ActionResult:
 
 
 class VariableParserTest(unittest.TestCase):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.app_config = get_config_loader().load_app_config()
-
     def test_get_run_arg_replacement_without_index(self):
         expected = ['test-result-0']
         run_context = self.__given_run_context_with_results(expected)
@@ -55,7 +50,7 @@ class VariableParserTest(unittest.TestCase):
         self.assertEqual(expected, result)
 
     def __given_run_context_with_results(self, results: [str]) -> RunContext:
-        run_context: RunContext = RunContext.of_config(self.app_config, agent_name)
+        run_context: RunContext = get_run_context([agent_name])
         self.__given_action_results(results, run_context)
         return run_context
 
@@ -69,9 +64,9 @@ class VariableParserTest(unittest.TestCase):
         return output
 
     def test_replace_all_variables(self):
-        agents: [str] = get_config_loader().load_app_config().get("agents")
+        agents: [str] = load_app_config().get("agents")
         for agent in agents:
-            self.replace_all_variables(get_config_loader().load_agent_config(agent))
+            self.replace_all_variables(load_agent_config(agent))
 
     @staticmethod
     def replace_all_variables(agent_config: dict[str, any]):

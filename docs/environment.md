@@ -19,26 +19,7 @@ DOCKER_MOUNT_BROWSER_PROFILE_DIR=
 # https://github.com/ultrafunkamsterdam/undetected-chromedriver/issues/743#issuecomment-1420119272
 SETUP_DISPLAY=true
 
-# agents
-AGENTS=[OPTIONAL]
-
 OUTPUT_DIR=resources/output
-
-# video input
-# VIDEO_CONTENT_FILE is used for title and description.
-# VIDEO_INPUT_FILE is used to generate the video.
-VIDEO_CONTENT_FILE=
-# Optional. If not set, the name (without extension) of VIDEO_CONTENT_FILE will be used
-VIDEO_TITLE=[OPTIONAL]
-# Optional. If not set, the content of VIDEO_CONTENT_FILE will be used
-VIDEO_DESCRIPTION=[OPTIONAL]
-# Optional. If not set, VIDEO_CONTENT_FILE is used
-VIDEO_INPUT_FILE=[OPTIONAL]
-# Optional. If not set, the content of VIDEO_INPUT_FILE will be used
-VIDEO_INPUT_TEXT=[OPTIONAL]
-VIDEO_COVER_IMAGE=
-# Optional. If not set, VIDEO_COVER_IMAGE will be used
-VIDEO_COVER_IMAGE_SQUARE=[OPTIONAL]
 
 # video output
 VIDEO_OUTPUT_TYPE=mp4
