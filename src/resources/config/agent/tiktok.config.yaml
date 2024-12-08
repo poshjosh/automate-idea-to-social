@@ -1,5 +1,9 @@
 # For TikTok, it is better to use the default cover (i.e. first scene), than to upload one
 # Our videos are generated with the first scene having the cover image.
+# [llm|browser|blog|generic]  llm is not yet supported
+agent-type: browser
+# Optional [generate-video|generate-text|post|test|custom]
+agent-tags: post
 interval-seconds: 1
 browser:
   chrome:

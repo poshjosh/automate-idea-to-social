@@ -2,6 +2,7 @@ from flask import Flask, render_template, request
 import logging.config
 import os.path
 
+from pyu.io.logging import SecretsMaskingFilter
 from app.config_loader import ConfigLoader
 from app.env import Env
 from app.web_service import WebService, ValidationError
@@ -10,23 +11,37 @@ web_app = Flask(__name__)
 
 web_servce = WebService()
 
+secrets_masking_filter = SecretsMaskingFilter(
+    ["(pass|key|secret|token|jwt|hash|signature|credential|auth|certificate|connection|pat)"])
+
 
 @web_app.route('/')
 def index():
     return render_template('index.html', **web_servce.index())
 
 
-@web_app.route('/automate')
+@web_app.route('/automate/index.html')
 def automate():
-    return render_template('automate.html', **web_servce.automate())
+    return render_template('automate/index.html', **web_servce.automate())
+
+
+@web_app.route('/automate/details.html')
+def automate_task():
+    tag = request.args['tag']
+    return render_template('automate/details.html', **web_servce.automate_task(tag))
 
 
 @web_app.route('/automate/start', methods=['POST'])
 def automate_start():
     try:
-        result_str = web_servce.automate_start(
-            request.form, request.files).pretty_str("<br/>", "&emsp;")
-        args = {"info": result_str}
+        result = web_servce.automate_start(request.form, request.files)
+        result_str = (result.pretty_str("<br/>", "&emsp;")
+                      .replace("ActionResult(", "(")
+                      .replace(", Action(", ", (")
+                      .replace("(success=True,", '(<span style="color:green">SUCCESS</span>,')
+                      .replace("(success=False,", '(<span style="color:red">FAILURE</span>,'))
+
+        args = {"info": secrets_masking_filter.redact(result_str)}
     except Exception as ex:
         default_err_msg = "An unexpected error occurred while trying to automate."
         if isinstance(ex, ValidationError):
@@ -34,7 +49,7 @@ def automate_start():
         else:
             args = {"error": default_err_msg}
     template_args = {**web_servce.automate(), **args}
-    return render_template('automate.html', **template_args)
+    return render_template('automate/index.html', **template_args)
 
 
 if __name__ == '__main__':

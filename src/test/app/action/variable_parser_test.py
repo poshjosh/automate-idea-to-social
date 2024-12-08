@@ -8,7 +8,7 @@ from aideas.app.action.variable_parser import get_run_arg_replacement, replace_a
     to_results_variable
 from aideas.app.agent.agent_name import AgentName
 from aideas.app.run_context import RunContext
-from test.app.test_functions import load_app_config, load_agent_config, get_run_context
+from test.app.test_functions import load_agent_names, load_agent_config, get_run_context
 
 agent_name: str = AgentName.PICTORY
 stage_name: str = "test-stage"
@@ -64,7 +64,7 @@ class VariableParserTest(unittest.TestCase):
         return output
 
     def test_replace_all_variables(self):
-        agents: [str] = load_app_config().get("agents")
+        agents: [str] = load_agent_names()
         for agent in agents:
             self.replace_all_variables(load_agent_config(agent))
 

@@ -52,16 +52,4 @@ browser:
 #        - incognito
 #        - crash-dumps-dir=/tmp
 
-agents:
-  - image-generator
-  - pictory
-  - translation
-  - youtube
-  - blog
-  - twitter
-  - reddit
-  - facebook
-  - instagram
-  - tiktok
-
 

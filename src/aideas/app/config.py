@@ -81,9 +81,6 @@ class AppConfig:
     def get_title(self, default: Union[str, None] = None) -> str:
         return self.app().get('title', default)
 
-    def get_agents(self, default: [str] = None) -> [str]:
-        return self.__config.get('agents', [] if default is None else default)
-
 
 class RunConfig:
     def __init__(self, config: dict[str, any]):
@@ -333,6 +330,19 @@ ON_SUCCESS = 'onsuccess'
 VALUE = TypeVar("VALUE", bound=Union[any, None])
 
 
+@unique
+class AgentType(str, Enum):
+    def __new__(cls, value):
+        obj = str.__new__(cls, [value])
+        obj._value_ = value
+        return obj
+
+    BLOG = 'blog'
+    BROWSER = 'browser'
+    GENERIC = 'generic'
+    LLM = 'llm'
+
+
 def check_for_typo(config: dict[str, any], valid_key: str) -> dict[str, any]:
     """
     Check if the config contains any key with a typo in its spelling.
@@ -356,6 +366,12 @@ class AgentConfig:
 
     def to_dict(self) -> dict[str, any]:
         return {**self.__config}
+
+    def get_agent_type(self) -> AgentType:
+        return AgentType(self.__config['agent-type'])
+
+    def get_agent_tags(self) -> [str]:
+        return self.__config.get('agent-tags', [])
 
     def stages(self, result_if_none=Union[dict[str, any], None]) -> Union[dict[str, any], None]:
         return self.__config.get(STAGES_KEY, result_if_none)
@@ -675,25 +691,33 @@ class RunArg(str, Enum):
         return RunArg._update_defaults(add_to)
 
     @staticmethod
+    def _complain(name: str):
+        raise ValueError(f"Specify either {RunArg.VIDEO_CONTENT_FILE._value_} or {name}")
+
+    @staticmethod
     def _update_defaults(result: dict[str, any]) -> dict[str, any]:
         # If target is empty, then no need update defaults,
         # To update defaults, we expect some values to be present
         if not result:
             return result
+
+        # TODO - Find a better way to use the tag to decide whether to update defaults
+        needy: bool = result.get('tag') and result.get('tag') in ['generate-video', 'post']
+
         video_content_path = result.get(RunArg.VIDEO_CONTENT_FILE._value_)
         video_content = None if not video_content_path else read_content(video_content_path)
 
         if not result.get(RunArg.VIDEO_TITLE._value_):
-            if not video_content_path:
-                raise ValueError(f"Specify either {RunArg.VIDEO_CONTENT_FILE._value_} "
-                                 f"or {RunArg.VIDEO_TITLE._value_}")
-            result[RunArg.VIDEO_TITLE._value_] = os.path.basename(video_content_path).split('.')[0]
+            if needy and not video_content_path:
+                RunArg._complain(RunArg.VIDEO_TITLE._value_)
+            if video_content_path:
+                result[RunArg.VIDEO_TITLE._value_] = os.path.basename(video_content_path).split('.')[0]
 
         if not result.get(RunArg.VIDEO_CONTENT._value_):
-            if not video_content_path:
-                raise ValueError(f"Specify either {RunArg.VIDEO_CONTENT_FILE._value_} "
-                                 f"or {RunArg.VIDEO_CONTENT._value_}")
-            result[RunArg.VIDEO_CONTENT._value_] = video_content
+            if needy and not video_content_path:
+                RunArg._complain(RunArg.VIDEO_CONTENT._value_)
+            if video_content:
+                result[RunArg.VIDEO_CONTENT._value_] = video_content
 
         video_content_suffix_path = result.get(RunArg.VIDEO_CONTENT_SUFFIX_FILE._value_)
 
@@ -702,14 +726,16 @@ class RunArg(str, Enum):
                 result[RunArg.VIDEO_CONTENT_SUFFIX._value_] \
                     = read_content(video_content_suffix_path)
 
-        video_content = result[RunArg.VIDEO_CONTENT._value_]
-        video_content_suffix = result.get(RunArg.VIDEO_CONTENT_SUFFIX._value_)
-        video_content_suffix = '' if not video_content_suffix else f"\n{video_content_suffix}"
-        result[VIDEO_CONTENT_FULL] = f"{video_content}{video_content_suffix}"
+        video_content = result.get(RunArg.VIDEO_CONTENT._value_)
+        if video_content:
+            video_content_suffix = result.get(RunArg.VIDEO_CONTENT_SUFFIX._value_)
+            video_content_suffix = '' if not video_content_suffix else f"\n{video_content_suffix}"
+            result[VIDEO_CONTENT_FULL] = f"{video_content}{video_content_suffix}"
 
-        if not result.get(RunArg.VIDEO_COVER_IMAGE_SQUARE._value_):
-            result[RunArg.VIDEO_COVER_IMAGE_SQUARE._value_] \
-                = result[RunArg.VIDEO_COVER_IMAGE._value_]
+        if result.get(RunArg.VIDEO_COVER_IMAGE._value_):
+            if not result.get(RunArg.VIDEO_COVER_IMAGE_SQUARE._value_):
+                result[RunArg.VIDEO_COVER_IMAGE_SQUARE._value_] \
+                    = result[RunArg.VIDEO_COVER_IMAGE._value_]
         return result
 
     @staticmethod

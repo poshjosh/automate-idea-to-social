@@ -4,6 +4,12 @@ form {
     padding: 1rem;
     border-radius: 0.5rem; }
 
+form #agents {
+    min-height: 2rem;
+    max-height: 7rem;
+    overflow-x: hidden;
+    overflow-y: scroll;
+}
 form .control { font-size: 1.5rem; }
 
 form select { width: 20rem; }

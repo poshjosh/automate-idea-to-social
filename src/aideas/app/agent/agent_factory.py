@@ -6,7 +6,7 @@ from .agent_name import AgentName
 from .blog_agent import BlogAgent
 from .browser_agent import BrowserAgent
 from .translation.translation_agent import TranslationAgent
-from ..config import AgentConfig
+from ..config import AgentConfig, AgentType
 from ..config_loader import ConfigLoader
 
 logger = logging.getLogger(__name__)
@@ -24,14 +24,19 @@ class AgentFactory:
     def __create_agent(self,
                        agent_name: str,
                        agent_config: dict[str, any]) -> Agent:
+        agent_type = AgentConfig(agent_config).get_agent_type()
         if agent_name == AgentName.TRANSLATION:
             agent = self.create_translation_agent(agent_name, agent_config)
-        elif agent_name == AgentName.BLOG:
+        elif agent_type == AgentType.BLOG:
             agent = self.create_blog_agent(agent_name, agent_config)
-        elif "generic" == agent_config.get('agent-type'):
+        elif agent_type == AgentType.GENERIC:
             agent = self.create_generic_agent(agent_name, agent_config)
-        else:
+        elif agent_type == AgentType.LLM:
+            raise NotImplementedError(f'{agent_type} is not yet implemented')
+        elif agent_type == AgentType.BROWSER:
             agent = self.create_browser_agent(agent_name, agent_config)
+        else:
+            raise ValueError(f'Unknown agent type: {agent_type}')
 
         self.__add_dependencies(agent)
         return agent

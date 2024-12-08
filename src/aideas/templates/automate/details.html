@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/body.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/form.css') }}">
+</head>
+<body>
+    <div class="heading">{{ heading }}</div>
+    <div class="error">{{ error|safe }}</div>
+    <div class="info">{{ info|safe }}</div>
+    <form action="/automate/start" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="tag" value="{{ tag }}"/>
+        <div>
+            <label for="agents">Select agent(s) to run</label>
+            <div id="agents">
+                {% if agents|length > 1 %}
+                <div>
+                    <input type="checkbox" id="all-agents" class="control"
+                           onclick="aideas.toggle_checked('.control.agent-check');"/>
+                    <label for="all-agents">All</label>
+                </div>
+                {% endif %}
+                <div>
+                    {% for value, label in agents.items() %}
+                    <input type="checkbox" name="agents" class="control agent-check"
+                           value="{{ value }}"/>
+                    <label for="{{ value }}">{{ label }}</label>
+                    <br/>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <p>
+            <input type="button" id="expand-ctrl" class="control"
+                   value="Use files" onclick="
+               aideas.toggle_text('#expand-ctrl', 'Use files', 'Enter text');
+               aideas.toggle_display('#expand-file');
+               aideas.toggle_display('#expand-text')"/>
+        </p>
+        <div id="expand-file" style="display:none">
+            <p>
+                <label for="video-content-file">
+                    Select the text file containing the content you want to post
+                </label>
+                <br/>
+                <input type="file" id="video-content-file" name="video-content-file"
+                       class="control" accept="text/*"/>
+            </p>
+            <p>
+                <label for="video-content-suffix-file">
+                    (Optional) Select the text file containing extra content
+                    e.g. hashtags or @ mentions, to add to your post.
+                </label>
+                <br/>
+                <input type="file" id="video-content-suffix-file" name="video-content-suffix-file"
+                       class="control" accept="text/*"/>
+            </p>
+        </div>
+        <div id="expand-text">
+            <p>
+                <label for="video-title">
+                    Enter the title of the content you want to post.
+                </label>
+                <br/>
+                <input type="text" id="video-title" name="video-title" class="control"
+                       placeholder="title" size="51" maxlength="120"/>
+            </p>
+            <p>
+                <label for="video-content">
+                    Enter the content you want to post, or select a file below.
+                </label>
+                <br/>
+                <textarea id="video-content" name="video-content" class="control"
+                          placeholder="content" rows="5" cols="42">
+                </textarea>
+            </p>
+            <p>
+                <label for="video-content-suffix">
+                    (Optional) Enter extra content e.g. hashtags or @ mentions, to add to your post.
+                </label>
+                <br/>
+                <textarea id="video-content-suffix" name="video-content-suffix" class="control"
+                          placeholder="content" rows="5" cols="42">
+                </textarea>
+            </p>
+        </div>
+        <p>
+            <label for="video-cover-image">Select an image - Landscape</label>
+            <br/>
+            <input type="file" id="video-cover-image" name="video-cover-image" class="control"
+                   accept="image/jpeg, image/jpg"/>
+        </p>
+        <p>
+            <label for="video-cover-image-square">Select an image - Square</label>
+            <br/>
+            <input type="file" id="video-cover-image-square" name="video-cover-image-square" class="control"
+                   accept="image/jpeg, image/jpg"/>
+        </p>
+        <button type="submit" id="submit" class="control">Submit</button>
+    </form>
+    <script src="{{ url_for('static', filename='scripts/scripts.js') }}"></script>
+</body>
+</html>

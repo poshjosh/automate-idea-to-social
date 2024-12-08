@@ -1,5 +1,9 @@
 # Instagram ids (starting with 'u_' or 'mount_') are dynamic,
 # so we use starts-with to match the first part of the id
+# [llm|browser|blog|generic]  llm is not yet supported
+agent-type: browser
+# Optional [generate-video|generate-text|post|test|custom]
+agent-tags: post
 depends-on:
   - facebook
 stages:

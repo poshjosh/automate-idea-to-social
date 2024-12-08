@@ -1,12 +1,11 @@
 import logging
 import os
 
-from pyu.io.file import load_yaml, read_content
+from pyu.io.file import load_yaml
 from pyu.io.yaml_loader import YamlLoader
 from .action.variable_parser import replace_all_variables
 from .config import RunArg
-from .env import Env, is_production
-from .paths import Paths
+from .env import Env
 
 logger = logging.getLogger(__name__)
 
@@ -23,17 +22,21 @@ class ConfigLoader(YamlLoader):
         self.__variable_source.update(
             run_config if run_config is not None else self.load_run_config())  # Run config
 
-    def load_app_config(self, path: str = None) -> dict[str, any]:
-        app_config = super().load_app_config(path)
-        # If not in production, use names of every agent in the 'agent' directory.
-        # This may include, test, hidden or agents under development.
-        if is_production() is False:
-            agents = []
-            agent_dir = os.path.join(os.path.dirname(self.get_path("app")), 'agent')
-            for agent_filename in os.listdir(agent_dir):
-                agents.append(agent_filename[0:agent_filename.index(_SUFFIX)])
-            app_config['agents'] = agents
-        return app_config
+    def load_agent_configs(self, cfg_filter=None) -> dict[str, dict[str, any]]:
+        configs = {}
+        for name in self.all_agent_names():
+            config = self.load_agent_config(name)
+            if not cfg_filter or cfg_filter(config):
+                configs[name] = config
+        logger.debug(f"Config names: {configs.keys()}")
+        return configs
+
+    def all_agent_names(self) -> [str]:
+        agents = []
+        agent_dir = os.path.join(os.path.dirname(self.get_path("app")), 'agent')
+        for agent_filename in os.listdir(agent_dir):
+            agents.append(agent_filename[0:agent_filename.index(_SUFFIX)])
+        return agents
 
     def load_run_config(self) -> dict[str, any]:
         result = self.load_config("run")

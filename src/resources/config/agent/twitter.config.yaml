@@ -1,5 +1,9 @@
 # Some times //*[@id="layers"]/div, some times //*[@id="layers"]/div[2]
 # For div, we use div[1], only for symmetry.
+# [llm|browser|blog|generic]  llm is not yet supported
+agent-type: browser
+# Optional [generate-video|generate-text|post|test|custom]
+agent-tags: post
 stages:
   email:
     #url: https://twitter.com/i/flow/login

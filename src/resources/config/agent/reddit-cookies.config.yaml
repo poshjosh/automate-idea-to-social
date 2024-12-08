@@ -1,3 +1,9 @@
+# [llm|browser|blog|generic]  llm is not yet supported
+agent-type: browser
+# Optional [generate-video|generate-text|post|test|custom]
+agent-tags:
+  - test
+  - post
 stages:
   cookies:
     url: https://www.reddit.com/

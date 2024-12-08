@@ -1,3 +1,9 @@
+# [llm|browser|blog|generic]  llm is not yet supported
+agent-type: generic
+# Optional [generate-video|generate-image|generate-text|post|test]
+agent-tags:
+  - test
+  - generate-image
 stages:
   generate-image:
     url: https://designer.microsoft.com/image-creator

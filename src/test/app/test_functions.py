@@ -21,6 +21,10 @@ def get_test_config_loader() -> ConfigLoader:
     return ConfigLoader(os.path.join("test", "resources", "config"))
 
 
+def load_agent_names() -> [str]:
+    return get_main_config_loader().load_agent_configs().keys()
+
+
 def load_app_config() -> dict[str, any]:
     return get_main_config_loader().load_app_config()
 

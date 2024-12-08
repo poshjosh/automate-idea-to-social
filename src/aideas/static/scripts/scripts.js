@@ -23,4 +23,11 @@ Aideas.prototype.toggle_text = function (selector, flip, flop) {
   }
 }
 
+Aideas.prototype.toggle_checked = function(selector) {
+  const checkboxes = document.querySelectorAll(selector);
+  checkboxes.forEach(function (checkbox) {
+    checkbox.checked = checkbox.checked !== true;
+  }, this);
+}
+
 const aideas = new Aideas();

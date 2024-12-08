@@ -35,7 +35,7 @@ class RunContext:
                  run_config: dict[str, any]):
         self.__app_config = AppConfig(app_config)
         self.__run_config = RunConfig(run_config)
-        self.__agent_names = self.__run_config.get_agents(self.__app_config.get_agents())
+        self.__agent_names = self.__run_config.get_agents()
         self.__args: dict[str, any] = run_config
         self.__args_formatted = {}
         for k, v in self.__args.items():

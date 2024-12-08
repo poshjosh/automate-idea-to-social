@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Use `agent-type` and `agent-tags` to customize agent work flow.
+- Replace VIDEO_DESCRIPTION with VIDEO_DESCRIPTION_FULL
+- Replace VIDEO_INPUT_TEXT with VIDEO_DESCRIPTION
 - Add run_config which may be provided via yaml file, `sys.argv` or `request.form`
 - Transform into web app using flask.
 - Mount browser profile dir for use within docker.
