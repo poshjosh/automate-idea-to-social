@@ -7,6 +7,7 @@ from enum import Enum, unique
 from typing import Union, TypeVar, Callable
 
 from pyu.io.file import read_content
+from pyu.io.variable_parser import visit_string_values, visit_variables
 from aideas.app.paths import Paths
 
 logger = logging.getLogger(__name__)
@@ -363,6 +364,23 @@ class AgentConfig:
 
     def __init__(self, config: dict[str, any]):
         self.__config = check_for_typo(config, STAGES_KEY)
+
+    # TODO - See how this could be used to automatically generate
+    #  html forms for collecting details required to run the agent
+    # def get_variable_names(self) -> [str]:
+    #     variables = []
+    #
+    #     def collect_variable(variable, _, end):
+    #         variables.append(variable)
+    #         return end
+    #
+    #     def collect_string_value(sval, _):
+    #         visit_variables(sval, collect_variable)
+    #         return sval
+    #
+    #     visit_string_values(self.__config, collect_string_value)
+    #
+    #     return variables
 
     def to_dict(self) -> dict[str, any]:
         return {**self.__config}

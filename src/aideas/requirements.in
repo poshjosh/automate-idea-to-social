@@ -4,4 +4,4 @@ selenium
 requests
 webvtt-py
 undetected-chromedriver
-git+https://github.com/poshjosh/pyu.git@v0.1.8#egg=pyu
+git+https://github.com/poshjosh/pyu.git@v0.1.9#egg=pyu
