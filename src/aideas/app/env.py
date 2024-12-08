@@ -184,14 +184,17 @@ def get_cookies_file_path(domain: str, file_name: str = "cookies.pkl") -> str:
     return os.path.join(dir_path, domain, file_name)
 
 
+def get_sessions_dir_path():
+    return os.path.join(Paths.get_path(get_env_value(Env.OUTPUT_DIR)), 'sessions')
+
+
 def get_downloads_file_path(session_id: str, filename: str) -> str:
     if not session_id:
         raise ValueError('session id is required')
     if not filename:
         raise ValueError('file name is required')
     now = datetime.now()
-    dir_path: str = os.path.join(Paths.get_path(get_env_value(Env.OUTPUT_DIR)),
-                                 'sessions',
+    dir_path: str = os.path.join(get_sessions_dir_path(),
                                  now.strftime("%Y"),
                                  now.strftime("%m"),
                                  now.strftime("%d"),
