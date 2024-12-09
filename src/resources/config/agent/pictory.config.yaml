@@ -328,18 +328,11 @@ stages:
   video-landscape:
     stage-items:
       save-file:
-        # By saving the file, other agents may access it from the local disc
-        # event when pictory run context is no longer available
-        # Will be saved to /pictory-dir/stage/stage-item/original-file-name.extension
-        # E.g. main/resources/agent/pictory/results/video-landscape/save-file/original.mp4
         actions:
           - wait 10 # Wait to make sure the file is downloaded
           - get_newest_file_in_dir ${OUTPUT_DIR}/agent/pictory $VIDEO_OUTPUT_TYPE 120
-          # Save to default output dir for agent
-          - save_file $results.me[1]
-          # Copy to the same dir as the video content file
-          - eval importlib.import_module('os').path.dirname('${VIDEO_CONTENT_FILE}')
-          - eval importlib.import_module('shutil').copy2('${results.me[1]}', '${results.me[3]}/${context.stage-id}.${VIDEO_OUTPUT_TYPE}')
+          # Save to current action's results dir, app input dir and user input dir
+          - save_file $results.me[1] ${context.stage-id}.${VIDEO_OUTPUT_TYPE}
   video-portrait:
     events:
       onsuccess: run_stages download-video video-landscape
@@ -395,3 +388,9 @@ stages:
         actions:
           - click
           - wait 5
+      save-subtitles-file:
+        actions:
+          - wait 3 # Wait to make sure the file is downloaded
+          - get_newest_file_in_dir ${OUTPUT_DIR}/agent/pictory $TRANSLATION_FILE_EXTENSION 10
+          # Save to current action's results dir, app input dir and user input dir
+          - save_file $results.me[1]

@@ -114,8 +114,9 @@ class RunContext:
     def get_env(self, key: Enum, result_if_none: Union[any, None] = None) -> any:
         return self.get_arg(key.value, result_if_none)
 
-    def get_arg(self, key: str, result_if_none: Union[any, None] = None) -> any:
-        return self.__args_formatted.get(RunContext._format_key(key), result_if_none)
+    def get_arg(self, key: Union[str, Enum], result_if_none: Union[any, None] = None) -> any:
+        key_str = key.value if isinstance(key, Enum) else key
+        return self.__args_formatted.get(RunContext._format_key(key_str), result_if_none)
 
     def get(self, key: str, result_if_none: Union[any, None] = None) -> any:
         return self.__values.get(key, result_if_none)

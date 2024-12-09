@@ -74,10 +74,7 @@ stages:
           - //*[@id="root"]//input[@type="file" and @accept="video/*"]
           - //input[@type="file" and @accept="video/*"]
         actions:
-          # Use the first result from the specified pictory download stage
-          #- enter_text $results.pictory.video-portrait.save-file[0]
-          - get_first_file ${OUTPUT_DIR}/agent/pictory/results/video-portrait/save-file $VIDEO_OUTPUT_TYPE
-          - enter_text $results.me[0]
+          - enter_text ${INPUT_DIR}/video-portrait.${VIDEO_OUTPUT_TYPE}
           - wait 5 # It takes a while but the default wait will cover the rest
       click-upload-button:
         timeout-seconds: 5

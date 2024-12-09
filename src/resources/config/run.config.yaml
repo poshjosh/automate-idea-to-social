@@ -19,6 +19,8 @@ agents:
 # They must however be contained within our DOCKER_MOUNT_CONTENT_DIR
 # See environment variables for DOCKER_MOUNT_CONTENT_DIR
 #############################################################################
+input-dir: /Users/chinomso/Desktop/live-above-3D/the-avatar-of-YHWH
+
 # Optional. Used for title and description. Either set this, or provide a title and description
 video-content-file: "/Users/chinomso/Desktop/live-above-3D/the-avatar-of-YHWH/THE AVATAR OF YHWH.txt"
 

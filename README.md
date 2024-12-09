@@ -1,5 +1,32 @@
 # automate-idea-to-social
 
+### Sample Input Directory Structure
+
+#### For video generation
+
+```
+- INPUT_DIR/
+    - VIDEO_CONTENT_FILE.txt
+    - VIDEO_CONTENT_SUFFIX_FILE.txt (optional)
+```
+
+#### For posting videos
+
+```
+- INPUT_DIR/
+    - cover-image.jpg
+    - cover-image-square.jpg 
+    - video-landscape.mp4
+    - video-square.mp4
+    - video-portrait.mp4
+    - subtitles/
+        - subtitles.en.vtt
+        - subtitles.fr.vtt
+        - subtitles.de.vtt
+        - subtitles.ar.vtt
+        - subtitles.es.vtt
+```
+
 ### Automate generating and publishing content from ideas to social media.
 
 Automation is done via agents. Each agent runs one or more stages. 

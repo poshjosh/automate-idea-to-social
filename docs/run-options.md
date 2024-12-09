@@ -11,6 +11,8 @@ agents:
 # They must however be contained within our DOCKER_MOUNT_CONTENT_DIR
 # See environment variables for DOCKER_MOUNT_CONTENT_DIR
 #############################################################################
+input-dir: 
+  
 # Optional. Used for title and description. Either set this, or provide a title and description
 video-content-file:
 

@@ -5,10 +5,10 @@ import time
 from enum import Enum, unique
 from typing import Union, TypeVar
 
+from pyu.io.file import read_content, write_content
 from .action import Action
 from .action_result import ActionResult
-from ..config import parse_query
-from pyu.io.file import read_content, write_content
+from ..config import parse_query, RunArg
 from ..run_context import RunContext
 
 logger = logging.getLogger(__name__)
@@ -41,7 +41,7 @@ class ActionId(BaseActionId):
     GET_NEWEST_FILE_IN_DIR = 'get_newest_file_in_dir'
     LOG = ('log', False)
     SAVE_FILE = 'save_file'
-    SAVE_TO_FILE = 'save_to_file'
+    SAVE_TEXT = 'save_text'
     SET_CONTEXT_VALUES = ('set_context_values', False)
     STARTS_WITH = 'starts_with'
     WAIT = ('wait', False)
@@ -105,9 +105,9 @@ class ActionHandler:
         elif key == ActionId.LOG.value:
             result: ActionResult = self.log(action)
         elif key == ActionId.SAVE_FILE.value:
-            result: ActionResult = self.save_file(action)
-        elif key == ActionId.SAVE_TO_FILE.value:
-            result: ActionResult = self.save_to_file(action)
+            result: ActionResult = self.save_file(run_context, action)
+        elif key == ActionId.SAVE_TEXT.value:
+            result: ActionResult = self.save_text(run_context, action)
         elif key == ActionId.SET_CONTEXT_VALUES.value:
             result: ActionResult = self.set_context_values(run_context, action)
         elif key == ActionId.STARTS_WITH.value:
@@ -152,22 +152,40 @@ class ActionHandler:
         return ActionResult(action, True)
 
     @staticmethod
-    def save_file(action: Action) -> ActionResult:
-        src = action.require_first_arg_as_str()
-        tgt_dir = ActionHandler.__make_target_dirs_if_need(action)
-        tgt = os.path.join(tgt_dir, os.path.basename(src))
-        logger.debug(f'Copying {src} to {tgt}')
-        shutil.copy2(src, tgt)
-        return ActionResult.success(action)
+    def save_file(run_context: RunContext, action: Action) -> ActionResult:
+        args: [str] = action.get_args_as_str_list()
+        src_file = args[0]
+        tgt_filename = os.path.basename(src_file) if len(args) < 2 else args[1]
+        tgt_dirs = ActionHandler.get_output_dirs(run_context, action)
+        if len(args) > 2:
+            tgt_dirs.extend(args[2:])
+
+        result = []
+        for tgt_dir in tgt_dirs:
+            tgt_file = os.path.join(tgt_dir, tgt_filename)
+            logger.debug(f'Copying {src_file} to {tgt_file}')
+            shutil.copy2(src_file, tgt_file)
+            result.append(tgt_file)
+        return ActionResult.success(action, result)
 
     @staticmethod
-    def save_to_file(action: Action) -> ActionResult:
+    def save_text(run_context: RunContext, action: Action) -> ActionResult:
         args: [str] = action.get_args_as_str_list()
         content = args[0]
-        tgt_dir = ActionHandler.__make_target_dirs_if_need(action)
-        tgt = os.path.join(tgt_dir, DEFAULT_FILE_NAME if len(args) < 2 else args[1])
-        logger.debug(f'Writing to {tgt}')
-        return ActionResult.success(action, write_content(content, tgt))
+        chars = len(content)
+        filename = DEFAULT_FILE_NAME if len(args) < 2 else args[1]
+        tgt_dirs = ActionHandler.get_output_dirs(run_context, action)
+        if len(args) > 2:
+            tgt_dirs.extend(args[2:])
+
+        result = []
+        for tgt_dir in tgt_dirs:
+            tgt = os.path.join(tgt_dir, filename)
+            logger.debug(f'Writing {chars} chars to {tgt}')
+            write_content(content, tgt)
+            result.append(tgt)
+
+        return ActionResult.success(action, result)
 
     @staticmethod
     def set_context_values(run_context: RunContext, action: Action) -> ActionResult:
@@ -254,12 +272,50 @@ class ActionHandler:
         return entry.is_file() and (file_type == ActionHandler.__ALL_FILE_TYPES or
                                     entry.name.endswith(file_type))
 
+        # By saving the file, other agents may access it from the local disc
+        # event when pictory run context is no longer available
+        # We save the file:
+        # 1. At current agent's results: ${OUTPUT_DIR}/agent/${agent_name}/results/${stage}/${stage-item}/original-file-name.${VIDEO_OUTPUT_TYPE}
+        #    e.g. resources/agent/pictory/results/video-landscape/save-file/original.mp4
+        #    This is cleared before each run of the agent.
+        # 2. For the user at the parent directory of ${VIDEO_CONTENT_FILE}
+        #    e.g. user_supplied_dir/video-landscape.mp4
+        # 3. For other agents at: ${INPUT-DIR}/${stage}.${VIDEO_OUTPUT_TYPE}
+        #    e.g. resources/input/video-landscape.mp4
+        #    This is cleared before each run of the app.
+
     @staticmethod
-    def __make_target_dirs_if_need(action: Action) -> str:
-        tgt_dir = action.get_results_dir()
-        if not os.path.exists(tgt_dir):
-            os.makedirs(tgt_dir)
-        return tgt_dir
+    def get_output_dirs(run_context: RunContext, action: Action) -> []:
+        """
+        Get the directories where the result should be saved. Create them if needed.
+        We save the result to multiple directories:
+        1. At the current action's results directory.
+           (a) Format: ${OUTPUT_DIR}/agent/${agent_name}/results/${stage}/${stage-item}/original-file-name.${VIDEO_OUTPUT_TYPE}
+           (b) Example: resources/agent/pictory/results/video-landscape/save-file/original.mp4
+           (c) This is cleared before each run of the agent.
+        2. At the app's input directory, so that other agents can access it.
+           (a) Format: ${INPUT-DIR}/${stage}.${VIDEO_OUTPUT_TYPE}
+           (b) Example: resources/input/video-landscape.mp4
+           (c) This is cleared before each run of the app.
+        3. At the user's input directory.
+           (a) Format: Parent directory of ${VIDEO_CONTENT_FILE}
+           (b) Example: <<USER_SUPPLIED_DIR>>/video-landscape.mp4
+           (c) This is never cleared by the app. It is up to the user to delete it.
+        :param run_context: The run context
+        :param action: The executing action
+        :return: The list of output directory
+        """
+        return [
+            ActionHandler.__make_dir_if_need(action.get_results_dir()),
+            ActionHandler.__make_dir_if_need(run_context.get_arg(RunArg.INPUT_DIR)),
+            ActionHandler.__make_dir_if_need(run_context.get_arg(RunArg.VIDEO_CONTENT_FILE))
+        ]
+
+    @staticmethod
+    def __make_dir_if_need(dir) -> str:
+        if not os.path.exists(dir):
+            os.makedirs(dir)
+        return dir
 
 
 class NoopActionHandler(ActionHandler):

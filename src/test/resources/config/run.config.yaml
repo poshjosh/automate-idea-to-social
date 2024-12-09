@@ -11,6 +11,8 @@ agents:
 # They must however be contained within our DOCKER_MOUNT_CONTENT_DIR
 # See environment variables for DOCKER_MOUNT_CONTENT_DIR
 #############################################################################
+input-dir: test/resources/test-content
+
 # Used for title and description.
 # Used to generate the video.
 video-content-file: test/resources/test-content/video.txt

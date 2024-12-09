@@ -90,9 +90,7 @@ stages:
           - //*[@id="content"]/input[@type="file"]
           - //input[@type="file"]
         actions:
-          # Use the first result from the specified pictory download stage
-          - get_first_file ${OUTPUT_DIR}/agent/pictory/results/video-portrait/save-file $VIDEO_OUTPUT_TYPE
-          - enter_text $results.me[0]
+          - enter_text ${INPUT_DIR}/video-portrait.${VIDEO_OUTPUT_TYPE}
           - wait 5
       enter-video-title:
         search-for:
@@ -200,7 +198,8 @@ stages:
         search-for: //*[@id="share-url"]
         actions:
           - get_text
-          - save_to_file $results.me[0]
+          # Save to current action's results dir, app input dir and user input dir
+          - save_text $results.me[0] youtube-video-link.txt
   subtitles:
     #"ar", "bn", "de", "es", "fr", "hi", "it", "ja", "ko", "ru", "zh", "zh-TW"
     languages:
@@ -232,7 +231,7 @@ stages:
     stage-items:
       subtitles-link:
         actions:
-          - get_file_content ${OUTPUT_DIR}/agent/youtube/results/wait-for-video-link/save-video-link/result.txt
+          - get_file_content ${INPUT_DIR}/youtube-video-link.txt
           - eval importlib.import_module('urllib.parse').urlparse('${results.me[0]}').path
           - eval importlib.import_module('os').path.basename('${results.me[1]}')
           - set_context_values youtube-edit-subtitles-link=https://studio.youtube.com/video/${results.me[2]}/translations
@@ -285,8 +284,7 @@ stages:
         # There are many file inputs, so we differentiate as much as possible
         search-for: //*[@id="captions-file-loader" and @type="file" and @class="style-scope ytve-captions-editor-upload-dialog"]
         actions:
-          # Use the first result from translation agent
-          - get_first_file ${OUTPUT_DIR}/agent/translation/results ${context.youtube-edit-subtitles-code}.vtt
+          - get_first_file ${INPUT_DIR}/subtitles ${context.youtube-edit-subtitles-code}.vtt
           - execute_script_on arguments[0].focus();
           - enter_text $results.me[0]
           - wait 10

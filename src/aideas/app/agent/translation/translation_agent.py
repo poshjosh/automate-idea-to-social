@@ -47,94 +47,104 @@ class TranslationAgent(Agent):
     def __translate_subtitles(self, run_context: RunContext) -> ElementResultSet:
         stage = DEFAULT_STAGE
         file_type = run_context.get_env(Env.TRANSLATION_FILE_EXTENSION)
-        pictory_output_dir: str = self.get_output_dir(AgentName.PICTORY)
-        src_files = [f for f in glob.glob(f'{pictory_output_dir}/*.{file_type}')]
+        input_dir = run_context.get_arg(RunArg.INPUT_DIR)
+        src_files = [f for f in glob.glob(f'{input_dir}/*.{file_type}')]
 
         if len(src_files) == 0:
-            logger.warning(f'No translation files found in: {pictory_output_dir}')
+            logger.warning(f'No translation files found in: {input_dir}')
             return run_context.get_element_results(self.get_name(), stage.id)
 
         target_languages_str: str = run_context.get_env(Env.TRANSLATION_OUTPUT_LANGUAGES)
         target_language_codes: [str] = target_languages_str.split(',')
         logger.debug(f'Output languages: {target_language_codes}, '
-                     f'files: {len(src_files)}, dir: {pictory_output_dir}')
+                     f'files: {len(src_files)}, dir: {input_dir}')
 
-        results_dir: str = self.get_results_dir()
         for src_file in src_files:
-            tgt_file = os.path.join(results_dir, os.path.basename(src_file))
-            shutil.copy2(src_file, tgt_file)
-            logger.debug(f"Copied to: {tgt_file} from: {src_file}")
-            self.__translate_all(stage.id, tgt_file, target_language_codes, run_context)
+            self.__do_translate_subtitles(stage.id, src_file, target_language_codes, run_context)
 
         return run_context.get_element_results(self.get_name(), stage.id)
 
-    def __translate_all(self,
-                        stage_id: str,
-                        filename_in: str,
-                        output_language_codes: [str],
-                        run_context: RunContext) -> ElementResultSet:
+    def __do_translate_subtitles(self,
+                                 stage_id: str,
+                                 filepath_in: str,
+                                 output_language_codes: [str],
+                                 run_context: RunContext) -> ElementResultSet:
 
         video_content_file = run_context.get_env(RunArg.VIDEO_CONTENT_FILE)
-        target_dir = os.path.join(os.path.dirname(video_content_file), "subtitles")
+        src_dir = os.path.dirname(filepath_in)
+        subtitles_dir_name = "subtitles"
+        target_dirs = [
+            os.path.join(src_dir, subtitles_dir_name),
+            os.path.join(self.get_results_dir(), subtitles_dir_name),
+            os.path.join(os.path.dirname(video_content_file), subtitles_dir_name)]
 
-        self.__copy_to_content_dir(filename_in, target_dir)
+        for target_dir in target_dirs:
+            self.__copy_to_dir(filepath_in, target_dir)
 
-        for output_language_code in output_language_codes:
-            filename_out = _compose_file_name(filename_in, output_language_code)
-            result: ActionResult = self.__translate(
-                stage_id, filename_in, filename_out, output_language_code)
+        for lang in output_language_codes:
 
-            self.__copy_to_content_dir(filename_out, target_dir)
+            filepath_out = _add_language_code_to_path(filepath_in, lang)
+            filename_out = os.path.basename(filepath_out)
+            filepaths_out = [filepath_out]
+            for target_dir in target_dirs:
+                filepaths_out.append(os.path.join(target_dir, filename_out))
+
+            result: ActionResult = self.__translate_subtitle(
+                stage_id, filepath_in, filepaths_out, lang)
 
             run_context.add_action_result(AgentName.TRANSLATION, stage_id, result)
 
         return run_context.get_element_results(self.get_name(), stage_id)
 
     @staticmethod
-    def __copy_to_content_dir(src: str, tgt_dir):
+    def __copy_to_dir(src: str, tgt_dir):
         if not os.path.exists(tgt_dir):
             os.makedirs(tgt_dir)
             logger.debug(f'Created dir: {tgt_dir}')
         shutil.copy2(src, os.path.join(tgt_dir, os.path.basename(src)))
 
-    def __translate(self,
-                    stage_id: str,
-                    filename_in: str,
-                    filename_out: str,
-                    output_language_code: str) -> ActionResult:
+    def __translate_subtitle(self,
+                             stage_id: str,
+                             filepath_in: str,
+                             filepaths_out: [str],
+                             output_language_code: str) -> ActionResult:
+        args = [filepath_in]
+        args.extend(filepaths_out)
+        args.append(output_language_code)
         action = Action.of_generic(
             AgentName.TRANSLATION,
             stage_id,
-            [filename_in, filename_out, output_language_code])
+            args)
         try:
-            self.__do_translate(filename_in, filename_out, output_language_code)
-            return ActionResult(action, True, filename_out)
+            self.__do_translate_subtitle(filepath_in, filepaths_out, output_language_code)
+            return ActionResult(action, True, filepaths_out)
         except Exception as ex:
             logger.exception(ex)
             return ActionResult(action, False)
 
-    def __do_translate(self,
-                       filename_in: str,
-                       filename_out: str,
-                       to_lang: str):
+    def __do_translate_subtitle(self,
+                                filepath_in: str,
+                                filepaths_out: [str],
+                                output_language_code: str):
 
-        subtitles_list = subtitle_read(filename_in)
+        subtitles_list = subtitle_read(filepath_in)
         grouped_list = grouping_subtitle(subtitles_list)
 
         self.__print_subtitles_if_verbose(grouped_list)
 
         q = (c.text for c in grouped_list)
 
-        translated_result = self.__translator.translate(q, self.__from_lang, to_lang)
+        translated_result = self.__translator.translate(q, self.__from_lang, output_language_code)
 
         for group_capt, translated_row in zip(grouped_list, translated_result):
             group_capt.text = translated_row
 
         self.__print_subtitles_if_verbose(grouped_list)
 
-        subtitle_save(filename_out, grouped_list)
-
-        logger.debug(f'{to_lang} translated to: {filename_out}, from: {filename_in}')
+        for filepath_out in filepaths_out:
+            subtitle_save(filepath_out, grouped_list)
+            logger.debug(f'{output_language_code} subtitles saved to: '
+                         f'{filepath_out}, from: {filepath_in}')
 
     def __print_subtitles_if_verbose(self, subtitles_list: list[webvtt.Caption], title: str = ""):
         if self.__verbose is not True:
@@ -145,7 +155,7 @@ class TranslationAgent(Agent):
         logger.debug(output)
 
 
-def _compose_file_name(filename: str, target_language_code: str):
+def _add_language_code_to_path(filename: str, target_language_code: str):
     parts: [str] = filename.rsplit('.', 1)
     if len(parts) < 2:
         return filename + "." + target_language_code

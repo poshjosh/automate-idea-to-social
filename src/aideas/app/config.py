@@ -671,6 +671,7 @@ class RunArg(str, Enum):
 
     AGENTS = ('agents', 'a', 'list')
     CONTINUE_ON_ERROR = ('continue-on-error', 'coe', 'bool', True, False)
+    INPUT_DIR = ('input-dir', 'id', 'str', True, True)
     VIDEO_CONTENT_FILE = ('video-content-file', 'vcf', 'str', True, True)
     VIDEO_CONTENT_SUFFIX_FILE = ('video-content-suffix-file', 'vcsf', 'str', True, True)
     VIDEO_TITLE = ('video-title', 'vt', 'str', True, False)
