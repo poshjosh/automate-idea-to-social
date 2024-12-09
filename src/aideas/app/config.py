@@ -7,8 +7,7 @@ from enum import Enum, unique
 from typing import Union, TypeVar, Callable
 
 from pyu.io.file import read_content
-from pyu.io.variable_parser import visit_string_values, visit_variables
-from aideas.app.paths import Paths
+from .paths import Paths
 
 logger = logging.getLogger(__name__)
 
