@@ -22,11 +22,11 @@ services:
         source: ./src/resources
         target: /aideas/resources # must be within our WORKDIR (i.e. 'aideas')
       - type: bind
-        source: ${DOCKER_MOUNT_CONTENT_DIR}
-        target: ${DOCKER_MOUNT_CONTENT_DIR}
+        source: ${CONTENT_DIR}
+        target: ${CONTENT_DIR}
       - type: bind
-        source: ${DOCKER_MOUNT_BROWSER_PROFILE_DIR}
-        target: ${DOCKER_MOUNT_BROWSER_PROFILE_DIR}
+        source: ${BROWSER_PROFILE_DIR}
+        target: ${BROWSER_PROFILE_DIR}
       - type: bind
         # TODO - This should be dynamic. By the way it is only required by the blog agent
         source: ./src/resources/output/blog-app/app/automate-jamstack-0.0.9/app

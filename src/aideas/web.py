@@ -35,13 +35,14 @@ def automate_task():
 def automate_start():
     try:
         result = web_servce.automate_start(request.form, request.files)
-        result_str = (result.pretty_str("<br/>", "&emsp;")
+        result_str = (result.pretty_str("\n", "&emsp;")
                       .replace("ActionResult(", "(")
                       .replace(", Action(", ", (")
                       .replace("(success=True,", '(<span style="color:green">SUCCESS</span>,')
                       .replace("(success=False,", '(<span style="color:red">FAILURE</span>,'))
-
-        args = {"info": secrets_masking_filter.redact(result_str)}
+        result_str = secrets_masking_filter.redact(result_str)
+        result_str = result_str.replace("\n", "<br>")  # Replace his only after masking secrets
+        args = {"info": f'<span style="font-size:0.75rem;">{result_str}</span>'}
     except Exception as ex:
         default_err_msg = "An unexpected error occurred while trying to automate."
         if isinstance(ex, ValidationError):

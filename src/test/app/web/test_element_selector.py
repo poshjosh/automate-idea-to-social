@@ -4,7 +4,7 @@ from selenium.webdriver.remote.webelement import WebElement
 
 from test.app.web.noop_cookie_store import NoopCookieStore
 from aideas.app.config import SearchConfigs
-from aideas.app.env import get_cookies_file_path
+from aideas.app.env import get_cookies_file
 from aideas.app.web.element_selector import ElementSelector
 
 
@@ -29,7 +29,7 @@ class TestWebElement(WebElement):
 class TestElementSelector(ElementSelector):
     @classmethod
     def of(cls, webdriver, domain, wait_timeout_seconds: float = 20) -> 'ElementSelector':
-        cookie_store = NoopCookieStore(webdriver, get_cookies_file_path(domain))
+        cookie_store = NoopCookieStore(webdriver, get_cookies_file(domain))
         return cls(webdriver, wait_timeout_seconds, cookie_store)
 
     def select_element(self, search_configs: SearchConfigs) -> WebElement:

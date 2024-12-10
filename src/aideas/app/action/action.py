@@ -5,7 +5,7 @@ from typing import Union
 
 from .variable_parser import get_run_arg_replacement
 from ..config import tokenize
-from ..env import get_agent_results_dir
+from ..env import get_agent_results_dir, get_content_dir
 
 logger = logging.getLogger(__name__)
 
@@ -58,9 +58,28 @@ class Action:
         self.__name = name
         self.__args = [] if args is None else list(args)
 
-    def get_results_dir(self) -> str:
+    def get_output_dirs(self, sub_path=None) -> [str]:
+        """
+        Get the directories where the result should be saved. Create the dirs if they don't exist.
+        We save the result to multiple directories:
+        1. At the current action's results directory.
+           (a) Format: ${OUTPUT_DIR}/agent/${agent_name}/results/${stage}/${stage-item}/original-file-name.${VIDEO_OUTPUT_TYPE}
+           (b) Example: resources/agent/pictory/results/video-landscape/save-file/original.mp4
+           (c) This is cleared before each run of the agent.
+        2. At the app's content directory, so that other agents can access it.
+           (a) Format: ${CONTENT_DIR}/${stage}.${VIDEO_OUTPUT_TYPE}
+           (b) Example: resources/input/video-landscape.mp4
+           (c) This is cleared before each run of the app.
+        :param sub_path: The sub-path to append to each output directory
+        :return: The list of output directory
+        """
+        return [Action.__make_dir_if_need(self._get_results_dir(sub_path)),
+                Action.__make_dir_if_need(get_content_dir(sub_path))]
+
+    def _get_results_dir(self, sub_path=None) -> str:
         results_dir = get_agent_results_dir(self.__agent_name)
-        return os.path.join(results_dir, self.get_stage_id(), self.get_stage_item_id())
+        main = os.path.join(results_dir, self.get_stage_id(), self.get_stage_item_id())
+        return main if not sub_path else os.path.join(main, sub_path)
 
     def get_agent_name(self) -> str:
         return self.__agent_name
@@ -107,6 +126,12 @@ class Action:
 
     def get_args_as_str_list(self) -> list[str]:
         return [str(e) for e in self.__args]
+
+    @staticmethod
+    def __make_dir_if_need(dir_path) -> str:
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path)
+        return dir_path
 
     @staticmethod
     def __split_into_name_and_args(parts: list[str]) -> tuple[str, [str]]:

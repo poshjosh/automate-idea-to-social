@@ -16,7 +16,7 @@ if __name__ == '__main__':
 
     run_config = config_loader.load_run_config()
 
-    run_config.update(RunArg.collect())
+    run_config.update(RunArg.of_sys_argv())
 
     App.of_defaults(config_loader).run(run_config)
 

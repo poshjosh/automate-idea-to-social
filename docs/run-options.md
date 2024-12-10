@@ -8,11 +8,9 @@ agents:
 #############################################################################
 # If running in docker (usually the case)
 # These can be full paths, because we are mounting their directory in docker
-# They must however be contained within our DOCKER_MOUNT_CONTENT_DIR
-# See environment variables for DOCKER_MOUNT_CONTENT_DIR
+# They must however be contained within our CONTENT_DIR
+# See environment variables for CONTENT_DIR
 #############################################################################
-input-dir: 
-  
 # Optional. Used for title and description. Either set this, or provide a title and description
 video-content-file:
 

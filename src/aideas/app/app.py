@@ -60,8 +60,7 @@ class App:
                     result = run_context.get_stage_results(agent_name)
                     if not result or result.is_empty():
                         action = Action.of(agent_name, "*", "*", "*", run_context)
-                        run_context.add_action_result(agent_name, action.get_stage_id(),
-                                                      ActionResult.failure(action, "Error"))
+                        run_context.add_action_result(ActionResult.failure(action, "Error"))
                 else:
                     raise ex
         return run_context.get_result_set().close()

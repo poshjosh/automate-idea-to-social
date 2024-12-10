@@ -37,7 +37,7 @@ class Env(str, Enum):
 
     APP_LANGUAGE = ('APP_LANGUAGE', True, False)
 
-    DOCKER_MOUNT_CONTENT_DIR = ('DOCKER_MOUNT_CONTENT_DIR', False, True)
+    CONTENT_DIR = ('CONTENT_DIR', False, True)
 
     SETUP_DISPLAY = ('SETUP_DISPLAY', True, False)
 
@@ -117,7 +117,7 @@ DEFAULTS: dict[Env, str] = {
     Env.APP_LANGUAGE: 'en-GB',
     Env.OUTPUT_DIR: 'resources/output',
     Env.TRANSLATION_FILE_EXTENSION: 'vtt',
-    Env.TRANSLATION_OUTPUT_LANGUAGES: "ar,bn,de,es,fr,hi,it,ja,ko,ru,zh,zh-TW",
+    Env.TRANSLATION_OUTPUT_LANGUAGES: "ar,bn",
     Env.VIDEO_OUTPUT_TYPE: 'mp4'
 }
 
@@ -125,8 +125,8 @@ DEFAULTS: dict[Env, str] = {
 def get_app_language(full: bool) -> str:
     lang = get_env_value(Env.APP_LANGUAGE, DEFAULTS[Env.APP_LANGUAGE])
     return lang if full else lang.split('-')[0]
-    
-    
+
+
 def is_docker() -> bool:
     return 'docker' in os.environ.get('APP_PROFILES', '')
 
@@ -179,24 +179,29 @@ def get_env_value(name: Union[str, Enum], default: any = None) -> any:
     return os.environ.get(name.value if isinstance(name, Enum) else name, default)
 
 
-def get_cookies_file_path(domain: str, file_name: str = "cookies.pkl") -> str:
+def get_cookies_file(domain: str, file_name: str = "cookies.pkl") -> str:
     dir_path = Paths.get_path(get_env_value(Env.OUTPUT_DIR), "cookies")
     return os.path.join(dir_path, domain, file_name)
 
 
-def get_sessions_dir_path():
-    return os.path.join(Paths.get_path(get_env_value(Env.OUTPUT_DIR)), 'sessions')
+def get_content_dir(sub_path=None):
+    main = Paths.get_path(get_env_value(Env.CONTENT_DIR))
+    return main if not sub_path else os.path.join(main, sub_path)
 
 
-def get_downloads_file_path(session_id: str, filename: str) -> str:
-    if not session_id:
-        raise ValueError('session id is required')
+def get_uploads_dir():
+    return get_content_dir('uploads')
+
+
+def get_upload_file(task_id: str, filename: str) -> str:
+    if not task_id:
+        raise ValueError('task id is required')
     if not filename:
         raise ValueError('file name is required')
     now = datetime.now()
-    dir_path: str = os.path.join(get_sessions_dir_path(),
-                                 now.strftime("%Y"),
-                                 now.strftime("%m"),
-                                 now.strftime("%d"),
-                                 session_id)
-    return os.path.join(dir_path, filename)
+    return os.path.join(get_uploads_dir(),
+                        now.strftime("%Y"),
+                        now.strftime("%m"),
+                        now.strftime("%d"),
+                        task_id,
+                        filename)

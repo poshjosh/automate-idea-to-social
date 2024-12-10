@@ -74,7 +74,7 @@ stages:
           - //*[@id="root"]//input[@type="file" and @accept="video/*"]
           - //input[@type="file" and @accept="video/*"]
         actions:
-          - enter_text ${INPUT_DIR}/video-portrait.${VIDEO_OUTPUT_TYPE}
+          - enter_text ${CONTENT_DIR}/video-portrait.${VIDEO_OUTPUT_TYPE}
           - wait 5 # It takes a while but the default wait will cover the rest
       click-upload-button:
         timeout-seconds: 5

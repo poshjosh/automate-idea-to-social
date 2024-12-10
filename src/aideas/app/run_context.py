@@ -48,10 +48,9 @@ class RunContext:
         self.__values[agent_name] = config
         return config
 
-    def add_action_result(self,
-                          agent_name: str,
-                          stage_id: str,
-                          result: ActionResult) -> 'RunContext':
+    def add_action_result(self, result: ActionResult) -> 'RunContext':
+        agent_name = result.get_action().get_agent_name()
+        stage_id = result.get_action().get_stage_id()
         new_stage = False
         new_stage_element = False
         stage_result_set: StageResultSet = self.get_stage_results(agent_name, None)

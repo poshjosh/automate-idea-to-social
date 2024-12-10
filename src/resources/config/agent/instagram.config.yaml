@@ -112,7 +112,7 @@ stages:
           - /html/body//form/input[@type="file"]
           - //input[@type="file"]
         actions:
-          - enter_text ${INPUT_DIR}/video-square.${VIDEO_OUTPUT_TYPE}
+          - enter_text ${CONTENT_DIR}/video-square.${VIDEO_OUTPUT_TYPE}
           - wait 7
       dismiss-alert:
         events:

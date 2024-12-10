@@ -18,9 +18,11 @@ class ConfigLoader(YamlLoader):
         super().__init__(config_path, suffix=_SUFFIX)
         self.__variable_source = {}
         self.__variable_source.update(Env.collect())  # Environment variables
-        self.__variable_source.update(RunArg.collect())  # Run args from sys.argv
-        self.__variable_source.update(
-            run_config if run_config is not None else self.load_run_config())  # Run config
+        if run_config is None:
+            self.__variable_source.update(self.load_run_config())  # Properties file
+        self.__variable_source.update(RunArg.of_sys_argv())  # sys.argv
+        if run_config is not None:
+            self.__variable_source.update(run_config)  # User supplied
 
     def load_agent_configs(self, cfg_filter=None) -> dict[str, dict[str, any]]:
         configs = {}

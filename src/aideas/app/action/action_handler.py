@@ -8,7 +8,7 @@ from typing import Union, TypeVar
 from pyu.io.file import read_content, write_content
 from .action import Action
 from .action_result import ActionResult
-from ..config import parse_query, RunArg
+from ..config import parse_query
 from ..run_context import RunContext
 
 logger = logging.getLogger(__name__)
@@ -105,9 +105,9 @@ class ActionHandler:
         elif key == ActionId.LOG.value:
             result: ActionResult = self.log(action)
         elif key == ActionId.SAVE_FILE.value:
-            result: ActionResult = self.save_file(run_context, action)
+            result: ActionResult = self.save_file(action)
         elif key == ActionId.SAVE_TEXT.value:
-            result: ActionResult = self.save_text(run_context, action)
+            result: ActionResult = self.save_text(action)
         elif key == ActionId.SET_CONTEXT_VALUES.value:
             result: ActionResult = self.set_context_values(run_context, action)
         elif key == ActionId.STARTS_WITH.value:
@@ -152,11 +152,11 @@ class ActionHandler:
         return ActionResult(action, True)
 
     @staticmethod
-    def save_file(run_context: RunContext, action: Action) -> ActionResult:
+    def save_file(action: Action) -> ActionResult:
         args: [str] = action.get_args_as_str_list()
         src_file = args[0]
         tgt_filename = os.path.basename(src_file) if len(args) < 2 else args[1]
-        tgt_dirs = ActionHandler.get_output_dirs(run_context, action)
+        tgt_dirs = action.get_output_dirs()
         if len(args) > 2:
             tgt_dirs.extend(args[2:])
 
@@ -169,12 +169,12 @@ class ActionHandler:
         return ActionResult.success(action, result)
 
     @staticmethod
-    def save_text(run_context: RunContext, action: Action) -> ActionResult:
+    def save_text(action: Action) -> ActionResult:
         args: [str] = action.get_args_as_str_list()
         content = args[0]
         chars = len(content)
         filename = DEFAULT_FILE_NAME if len(args) < 2 else args[1]
-        tgt_dirs = ActionHandler.get_output_dirs(run_context, action)
+        tgt_dirs = action.get_output_dirs()
         if len(args) > 2:
             tgt_dirs.extend(args[2:])
 
@@ -271,51 +271,6 @@ class ActionHandler:
     def accept_dir_entry(entry: os.DirEntry, file_type: str) -> bool:
         return entry.is_file() and (file_type == ActionHandler.__ALL_FILE_TYPES or
                                     entry.name.endswith(file_type))
-
-        # By saving the file, other agents may access it from the local disc
-        # event when pictory run context is no longer available
-        # We save the file:
-        # 1. At current agent's results: ${OUTPUT_DIR}/agent/${agent_name}/results/${stage}/${stage-item}/original-file-name.${VIDEO_OUTPUT_TYPE}
-        #    e.g. resources/agent/pictory/results/video-landscape/save-file/original.mp4
-        #    This is cleared before each run of the agent.
-        # 2. For the user at the parent directory of ${VIDEO_CONTENT_FILE}
-        #    e.g. user_supplied_dir/video-landscape.mp4
-        # 3. For other agents at: ${INPUT-DIR}/${stage}.${VIDEO_OUTPUT_TYPE}
-        #    e.g. resources/input/video-landscape.mp4
-        #    This is cleared before each run of the app.
-
-    @staticmethod
-    def get_output_dirs(run_context: RunContext, action: Action) -> []:
-        """
-        Get the directories where the result should be saved. Create them if needed.
-        We save the result to multiple directories:
-        1. At the current action's results directory.
-           (a) Format: ${OUTPUT_DIR}/agent/${agent_name}/results/${stage}/${stage-item}/original-file-name.${VIDEO_OUTPUT_TYPE}
-           (b) Example: resources/agent/pictory/results/video-landscape/save-file/original.mp4
-           (c) This is cleared before each run of the agent.
-        2. At the app's input directory, so that other agents can access it.
-           (a) Format: ${INPUT-DIR}/${stage}.${VIDEO_OUTPUT_TYPE}
-           (b) Example: resources/input/video-landscape.mp4
-           (c) This is cleared before each run of the app.
-        3. At the user's input directory.
-           (a) Format: Parent directory of ${VIDEO_CONTENT_FILE}
-           (b) Example: <<USER_SUPPLIED_DIR>>/video-landscape.mp4
-           (c) This is never cleared by the app. It is up to the user to delete it.
-        :param run_context: The run context
-        :param action: The executing action
-        :return: The list of output directory
-        """
-        return [
-            ActionHandler.__make_dir_if_need(action.get_results_dir()),
-            ActionHandler.__make_dir_if_need(run_context.get_arg(RunArg.INPUT_DIR)),
-            ActionHandler.__make_dir_if_need(run_context.get_arg(RunArg.VIDEO_CONTENT_FILE))
-        ]
-
-    @staticmethod
-    def __make_dir_if_need(dir) -> str:
-        if not os.path.exists(dir):
-            os.makedirs(dir)
-        return dir
 
 
 class NoopActionHandler(ActionHandler):

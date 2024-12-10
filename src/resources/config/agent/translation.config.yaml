@@ -1,7 +1,7 @@
 # [llm|browser|blog|generic]  llm is not yet supported
 agent-type: generic
 # Optional [generate-video|generate-text|post|test|custom]
-#agent-tags:
+agent-tags: custom
 net:
   # https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=uk&dt=t&q=TEXT
   service-url: https://translate.googleapis.com/translate_a/single

@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Run arg `INPUT_DIR`
+- Use `CONTENT_DIR` and deprecate `INPUT_DIR`
 
 ## [0.2.0] - 2024-12-09
 

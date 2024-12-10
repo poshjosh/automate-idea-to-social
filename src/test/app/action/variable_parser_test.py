@@ -59,7 +59,7 @@ class VariableParserTest(unittest.TestCase):
         output: list[ActionResult] = []
         for r in results:
             action_result = create_action_result(r)
-            run_context.add_action_result(agent_name, stage_name, action_result)
+            run_context.add_action_result(action_result)
             output.append(action_result)
         return output
 

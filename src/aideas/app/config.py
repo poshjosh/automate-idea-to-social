@@ -7,6 +7,7 @@ from enum import Enum, unique
 from typing import Union, TypeVar, Callable
 
 from pyu.io.file import read_content
+
 from .paths import Paths
 
 logger = logging.getLogger(__name__)
@@ -671,7 +672,6 @@ class RunArg(str, Enum):
 
     AGENTS = ('agents', 'a', 'list')
     CONTINUE_ON_ERROR = ('continue-on-error', 'coe', 'bool', True, False)
-    INPUT_DIR = ('input-dir', 'id', 'str', True, True)
     VIDEO_CONTENT_FILE = ('video-content-file', 'vcf', 'str', True, True)
     VIDEO_CONTENT_SUFFIX_FILE = ('video-content-suffix-file', 'vcsf', 'str', True, True)
     VIDEO_TITLE = ('video-title', 'vt', 'str', True, False)
@@ -697,7 +697,7 @@ class RunArg(str, Enum):
         return RunArg._update_defaults(target)
 
     @staticmethod
-    def collect(add_to: dict[str, any] = None) -> dict[str, any]:
+    def of_sys_argv(add_to: dict[str, any] = None) -> dict[str, any]:
         if add_to is None:
             add_to = {}
         for e in RunArg:

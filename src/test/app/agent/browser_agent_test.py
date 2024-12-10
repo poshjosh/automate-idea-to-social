@@ -82,14 +82,13 @@ stages:
     def _given_run_context_with_downloaded_file(agent_name: str) -> RunContext:
         run_context: RunContext = get_run_context([agent_name])
         stage = AgentName.PictoryStage
-        stage_id = stage.VIDEO_LANDSCAPE
+        stage_id = stage.VIDEO_PORTRAIT
         target_id = stage.Action.GET_FILE
         action = Action(agent_name, stage_id, target_id,
                         ActionId.GET_NEWEST_FILE_IN_DIR.value,
                         ['/videos/dir', 'mp4', '120'])
         action_result = ActionResult(action, True, 'test-downloaded-video.mp4')
-        run_context.add_action_result(
-            AgentName.PICTORY, stage.VIDEO_PORTRAIT, action_result)
+        run_context.add_action_result(action_result)
         return run_context
 
 

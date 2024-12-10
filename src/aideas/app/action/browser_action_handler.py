@@ -15,7 +15,7 @@ from pyu.io.file import create_file, write_content
 from ..action.action import Action
 from ..action.action_handler import ActionHandler, BaseActionId
 from ..action.action_result import ActionResult
-from ..env import get_cookies_file_path, get_cached_results_file
+from ..env import get_cookies_file, get_cached_results_file
 from ..run_context import RunContext
 from ..web.element_selector import ElementSelector
 
@@ -108,7 +108,7 @@ class BrowserActionHandler(ActionHandler):
         return ActionResult.success(action, self.__element_selector.load_page(action.get_arg_str()))
 
     def __delete_cookies(self, action: Action) -> ActionResult:
-        file = get_cookies_file_path(action.get_agent_name())
+        file = get_cookies_file(action.get_agent_name())
         self.get_web_driver().delete_all_cookies()
         if os.path.exists(file):
             os.remove(file)

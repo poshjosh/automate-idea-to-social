@@ -76,7 +76,7 @@ stages:
           - //*[@id="react-root"]//div[@role="textbox" and @aria-label="Post text"]
           - //*[@id="react-root"]/div/div/div[2]/main/div/div/div/div[1]/div/div[3]/div/div[2]/div[1]/div/div/div/div[2]/div[1]/div/div/div/div/div/div/div/div/div/div/label/div[1]/div/div/div/div/div/div[2]/div
         actions:
-          - get_file_content ${INPUT_DIR}/youtube-video-link.txt
+          - get_file_content ${CONTENT_DIR}/youtube-video-link.txt
           - enter_text $VIDEO_TITLE $results.me[0]
           # When we enter a link, twitter retrieves some metadata from the link
           - wait 5

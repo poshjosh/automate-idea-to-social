@@ -365,7 +365,7 @@ class Automator:
             result: ActionResult = action_handler.execute_on(run_context, action, target)
 
             if self.__populate_result_set is True:
-                run_context.add_action_result(self.__agent_name, stage_id, result)
+                run_context.add_action_result(result)
             else:
                 result_set.add(result)
 

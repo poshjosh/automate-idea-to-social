@@ -8,7 +8,7 @@ from pyu.io.file import create_file
 from .app import App
 from .config import RunArg, AppConfig, AgentConfig
 from .config_loader import ConfigLoader
-from .env import get_downloads_file_path, is_production
+from .env import get_upload_file, is_production
 from .result.result_set import AgentResultSet
 
 CONFIG_PATH = os.path.join(os.getcwd(), 'resources', 'config')
@@ -113,7 +113,7 @@ def _validate_image_ext(uploaded_file):
         raise ValidationError(f"Invalid image type: {img_ext}")
 
 
-def _save_file(session_id, files, input_name) -> Union[str, None]:
+def _save_file(task_id, files, input_name) -> Union[str, None]:
     uploaded_file = files.get(input_name)
     if not uploaded_file:
         return None
@@ -122,20 +122,20 @@ def _save_file(session_id, files, input_name) -> Union[str, None]:
     if input_name == RunArg.VIDEO_COVER_IMAGE.value or \
             input_name == RunArg.VIDEO_COVER_IMAGE_SQUARE.value:
         _validate_image_ext(uploaded_file)
-    filepath = get_downloads_file_path(session_id, _secure_filename(uploaded_file.filename))
+    filepath = get_upload_file(task_id, _secure_filename(uploaded_file.filename))
     logger.debug(f"Will save: {input_name} to {filepath}")
     create_file(filepath)
     uploaded_file.save(filepath)
     return filepath
 
 
-def _save_files(session_id, files) -> dict[str, any]:
+def _save_files(task_id, files) -> dict[str, any]:
     saved_files = {}
     for e in RunArg:
         run_arg = RunArg(e)
         if not run_arg.is_path:
             continue
-        saved_file = _save_file(session_id, files, run_arg.value)
+        saved_file = _save_file(task_id, files, run_arg.value)
         if not saved_file:
             continue
         saved_files[run_arg.value] = saved_file

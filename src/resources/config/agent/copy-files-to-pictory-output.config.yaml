@@ -15,7 +15,7 @@ stages:
         events:
           onerror: continue
         actions:
-          - get_first_file ${DOCKER_MOUNT_CONTENT_DIR} $TRANSLATION_FILE_EXTENSION
+          - get_first_file ${CONTENT_DIR} $TRANSLATION_FILE_EXTENSION
           - eval importlib.import_module('os').makedirs('${self.output-dir}')
           - eval importlib.import_module('shutil').copy2('${results.me[0]}', '${self.output-dir}/subtitles.${TRANSLATION_FILE_EXTENSION}')
   copy-files:
@@ -33,7 +33,7 @@ stages:
           - set_context_values copy-files_typ=${results.me[0]}
           - eval importlib.import_module('os').makedirs('${self.output-dir}/results/video-${context.copy-files_typ}/save-file')
           - set_context_values copy-files_filename=video-${context.copy-files_typ}.${VIDEO_OUTPUT_TYPE}
-          - set_context_values copy-files_src=${DOCKER_MOUNT_CONTENT_DIR}/${context.copy-files_filename}
+          - set_context_values copy-files_src=${CONTENT_DIR}/${context.copy-files_filename}
           - set_context_values copy-files_tgt=${self.output-dir}/results/video-${context.copy-files_typ}/save-file/${context.copy-files_filename}
           - log INFO source = ${context.copy-files_src}
           - log INFO target = ${context.copy-files_tgt}

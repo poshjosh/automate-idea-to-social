@@ -98,7 +98,7 @@ class EventHandler:
                     event_name, action_signature, run_context)
                 logger.debug(f"Executing event action: {action}")
                 action_result = self.__action_handler.execute(run_context, action)
-                run_context.add_action_result(agent_name, stage_id, action_result)
+                run_context.add_action_result(action_result)
 
         return run_context.get_element_results(agent_name, stage_id)
 

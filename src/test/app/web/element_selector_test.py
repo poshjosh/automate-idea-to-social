@@ -2,7 +2,7 @@ import unittest
 
 from aideas.app.web.element_selector import ElementSelector
 from aideas.app.config import SearchBy, SearchConfig, SearchConfigs
-from aideas.app.env import get_cookies_file_path
+from aideas.app.env import get_cookies_file
 
 from test.app.test_functions import create_webdriver, get_agent_resource
 from test.app.web.noop_cookie_store import NoopCookieStore
@@ -40,7 +40,7 @@ class ElementSelectorTest(unittest.TestCase):
 def get_element_selector(webdriver=None) -> ElementSelector:
     if webdriver is None:
         webdriver = create_webdriver()
-    cookie_store = NoopCookieStore(webdriver, get_cookies_file_path("test-agent"))
+    cookie_store = NoopCookieStore(webdriver, get_cookies_file("test-agent"))
     return ElementSelector(webdriver, 10, cookie_store)
 
 

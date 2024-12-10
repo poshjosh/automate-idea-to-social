@@ -1,19 +1,30 @@
 # automate-idea-to-social
 
-### Sample Input Directory Structure
+### Sample Input
 
 #### For video generation
 
-```
-- INPUT_DIR/
+Use files or text to provide input for video generation.
+
+1. Files
+    ```
     - VIDEO_CONTENT_FILE.txt
     - VIDEO_CONTENT_SUFFIX_FILE.txt (optional)
-```
+    ```
 
+2. Text
+    ```
+    - VIDEO_TITLE (text)
+    - VIDEO_CONTENT (text)
+    - VIDEO_CONTEXT_SUFFX (optional, text)
+    ```
+   
 #### For posting videos
 
-```
-- INPUT_DIR/
+We need all the inputs for video generation, plus the following:
+
+Files 
+    ```
     - cover-image.jpg
     - cover-image-square.jpg 
     - video-landscape.mp4
@@ -25,7 +36,7 @@
         - subtitles.de.vtt
         - subtitles.ar.vtt
         - subtitles.es.vtt
-```
+    ```
 
 ### Automate generating and publishing content from ideas to social media.
 

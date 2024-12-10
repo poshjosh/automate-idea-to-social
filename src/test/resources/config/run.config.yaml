@@ -8,11 +8,9 @@ agents:
 #############################################################################
 # If running in docker (usually the case)
 # These can be full paths, because we are mounting their directory in docker
-# They must however be contained within our DOCKER_MOUNT_CONTENT_DIR
-# See environment variables for DOCKER_MOUNT_CONTENT_DIR
+# They must however be contained within our CONTENT_DIR
+# See environment variables for CONTENT_DIR
 #############################################################################
-input-dir: test/resources/test-content
-
 # Used for title and description.
 # Used to generate the video.
 video-content-file: test/resources/test-content/video.txt
