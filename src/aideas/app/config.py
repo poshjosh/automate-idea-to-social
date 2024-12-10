@@ -489,6 +489,9 @@ class AgentConfig:
             self, stage: Union[str, Name], result_if_none: Union[str, None]) -> Union[str, None]:
         return self.stage(stage, {}).get('url', result_if_none)
 
+    def get_sort_order(self, result_if_none=sys.maxsize) -> int:
+        return self.__config.get('sort-order', result_if_none)
+
     def get_depends_on(self) -> [str]:
         return self.__config.get('depends-on', [])
 

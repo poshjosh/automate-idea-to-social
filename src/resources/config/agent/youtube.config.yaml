@@ -2,6 +2,7 @@
 agent-type: browser
 # Optional [generate-video|generate-text|post|test|custom]
 agent-tags: post
+sort-order: 1
 browser:
   chrome:
     undetected: true

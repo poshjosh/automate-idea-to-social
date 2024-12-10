@@ -4,6 +4,7 @@
 agent-type: browser
 # Optional [generate-video|generate-text|post|test|custom]
 agent-tags: post
+sort-order: 2
 stages:
   email:
     #url: https://twitter.com/i/flow/login

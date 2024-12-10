@@ -2,6 +2,7 @@ import imghdr
 import logging
 import os.path
 import uuid
+from collections import OrderedDict
 from typing import Union
 
 from pyu.io.file import create_file
@@ -24,14 +25,9 @@ class ValidationError(Exception):
 
 class WebService:
     def __init__(self, app_config: dict[str, any] = None):
-        config_loader = ConfigLoader(CONFIG_PATH)
-        self.agent_configs = {}
-        for k, v in config_loader.load_agent_configs().items():
-            agent_config = AgentConfig(v)
-            if is_production() is False or 'test' not in agent_config.get_agent_tags():
-                self.agent_configs[k] = agent_config
+        self.__config_loader = ConfigLoader(CONFIG_PATH)
         if not app_config:
-            app_config = config_loader.load_app_config()
+            app_config = self.__config_loader.load_app_config()
         self.app_config = AppConfig(app_config)
 
     def index(self) -> dict[str, str]:
@@ -39,8 +35,8 @@ class WebService:
 
     def automate_task(self, tag) -> dict[str, any]:
         agents = {}
-        for e in self._get_agent_names(tag):
-            agents[e] = e.replace('-', ' ')
+        for agent_name in self._get_agent_names(tag):
+            agents[agent_name] = agent_name.replace('-', ' ')
         return {
             'title': self.app_config.get_title(),
             'heading': self._get_heading_for_tag(tag),
@@ -72,8 +68,17 @@ class WebService:
             logger.exception(ex)
             raise ex
 
-    def _get_agent_names(self, tag) -> list[str]:
-        return [name for name, cfg in self.agent_configs.items() if tag in cfg.get_agent_tags()]
+    def _get_agent_names(self, tag: str) -> list[str]:
+        def config_filter(config: dict[str, any]) -> bool:
+            agent_tags = AgentConfig(config).get_agent_tags()
+            if is_production() is True and 'test' in agent_tags:
+                return False
+            return tag in agent_tags
+
+        def config_sort(config: dict[str, any]) -> int:
+            return AgentConfig(config).get_sort_order()
+
+        return self.__config_loader.get_sorted_agent_names(config_filter, config_sort)
 
     def _get_heading_for_tag(self, tag):
         if tag == 'generate-video':

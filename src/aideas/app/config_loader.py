@@ -1,5 +1,6 @@
 import logging
 import os
+from typing import Callable
 
 from pyu.io.file import load_yaml
 from pyu.io.yaml_loader import YamlLoader
@@ -23,17 +24,32 @@ class ConfigLoader(YamlLoader):
         self.__variable_source.update(RunArg.of_sys_argv())  # sys.argv
         if run_config is not None:
             self.__variable_source.update(run_config)  # User supplied
+        self.__agent_configs = self.load_agent_configs()
+
+    def get_sorted_agent_names(self,
+                               config_filter: Callable[[dict[str, any]], bool],
+                               config_sort: Callable[[dict[str, any]], int]) -> [str]:
+        keys = []
+        values = []
+        for k, v in self.__agent_configs.items():
+            if config_filter(v):
+                keys.append(k)
+                values.append(v)
+        values_sorted = [e for e in values]
+        values_sorted.sort(key=config_sort)
+
+        return [keys[values.index(sorted_val)] for sorted_val in values_sorted]
 
     def load_agent_configs(self, cfg_filter=None) -> dict[str, dict[str, any]]:
         configs = {}
-        for name in self.all_agent_names():
+        for name in self.__all_agent_names():
             config = self.load_agent_config(name)
             if not cfg_filter or cfg_filter(config):
                 configs[name] = config
         logger.debug(f"Config names: {configs.keys()}")
         return configs
 
-    def all_agent_names(self) -> [str]:
+    def __all_agent_names(self) -> [str]:
         agents = []
         agent_dir = os.path.join(os.path.dirname(self.get_path("app")), 'agent')
         for agent_filename in os.listdir(agent_dir):
