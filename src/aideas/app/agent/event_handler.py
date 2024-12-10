@@ -4,6 +4,7 @@ from typing import Callable
 
 from ..action.action import Action
 from ..action.action_handler import ActionHandler, ActionError
+from ..action.action_result import ActionResult
 from ..action.action_signatures import parse_agent_to_stages
 from ..config import AgentConfig, ConfigPath, Name, ON_ERROR, ON_SUCCESS
 from ..result.result_set import ElementResultSet
@@ -68,6 +69,11 @@ class EventHandler:
         stage_id = config_path.stage().id
         target_id = config_path.name().id
 
+        def create_action():
+            return self.__create_action(
+                agent_name, stage_id, target_id, index,
+                event_name, action_signature, run_context)
+
         index: int = -1
         for action_signature in action_signature_list:
             index += 1
@@ -78,6 +84,7 @@ class EventHandler:
                     logger.exception(exception)
             elif action_signature == 'fail':
                 error_msg: str = f'Error {config_path}, result: {result}'
+                run_context.add_action_result(ActionResult.failure(create_action(), error_msg))
                 raise ActionError(error_msg) from exception
             elif action_signature.startswith('retry'):
                 max_trials: int = self.__max_trials(action_signature)
@@ -87,18 +94,21 @@ class EventHandler:
                     retry(trials + 1)
                 else:
                     error_msg: str = f'Max retries exceeded {config_path}, result: {result}'
+                    run_context.add_action_result(ActionResult.failure(create_action(), error_msg))
                     raise ActionError(error_msg) from exception
             elif action_signature.startswith('run_stages'):
                 _, agent_to_stages = parse_agent_to_stages(
                     action_signature, agent_name, config_path.stage())
                 run_stages(run_context, agent_to_stages)
             else:
-                action = self.__create_action(
-                    agent_name, stage_id, target_id, index,
-                    event_name, action_signature, run_context)
+                action = create_action()
                 logger.debug(f"Executing event action: {action}")
-                action_result = self.__action_handler.execute(run_context, action)
-                run_context.add_action_result(action_result)
+                try:
+                    action_result = self.__action_handler.execute(run_context, action)
+                    run_context.add_action_result(action_result)
+                except ActionError as ex:
+                    run_context.add_action_result(ActionResult.failure(action))
+                    raise ex
 
         return run_context.get_element_results(agent_name, stage_id)
 
