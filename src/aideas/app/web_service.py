@@ -1,16 +1,13 @@
 import imghdr
 import logging
 import os.path
-import uuid
-from collections import OrderedDict
-from typing import Union
+from typing import Union, Callable
 
 from pyu.io.file import create_file
-from .app import App
 from .config import RunArg, AppConfig, AgentConfig
 from .config_loader import ConfigLoader
 from .env import get_upload_file, is_production
-from .result.result_set import AgentResultSet
+from .task import Task, add_task, get_task_ids, require_task, submit_task
 
 CONFIG_PATH = os.path.join(os.getcwd(), 'resources', 'config')
 
@@ -44,13 +41,31 @@ class WebService:
             'tag': tag}
 
     def automate(self) -> dict[str, any]:
-        return {'title': self.app_config.get_title(), 'heading': 'Automate tasks using agents.'}
+        return {'title': self.app_config.get_title(), 'heading': 'Automate tasks using agents'}
 
     @staticmethod
-    def automate_start(form, files) -> AgentResultSet:
+    def automate_start_async(task_id: str, form, files) -> Task:
+        try:
+            task = WebService.new_task(task_id, form, files)
+            submit_task(task_id, task)
+            return task
+        except Exception as ex:
+            logger.exception(ex)
+            raise ex
+
+    @staticmethod
+    def automate_start(task_id: str, form, files) -> Task:
+        try:
+            return add_task(task_id, WebService.new_task(task_id, form, files)).start()
+        except Exception as ex:
+            logger.exception(ex)
+            raise ex
+
+    @staticmethod
+    def new_task(task_id: str, form, files) -> Task:
         try:
             form_data = dict(form)
-            form_data.update(_save_files(str(uuid.uuid4()), files))
+            form_data.update(_save_files(task_id, files))
             logger.debug(f"Form data: {form_data}")
 
             agent_names = form.getlist(RunArg.AGENTS.value)
@@ -58,15 +73,27 @@ class WebService:
                 run_config = RunArg.of_dict(form_data)
             except ValueError as value_ex:
                 raise ValidationError(value_ex.args[0])
-            run_config = {
-                **run_config,
-                RunArg.CONTINUE_ON_ERROR.value: True,
-                RunArg.AGENTS.value: agent_names
-            }
-            return App.of_defaults(ConfigLoader(CONFIG_PATH, run_config)).run(run_config)
+
+            run_config = {**run_config, RunArg.AGENTS.value: agent_names}
+
+            return Task.of_defaults(ConfigLoader(CONFIG_PATH, run_config), run_config)
         except Exception as ex:
             logger.exception(ex)
             raise ex
+
+    def tasks(self,
+              get_task_links: Callable[[str], dict[str, any]],
+              info: str = None) -> dict[str, any]:
+        task_ids: [str] = get_task_ids()
+        tasks = []
+        for task_id in task_ids:
+            tasks.append({
+                'id': task_id,
+                'agents': require_task(task_id).get_agent_names(),
+                'links': get_task_links(task_id)
+            })
+        return {'title': self.app_config.get_title(), 'heading': 'Tasks',
+                'tasks': tasks, 'info': info}
 
     def _get_agent_names(self, tag: str) -> list[str]:
         def config_filter(config: dict[str, any]) -> bool:

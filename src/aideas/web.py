@@ -1,63 +1,87 @@
 from flask import Flask, render_template, request
+# from flask_cors import CORS
+import uuid
 import logging.config
 import os.path
 
-from pyu.io.logging import SecretsMaskingFilter
-from app.config_loader import ConfigLoader
-from app.env import Env
+from app.app import App
+from app.task import get_task, stop_task
 from app.web_service import WebService, ValidationError
 
 web_app = Flask(__name__)
+# CORS(web_app)
 
-web_servce = WebService()
-
-secrets_masking_filter = SecretsMaskingFilter(
-    ["(pass|key|secret|token|jwt|hash|signature|credential|auth|certificate|connection|pat)"])
+web_service = WebService()
 
 
 @web_app.route('/')
 def index():
-    return render_template('index.html', **web_servce.index())
+    return render_template('index.html', **web_service.index())
 
 
 @web_app.route('/automate/index.html')
 def automate():
-    return render_template('automate/index.html', **web_servce.automate())
+    return render_template('automate/index.html', **web_service.automate())
 
 
 @web_app.route('/automate/details.html')
 def automate_task():
     tag = request.args['tag']
-    return render_template('automate/details.html', **web_servce.automate_task(tag))
+    return render_template('automate/details.html', **web_service.automate_task(tag))
+
+
+TASK_INDEX_TEMPLATE = 'task/index.html'
 
 
 @web_app.route('/automate/start', methods=['POST'])
 def automate_start():
+    asynch = request.args.get('async', True)
+    task_id = str(uuid.uuid4())
+
+    if asynch is True:
+        web_service.automate_start_async(task_id, request.form, request.files)
+        return _render_task_index_template(f"Submitted task: {task_id}")
+
     try:
-        result = web_servce.automate_start(request.form, request.files)
-        result_str = (result.pretty_str("\n", "&emsp;")
-                      .replace("ActionResult(", "(")
-                      .replace(", Action(", ", (")
-                      .replace("(success=True,", '(<span style="color:green">SUCCESS</span>,')
-                      .replace("(success=False,", '(<span style="color:red">FAILURE</span>,'))
-        result_str = secrets_masking_filter.redact(result_str)
-        result_str = result_str.replace("\n", "<br>")  # Replace his only after masking secrets
-        args = {"info": f'<span style="font-size:0.75rem;">{result_str}</span>'}
+        task = web_service.automate_start(task_id, request.form, request.files)
+        args = {"info": f'<span style="font-size:0.75rem;">{task.to_html()}</span>'}
     except Exception as ex:
-        default_err_msg = "An unexpected error occurred while trying to automate."
-        if isinstance(ex, ValidationError):
-            args = {"error": ex.message if ex.message else default_err_msg}
-        else:
-            args = {"error": default_err_msg}
-    template_args = {**web_servce.automate(), **args}
+        args = _convert_to_error_obj(ex)
+    template_args = {**web_service.automate(), **args}
     return render_template('automate/index.html', **template_args)
+
+
+@web_app.route(f'/{TASK_INDEX_TEMPLATE}')
+def view_tasks():
+    return _render_task_index_template()
+
+
+@web_app.route('/task/<task_id>')
+def task_by_id(task_id: str):
+    if request.args.get('action') == 'stop':
+        return _render_task_index_template(stop_task(task_id).to_html())
+    return _render_task_index_template(get_task(task_id).to_html())
+
+
+def _get_task_links(task_id: str) -> dict[str, any]:
+    return {'view': '/task/' + task_id, 'stop': '/task/' + task_id + '?action=stop'}
+
+
+def _render_task_index_template(info: str = None):
+    return render_template(TASK_INDEX_TEMPLATE, **web_service.tasks(_get_task_links, info))
+
+
+def _convert_to_error_obj(ex: Exception) -> dict[str, str]:
+    default_err_msg = "An unexpected error occurred while trying to automate."
+    if isinstance(ex, ValidationError):
+        return {"error": ex.message if ex.message else default_err_msg}
+    else:
+        return {"error": default_err_msg}
 
 
 if __name__ == '__main__':
 
-    Env.set_defaults()
-
-    config_loader = ConfigLoader(os.path.join(os.getcwd(), 'resources', 'config'))
+    config_loader = App.init()
 
     logging.config.dictConfig(config_loader.load_logging_config())
 
@@ -65,3 +89,5 @@ if __name__ == '__main__':
         host='0.0.0.0',
         port=os.environ.get('APP_PORT', 5551),
         debug=os.environ.get('APP_DEBUG', True))
+
+

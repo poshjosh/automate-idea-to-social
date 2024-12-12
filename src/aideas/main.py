@@ -1,16 +1,12 @@
 import logging.config
-import os.path
 
 from app.app import App
 from app.config import RunArg
-from app.config_loader import ConfigLoader
-from app.env import Env
+from app.task import Task
 
 if __name__ == '__main__':
 
-    Env.set_defaults()
-
-    config_loader = ConfigLoader(os.path.join(os.getcwd(), 'resources', 'config'))
+    config_loader = App.init()
 
     logging.config.dictConfig(config_loader.load_logging_config())
 
@@ -18,6 +14,6 @@ if __name__ == '__main__':
 
     run_config.update(RunArg.of_sys_argv())
 
-    App.of_defaults(config_loader).run(run_config)
+    Task.of_defaults(config_loader, run_config).start()
 
 

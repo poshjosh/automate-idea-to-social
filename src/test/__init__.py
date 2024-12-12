@@ -1,3 +1,3 @@
-from aideas.app.env import Env
+from aideas.app.app import App
 
-Env.set_defaults()
+App.init()
