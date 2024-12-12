@@ -56,9 +56,26 @@ def view_tasks():
 
 @web_app.route('/task/<task_id>')
 def task_by_id(task_id: str):
+    return _render_task_index_template(_task_by_id(task_id))
+
+
+def _task_by_id(task_id: str):
+    task = get_task(task_id)
+
+    if task is None:
+        return f"Task not found: {task_id}"
+
     if request.args.get('action') == 'stop':
-        return _render_task_index_template(stop_task(task_id).to_html())
-    return _render_task_index_template(get_task(task_id).to_html())
+        if task.is_started() is False:
+            return f"Task is not started: {task_id}"
+        if task.is_completed() is True:
+            return f"Task is already completed: {task_id}"
+
+        stop_task(task_id)
+
+        return f"<p>Task stopped: {task_id}</p>{task.to_html()}"
+
+    return f"<p>Displaying task: {task_id}</p>{task.to_html()}"
 
 
 def _get_task_links(task_id: str) -> dict[str, any]:
