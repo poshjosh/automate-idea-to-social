@@ -55,12 +55,16 @@ def _check_replaced(text: str) -> str:
 
 
 def replace_all_variables(
-        target: dict[str, any], source: Union[dict[str, any], None] = None) -> dict[str, any]:
+        target: dict[str, any],
+        source: Union[dict[str, any], None] = None,
+        check_replaced: bool = True) -> dict[str, any]:
 
     if not source:
         source = dict(os.environ)
 
-    return replace_all(target, source, _check_replaced, NODES_TO_SKIP)
+    return replace_all(target, source,
+                       _check_replaced if check_replaced is True else lambda x: x,
+                       NODES_TO_SKIP)
 
 
 def get_run_arg_replacement(curr_path: [str], arg: str, run_context: 'RunContext' = None) -> any:

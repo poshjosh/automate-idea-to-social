@@ -21,6 +21,11 @@ BROWSER_PROFILE_DIR=
 # https://github.com/ultrafunkamsterdam/undetected-chromedriver/issues/743#issuecomment-1420119272
 SETUP_DISPLAY=true
 
+# Used when WEB_APP=true
+APP_PORT=5001
+
+WEB_APP=true
+
 OUTPUT_DIR=resources/output
 
 # video output

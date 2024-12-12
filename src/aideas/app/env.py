@@ -22,11 +22,13 @@ _browser_chrome = 'BROWSER_CHROME'
 
 @unique
 class Env(str, Enum):
-    def __new__(cls, value, optional: bool = False, path: bool = False):
+    def __new__(cls, value, optional: bool = False,
+                path: bool = False, default_value: str = None):
         obj = str.__new__(cls, [value])
         obj._value_ = value
         obj.__optional = optional
         obj.__path = path
+        obj.__default_value = default_value
         return obj
 
     def is_optional(self) -> bool:
@@ -35,15 +37,22 @@ class Env(str, Enum):
     def is_path(self) -> bool:
         return self.__path
 
-    APP_LANGUAGE = ('APP_LANGUAGE', True, False)
+    def get_default_value(self) -> str:
+        return self.__default_value
+
+    APP_LANGUAGE = ('APP_LANGUAGE', True, False, 'en-GB')
 
     CONTENT_DIR = ('CONTENT_DIR', False, True)
 
     SETUP_DISPLAY = ('SETUP_DISPLAY', True, False)
 
-    OUTPUT_DIR = ('OUTPUT_DIR', False, True)
+    APP_PORT = ('APP_PORT', True, False, '5001')
 
-    VIDEO_OUTPUT_TYPE = f'{_video}_OUTPUT_TYPE'
+    WEB_APP = ('WEB_APP', True, False, 'true')
+
+    OUTPUT_DIR = ('OUTPUT_DIR', False, True, 'resources/output')
+
+    VIDEO_OUTPUT_TYPE = (f'{_video}_OUTPUT_TYPE', False, False, 'mp4')
 
     PICTORY_USER_EMAIL = f'{_pictory}_USER_EMAIL'
     PICTORY_USER_PASS = f'{_pictory}_USER_PASS'
@@ -52,8 +61,9 @@ class Env(str, Enum):
     PICTORY_VOICE_NAME = f'{_pictory}_VOICE_NAME'
     PICTORY_TEXT_STYLE = f'{_pictory}_TEXT_STYLE'
 
-    TRANSLATION_OUTPUT_LANGUAGES = f'{_translation}_OUTPUT_LANGUAGES'
-    TRANSLATION_FILE_EXTENSION = f'{_translation}_FILE_EXTENSION'
+    TRANSLATION_OUTPUT_LANGUAGES = (f'{_translation}_OUTPUT_LANGUAGES',
+                                    False, False, 'ar,bn,de,es,fr,hi,it,ja,ko,ru,zh,zh-TW')
+    TRANSLATION_FILE_EXTENSION = (f'{_translation}_FILE_EXTENSION', False, False, 'vtt')
 
     YOUTUBE_USER_EMAIL = f'{_youtube}_USER_EMAIL'
     YOUTUBE_USER_PASS = f'{_youtube}_USER_PASS'
@@ -89,8 +99,10 @@ class Env(str, Enum):
 
     @staticmethod
     def set_defaults():
-        for k, v in DEFAULTS.items():
-            Env.set_default(k, v)
+        for e in Env:
+            default_value = Env(e).get_default_value()
+            if default_value:
+                Env.set_default(e, default_value)
 
     @staticmethod
     def set_default(k: Union[str, 'Env'], v: str):
@@ -113,18 +125,13 @@ class Env(str, Enum):
         return add_to
 
 
-DEFAULTS: dict[Env, str] = {
-    Env.APP_LANGUAGE: 'en-GB',
-    Env.OUTPUT_DIR: 'resources/output',
-    Env.TRANSLATION_FILE_EXTENSION: 'vtt',
-    Env.TRANSLATION_OUTPUT_LANGUAGES: "ar,bn",
-    Env.VIDEO_OUTPUT_TYPE: 'mp4'
-}
-
-
 def get_app_language(full: bool) -> str:
-    lang = get_env_value(Env.APP_LANGUAGE, DEFAULTS[Env.APP_LANGUAGE])
+    lang = get_env_value(Env.APP_LANGUAGE)
     return lang if full else lang.split('-')[0]
+
+
+def get_app_port() -> int:
+    return int(get_env_value(Env.APP_PORT))
 
 
 def is_docker() -> bool:
@@ -133,6 +140,14 @@ def is_docker() -> bool:
 
 def is_production() -> bool:
     return 'prod' in os.environ.get('APP_ENV', '')
+
+
+def is_web_app() -> bool:
+    return get_env_value(Env.WEB_APP) == 'true'
+
+
+def is_setup_display() -> bool:
+    return get_env_value(Env.SETUP_DISPLAY) == 'true'
 
 
 def get_cached_results_file(agent_name: str, filename: str = None) -> str:
@@ -175,8 +190,21 @@ def get_agent_output_dir(agent_name: str):
     return os.path.join(get_env_value(Env.OUTPUT_DIR), 'agent', agent_name)
 
 
-def get_env_value(name: Union[str, Enum], default: any = None) -> any:
-    return os.environ.get(name.value if isinstance(name, Enum) else name, default)
+def get_env_value(name: Union[str, Enum], default: str = None) -> str:
+    if not name:
+        return default
+    if isinstance(name, Env):
+        return os.environ.get(str(name.value), default if default is not None else name.get_default_value())
+    if isinstance(name, Enum):
+        return os.environ.get(str(name.value), default)
+    if isinstance(name, str):
+        value = os.environ.get(name)
+        if value:
+            return value
+        if name in Env.values():
+            return get_env_value(Env(name), default)
+        return default
+    return default
 
 
 def get_cookies_file(domain: str, file_name: str = "cookies.pkl") -> str:
@@ -185,7 +213,7 @@ def get_cookies_file(domain: str, file_name: str = "cookies.pkl") -> str:
 
 
 def get_content_dir(sub_path=None):
-    main = Paths.get_path(get_env_value(Env.CONTENT_DIR))
+    main = Paths.require_path(get_env_value(Env.CONTENT_DIR))
     return main if not sub_path else os.path.join(main, sub_path)
 
 

@@ -21,11 +21,9 @@ class ValidationError(Exception):
 
 
 class WebService:
-    def __init__(self, app_config: dict[str, any] = None):
-        self.__config_loader = ConfigLoader(CONFIG_PATH)
-        if not app_config:
-            app_config = self.__config_loader.load_app_config()
-        self.app_config = AppConfig(app_config)
+    def __init__(self, config_loader: ConfigLoader):
+        self.__config_loader = config_loader
+        self.app_config = AppConfig(config_loader.load_app_config())
 
     def index(self) -> dict[str, str]:
         return {'title': self.app_config.get_title(), 'heading': self.app_config.get_title()}
@@ -43,26 +41,23 @@ class WebService:
     def automate(self) -> dict[str, any]:
         return {'title': self.app_config.get_title(), 'heading': 'Automate tasks using agents'}
 
-    @staticmethod
-    def automate_start_async(task_id: str, form, files) -> Task:
+    def automate_start_async(self, task_id: str, form, files) -> Task:
         try:
-            task = WebService.new_task(task_id, form, files)
+            task = self.new_task(task_id, form, files)
             submit_task(task_id, task)
             return task
         except Exception as ex:
             logger.exception(ex)
             raise ex
 
-    @staticmethod
-    def automate_start(task_id: str, form, files) -> Task:
+    def automate_start(self, task_id: str, form, files) -> Task:
         try:
-            return add_task(task_id, WebService.new_task(task_id, form, files)).start()
+            return add_task(task_id, self.new_task(task_id, form, files)).start()
         except Exception as ex:
             logger.exception(ex)
             raise ex
 
-    @staticmethod
-    def new_task(task_id: str, form, files) -> Task:
+    def new_task(self, task_id: str, form, files) -> Task:
         try:
             form_data = dict(form)
             form_data.update(_save_files(task_id, files))
@@ -76,7 +71,7 @@ class WebService:
 
             run_config = {**run_config, RunArg.AGENTS.value: agent_names}
 
-            return Task.of_defaults(ConfigLoader(CONFIG_PATH, run_config), run_config)
+            return Task.of_defaults(self.__config_loader, run_config)
         except Exception as ex:
             logger.exception(ex)
             raise ex

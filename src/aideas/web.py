@@ -2,16 +2,14 @@ from flask import Flask, render_template, request
 # from flask_cors import CORS
 import uuid
 import logging.config
-import os.path
 
 from app.app import App
+from app.env import get_app_port, is_production
 from app.task import get_task, stop_task
 from app.web_service import WebService, ValidationError
 
 web_app = Flask(__name__)
 # CORS(web_app)
-
-web_service = WebService()
 
 
 @web_app.route('/')
@@ -85,9 +83,10 @@ if __name__ == '__main__':
 
     logging.config.dictConfig(config_loader.load_logging_config())
 
+    web_service = WebService(config_loader)
+
     web_app.run(
         host='0.0.0.0',
-        port=os.environ.get('APP_PORT', 5551),
-        debug=os.environ.get('APP_DEBUG', True))
-
+        port=get_app_port(),
+        debug=is_production() is False)
 

@@ -3,7 +3,7 @@ import os
 import signal
 import sys
 
-from .config_loader import ConfigLoader
+from .config_loader import ConfigLoader, SimpleConfigLoader
 from .env import Env
 from .task import shutdown as shutdown_tasks
 
@@ -19,7 +19,7 @@ class App:
         signal.signal(signal.SIGINT, App.shutdown)
         signal.signal(signal.SIGTERM, App.shutdown)
         Env.set_defaults()
-        return ConfigLoader(os.path.join(os.getcwd(), 'resources', 'config'))
+        return SimpleConfigLoader(os.path.join(os.getcwd(), 'resources', 'config'))
 
     @staticmethod
     def shutdown(signum, _):

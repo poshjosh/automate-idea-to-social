@@ -35,4 +35,8 @@ fi
 
 #printf "\nRunning: %s\n" "$@"
 #exec "$@"
-exec python main.py
+if [ "$WEB_APP" = true ] || [ "$WEB_APP" = "true" ] ; then
+  exec python web.py
+else
+  exec python main.py
+fi

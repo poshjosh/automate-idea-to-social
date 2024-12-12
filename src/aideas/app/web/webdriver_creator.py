@@ -9,10 +9,9 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 import undetected_chromedriver as uc
 
-from ..config import BrowserConfig
-from ..env import Env, get_env_value
-
 from pyu.io.shell import run_command
+from ..config import BrowserConfig
+from ..env import is_setup_display
 
 logger = logging.getLogger(__name__)
 
@@ -31,13 +30,13 @@ class WebDriverCreator:
             browser_config.get_options(),
             {} if browser_config.is_undetected() is True else browser_config.prefs())
 
-        if "headless" not in options.arguments and get_env_value(Env.SETUP_DISPLAY, False) is False:
+        if "headless" not in options.arguments and is_setup_display() is False:
             logger.warning("DISPLAY is not set up. Webdriver may crash.")
 
         if browser_config.is_undetected():
             logger.debug("Undetected ChromeDriver will be used")
 
-            chrome_version: int | None = WebDriverCreator.__get_chrome_version()
+            chrome_version: Union[int, None] = WebDriverCreator.__get_chrome_version()
             if chrome_version is not None:
                 logger.debug(f"Target chrome version: {chrome_version}")
 

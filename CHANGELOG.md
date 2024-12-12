@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Environment variable 'APP_PORT' and fix deployment as 'WEB_APP' to docker.
+- Environment variable 'WEB_APP', to enable running as a web app.
 - Tasks, and async processing of agent tasks.
 - Error results to returned results.
 - Sorting of agent names displayed on web page according to `sort-order`

@@ -22,18 +22,10 @@ secrets_masking_filter = SecretsMaskingFilter(
 
 class Task:
     @staticmethod
-    def of_defaults(source: Union[str, ConfigLoader], run_config: dict[str, any] = None) -> 'Task':
-        if isinstance(source, str):
-            config_loader = ConfigLoader(source)
-        elif isinstance(source, ConfigLoader):
-            config_loader = source
-        else:
-            raise ValueError(f"Source must be a string or a ConfigLoader, not {type(source)}")
-
+    def of_defaults(config_loader: ConfigLoader, run_config: dict[str, any]) -> 'Task':
+        config_loader = config_loader.with_added_variable_source(run_config)
         app_config = config_loader.load_app_config()
         agent_factory = AgentFactory(config_loader, app_config)
-        if not run_config:
-            run_config = config_loader.load_run_config()
         return Task(agent_factory, RunContext.of_config(app_config, run_config))
 
     def __init__(self, agent_factory: AgentFactory, run_context: RunContext):
