@@ -71,6 +71,8 @@ class Task:
         result_str = (self.get_result_set().pretty_str("\n", "&emsp;")
                       .replace("ActionResult(", "(")
                       .replace(", Action(", ", (")
+                      .replace(", result: None)", ")")
+                      .replace(", result: ResultSet(success-rate=0/0))", ")")
                       .replace("(success=True,", '(<span style="color:green">SUCCESS</span>,')
                       .replace("(success=False,", '(<span style="color:red">FAILURE</span>,'))
         result_str = secrets_masking_filter.redact(result_str)
@@ -147,10 +149,6 @@ def require_task(task_id: str) -> Task:
 
 
 def get_task_ids() -> list[str]:
-    # TODO - Submit a task to remove completed tasks from list of tasks
-    completed_tasks = [e for e in __tasks.keys() if __tasks[e].is_completed()]
-    for task_id in completed_tasks:
-        __tasks.pop(task_id)
     return [e for e in __tasks.keys()]
 
 

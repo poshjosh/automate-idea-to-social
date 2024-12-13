@@ -65,11 +65,13 @@ def _task_by_id(task_id: str):
     if task is None:
         return f"Task not found: {task_id}"
 
+    if task.is_started() is False:
+        return f"Task not started: {task_id}"
+
+    if task.is_completed() is True:
+        return f"<p>Task already completed: {task_id}</p>{task.to_html()}"
+
     if request.args.get('action') == 'stop':
-        if task.is_started() is False:
-            return f"Task is not started: {task_id}"
-        if task.is_completed() is True:
-            return f"Task is already completed: {task_id}"
 
         stop_task(task_id)
 
