@@ -20,7 +20,7 @@ agents:
 # See environment variables for CONTENT_DIR
 #############################################################################
 # Optional. Used for title and description. Either set this, or provide a title and description
-video-content-file: "/Users/chinomso/Desktop/live-above-3D/if-you-were-God?/If you were God?.txt"
+video-content-file: "/Users/chinomso/Desktop/live-above-3D/a-shadow-of-the-real-world/A shadow of the real world.txt"
 
 # Optional. Used for suffix to append to the description. If not set, description-suffix will be used
 #video-content-suffix-file:
@@ -34,7 +34,7 @@ video-content-file: "/Users/chinomso/Desktop/live-above-3D/if-you-were-God?/If y
 # Optional. If not set, the content of video-content-suffix-file will be used.
 video-content-suffix: "#christ #avatar #videogame #nomoregames #jesus #christian #love #faith #yahweh #god"
 
-video-cover-image: /Users/chinomso/Desktop/live-above-3D/if-you-were-God?/cover.jpg
+video-cover-image: /Users/chinomso/Desktop/live-above-3D/a-shadow-of-the-real-world/cover.jpg
 
 # Optional. If not set, video-cover-image will be used
-video-cover-image-square: /Users/chinomso/Desktop/live-above-3D/if-you-were-God?/cover-square.jpg
+video-cover-image-square: /Users/chinomso/Desktop/live-above-3D/a-shadow-of-the-real-world/cover-square.jpg

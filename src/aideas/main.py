@@ -2,7 +2,7 @@ import logging.config
 
 from app.app import App
 from app.config import RunArg
-from app.task import Task
+from app.task import AgentTask
 
 if __name__ == '__main__':
 
@@ -14,6 +14,4 @@ if __name__ == '__main__':
 
     run_config.update(RunArg.of_sys_argv())
 
-    Task.of_defaults(config_loader, run_config).start()
-
-
+    AgentTask.of_defaults(config_loader, run_config).start()

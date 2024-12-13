@@ -21,6 +21,49 @@ class EventHandler:
     def __init__(self, action_handler: ActionHandler):
         self.__action_handler: ActionHandler = action_handler
 
+    @staticmethod
+    def is_path_successful(
+            result_set: ElementResultSet, config: AgentConfig, config_path: ConfigPath) -> bool:
+        """
+        Determine if the result set has a failure, excluding stages and stage items
+        which ignore errors.
+
+        For stage items, it is sufficient to simply check if the result set is successful.
+        On the other hand, for stages, we need to exclude stage items which ignore errors.
+        These are stage items, which have `onerror: continue`.
+
+        If a stage-item fails:
+
+        - succeeding stage-items will not be executed, unless
+        `onerror` is set to `continue` for the stage-item.
+
+        - the stage will fail, unless `onerror` is set to
+        `continue` for the stage.
+
+        :param result_set: The result set to check
+        :param config: The agent configuration
+        :param config_path: The path to the aspect of the configuration which we are handling
+        :return: true if the result set has a failure, false otherwise
+        """
+
+        if config_path.is_stage_item():
+            return result_set.is_successful()
+        elif config_path.is_stage():
+            return not EventHandler.__has_failure_excluding_ignored(result_set, config, config_path)
+        else:
+            raise ValueError(f'Expected path to stage or stage item, got: {config_path}')
+
+    @staticmethod
+    def __has_failure_excluding_ignored(
+            result_set: ElementResultSet, config: AgentConfig, config_path: ConfigPath) -> bool:
+        for target_id, result_list in result_set.items():
+            target_cfg_path = config_path.join(target_id)
+            if config.is_continue_on_event(target_cfg_path, ON_ERROR):
+                continue
+            if result_set.is_result_successful(result_list) is False:
+                return True
+        return False
+
     def handle_event(self,
                      agent_name: str,
                      config: AgentConfig,
@@ -134,11 +177,12 @@ class EventHandler:
     def __has_failure(config: AgentConfig,
                       config_path: ConfigPath,
                       result_set: ElementResultSet) -> bool:
-        if not result_set:
+        # if not result_set:
+        if result_set.is_empty():
             # This happens if a condition to proceed with processing is not met
             # It does not indicate a failure, just that the condition for processing was not met.
             return False
-        return result_set.is_path_successful(config, config_path) is False
+        return EventHandler.is_path_successful(result_set, config, config_path) is False
 
     @staticmethod
     def __create_action(agent_name: str,

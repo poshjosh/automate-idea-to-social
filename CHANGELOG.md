@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Extensive result set tests
+- Improve display of task HTML (Display a short status per agent)
 - Environment variable 'APP_PORT' and fix deployment as 'WEB_APP' to docker.
 - Environment variable 'WEB_APP', to enable running as a web app.
 - Tasks, and async processing of agent tasks.

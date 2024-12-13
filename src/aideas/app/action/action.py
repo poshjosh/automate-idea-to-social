@@ -154,7 +154,7 @@ class Action:
                 and self.__args == other.__args)
 
     def __str__(self) -> str:
-        return f'Action({self.__stage_item_id}.{self.__name}{self.__args})'
+        return f'Action({self.__stage_item_id}.{self.__name})'
 
 
 NONE: Action = Action('', '', '', '', [])

@@ -63,8 +63,8 @@ class Agent:
         return clone
 
     def clone(self) -> 'Agent':
-        return self.__class__(self.get_name(), self.get_config().to_dict(), self._get_dependencies(),
-                              self.__automator, self.__interval_seconds)
+        return self.__class__(self.get_name(), self.get_config().to_dict(),
+                              self._get_dependencies(),self.__automator, self.__interval_seconds)
 
     def add_dependency(self, agent_name: str, agent: 'Agent') -> 'Agent':
         if agent is None:

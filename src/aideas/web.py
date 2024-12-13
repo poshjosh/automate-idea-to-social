@@ -5,7 +5,7 @@ import logging.config
 
 from app.app import App
 from app.env import get_app_port, is_production
-from app.task import get_task, stop_task
+from app.task import get_task, stop_task, TaskError
 from app.web_service import WebService, ValidationError
 
 web_app = Flask(__name__)
@@ -34,7 +34,7 @@ TASK_INDEX_TEMPLATE = 'task/index.html'
 @web_app.route('/automate/start', methods=['POST'])
 def automate_start():
     asynch = request.args.get('async', True)
-    task_id = str(uuid.uuid4())
+    task_id = str(uuid.uuid4().hex)
 
     if asynch is True:
         web_service.automate_start_async(task_id, request.form, request.files)
@@ -90,7 +90,7 @@ def _render_task_index_template(info: str = None):
 
 def _convert_to_error_obj(ex: Exception) -> dict[str, str]:
     default_err_msg = "An unexpected error occurred while trying to automate."
-    if isinstance(ex, ValidationError):
+    if isinstance(ex, ValidationError) or isinstance(ex, TaskError):
         return {"error": ex.message if ex.message else default_err_msg}
     else:
         return {"error": default_err_msg}

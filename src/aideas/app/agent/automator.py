@@ -163,7 +163,7 @@ class Automator:
             result_set = self._act_on_elements(config, stage, run_context)
 
             success: bool = False if result_set is None else \
-                result_set.is_path_successful(config, config_path)
+                EventHandler.is_path_successful(result_set, config, config_path)
             event = BaseAutomationEvent.STAGE_END if success else BaseAutomationEvent.STAGE_FAIL
             self.__listener.on_result(event, config_path, run_context, result_set)
 
@@ -338,6 +338,7 @@ class Automator:
         :param target_config: The target's configuration
         :param config_path: The path to the aspect of the configuration which we are handling
         :param run_context: The run context
+        :param timeout: The timeout
         :return: The selected target
 
         """
@@ -367,7 +368,7 @@ class Automator:
             if self.__populate_result_set is True:
                 run_context.add_action_result(result)
             else:
-                result_set.add(result)
+                result_set.add_action_result(result)
 
         if self.__populate_result_set is True:
             return run_context.get_element_results(self.__agent_name, stage_id)

@@ -7,7 +7,7 @@ from pyu.io.file import create_file
 from .config import RunArg, AppConfig, AgentConfig
 from .config_loader import ConfigLoader
 from .env import get_upload_file, is_production
-from .task import Task, add_task, get_task_ids, require_task, submit_task
+from .task import AgentTask, Task, add_task, get_task_ids, require_task, submit_task
 
 CONFIG_PATH = os.path.join(os.getcwd(), 'resources', 'config')
 
@@ -52,7 +52,9 @@ class WebService:
 
     def automate_start(self, task_id: str, form, files) -> Task:
         try:
-            return add_task(task_id, self.new_task(task_id, form, files)).start()
+            task = self.new_task(task_id, form, files)
+            add_task(task_id, task).start()
+            return task
         except Exception as ex:
             logger.exception(ex)
             raise ex
@@ -71,7 +73,7 @@ class WebService:
 
             run_config = {**run_config, RunArg.AGENTS.value: agent_names}
 
-            return Task.of_defaults(self.__config_loader, run_config)
+            return AgentTask.of_defaults(self.__config_loader, run_config)
         except Exception as ex:
             logger.exception(ex)
             raise ex
@@ -82,9 +84,10 @@ class WebService:
         task_ids: [str] = get_task_ids()
         tasks = []
         for task_id in task_ids:
+            task: AgentTask = require_task(task_id)
             tasks.append({
                 'id': task_id,
-                'agents': require_task(task_id).get_agent_names(),
+                'agents': task.get_run_context().get_agent_names(),
                 'links': get_task_links(task_id)
             })
         return {'title': self.app_config.get_title(), 'heading': 'Tasks',

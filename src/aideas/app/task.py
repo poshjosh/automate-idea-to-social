@@ -1,8 +1,9 @@
 import pickle
 import shutil
 import logging
+import time
 from concurrent.futures import Future, ThreadPoolExecutor
-from typing import Union
+from typing import Union, TypeVar, Callable
 
 from pyu.io.file import create_file
 from pyu.io.logging import SecretsMaskingFilter
@@ -19,31 +20,35 @@ logger = logging.getLogger(__name__)
 secrets_masking_filter = SecretsMaskingFilter(
     ["(pass|key|secret|token|jwt|hash|signature|credential|auth|certificate|connection|pat)"])
 
+RESULT = TypeVar("RESULT", bound=Union[any, None])
+
+
+class TaskError(Exception):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.message = args[0]
+
 
 class Task:
-    @staticmethod
-    def of_defaults(config_loader: ConfigLoader, run_config: dict[str, any]) -> 'Task':
-        config_loader = config_loader.with_added_variable_source(run_config)
-        app_config = config_loader.load_app_config()
-        agent_factory = AgentFactory(config_loader, app_config)
-        return Task(agent_factory, RunContext.of_config(app_config, run_config))
-
-    def __init__(self, agent_factory: AgentFactory, run_context: RunContext):
-        self.__agent_factory = agent_factory
-        self.__run_context = run_context
+    def __init__(self):
         self.__started = False
         self.__completed = False
 
-    def start(self) -> 'Task':
+    def start(self) -> RESULT:
         try:
             if self.is_started():
-                raise Exception(
+                raise TaskError(
                     "Task already running" if self.is_running() else "Task already completed")
             self.__started = True
-            self.__start()
-            return self
+            return self._start()
         finally:
             self.__completed = True
+
+    def _start(self) -> RESULT:
+        raise NotImplementedError()
+
+    def to_html(self) -> str:
+        raise NotImplementedError()
 
     def stop(self) -> 'Task':
         self.__completed = True
@@ -58,27 +63,45 @@ class Task:
     def is_completed(self) -> bool:
         return self.__started and self.__completed
 
+
+class AgentTask(Task):
+    @staticmethod
+    def of_defaults(config_loader: ConfigLoader, run_config: dict[str, any]) -> 'AgentTask':
+        config_loader = config_loader.with_added_variable_source(run_config)
+        app_config = config_loader.load_app_config()
+        agent_factory = AgentFactory(config_loader, app_config)
+        return AgentTask(agent_factory, RunContext.of_config(app_config, run_config))
+
+    def __init__(self, agent_factory: AgentFactory, run_context: RunContext):
+        super().__init__()
+        self.__agent_factory = agent_factory
+        self.__run_context = run_context
+        self.__agent_states = {}
+        for name in run_context.get_agent_names():
+            self.__agent_states[name] = "PENDING"
+
     def get_run_context(self) -> RunContext:
         return self.__run_context
 
-    def get_result_set(self) -> AgentResultSet:
-        return self.__run_context.get_result_set()
-
-    def get_agent_names(self) -> [str]:
-        return self.__run_context.get_agent_names()
-
     def to_html(self) -> str:
-        result_str = (self.get_result_set().pretty_str("\n", "&emsp;")
+        state_str = "<table><thead><tr><th>Agent</th><th>State</th></tr></thead><tbody>"
+        for agent_name, state in self.__agent_states.items():
+            state_str += f"<tr><td>{agent_name}</td><td>{state}</td></tr>"
+        state_str += "</tbody></table>"
+        result_str = (self.__run_context.get_result_set().pretty_str("\n", "&emsp;&emsp;")
                       .replace("ActionResult(", "(")
                       .replace(", Action(", ", (")
                       .replace(", result: None)", ")")
                       .replace(", result: ResultSet(success-rate=0/0))", ")")
                       .replace("(success=True,", '(<span style="color:green">SUCCESS</span>,')
                       .replace("(success=False,", '(<span style="color:red">FAILURE</span>,'))
-        result_str = secrets_masking_filter.redact(result_str)
-        return result_str.replace("\n", "<br>")  # Replace new-line only after masking secrets
 
-    def __start(self) -> AgentResultSet:
+        result_str = secrets_masking_filter.redact(result_str)
+
+        # Replace new-line only after masking secrets
+        return state_str + result_str.replace("\n", "<br/>")
+
+    def _start(self) -> AgentResultSet:
 
         agent_names = self.__run_context.get_agent_names()
 
@@ -88,9 +111,18 @@ class Task:
             agent = self.__agent_factory.get_agent(agent_name)
 
             try:
+                self.__agent_states[agent_name] = "RUNNING"
+
                 stage_result_set = agent.run(self.__run_context)
+
+                self.__agent_states[agent_name] = "SUCCESS"
+
                 self.__save_agent_results(agent_name, stage_result_set)
+
             except Exception as ex:
+
+                self.__agent_states[agent_name] = "FAILURE"
+
                 if self.__run_context.get_run_config().is_continue_on_error() is True:
                     logger.exception(ex)
                     result = self.__run_context.get_stage_results(agent_name)
@@ -99,6 +131,7 @@ class Task:
                         self.__run_context.add_action_result(ActionResult.failure(action, "Error"))
                 else:
                     raise ex
+
         return self.__run_context.get_result_set().close()
 
     def __save_agent_results(self, agent_name, result_set: StageResultSet):
@@ -130,6 +163,18 @@ __tasks: dict[str, Task] = {}
 __executor = ThreadPoolExecutor(max_workers=10)
 
 
+def init_tasks_cleanup(should_stop: Callable[[], bool], interval_seconds: int):
+    def cleanup():
+        if should_stop is True:
+            logger.debug("Stopping tasks cleanup")
+            return
+        remove_completed_tasks()
+        time.sleep(interval_seconds)
+        __executor.submit(cleanup)
+
+    __executor.submit(cleanup)
+
+
 def add_task(task_id: str, task: Task):
     __tasks[task_id] = task
     return task
@@ -153,13 +198,24 @@ def get_task_ids() -> list[str]:
 
 
 def shutdown() -> dict[str, Task]:
-    tasks = {**__tasks}
-    for task_id in get_task_ids():
-        stop_task(task_id)
-    with __executor as executor:
-        executor.shutdown(wait=True, cancel_futures=True)
-    return tasks
+    try:
+        tasks = {**__tasks}
+        logger.debug(f"Shutting down {len(tasks)} tasks")
+        for task_id in get_task_ids():
+            stop_task(task_id)
+        __executor.shutdown(wait=False, cancel_futures=True)
+        logger.debug(f"Done shutting down {len(tasks)} tasks")
+        return tasks
+    except Exception as ex:
+        logger.exception(ex)
 
 
 def stop_task(task_id: str) -> Task:
     return __tasks.pop(task_id).stop()
+
+
+def remove_completed_tasks():
+    logger.debug("Removing completed tasks")
+    for task_id, task in __tasks.items():
+        if task.is_completed():
+            __tasks.pop(task_id)

@@ -4,7 +4,6 @@ import logging
 from typing import Union, TypeVar, Callable
 
 from ..action.action_result import ActionResult
-from ..config import AgentConfig, ConfigPath, ON_ERROR
 
 logger = logging.getLogger(__name__)
 
@@ -29,9 +28,11 @@ class ResultSet:
         if results is not None:
             self.__results.update(copy.deepcopy(results))
 
-    """Returns a copy of the result or the result_if_none if the result is not found."""
+    def add_action_result(self, result: ActionResult) -> 'ResultSet':
+        raise ValueError('Please implement me')
 
     def get(self, result_id: str, result_if_none: RESULT = None) -> RESULT:
+        """Returns a copy of the result or the result_if_none when the result is not found."""
         return self.__get(result_id, result_if_none)
 
     def keys(self) -> set[str]:
@@ -53,7 +54,7 @@ class ResultSet:
         return self.__results.get(result_id, result_if_none)
 
     def __set(self, result_id: str, value: RESULT) -> RESULT:
-        self.__check_closed()
+        self.__required_not_closed()
         if value is None:
             raise ValueError('Cannot add None')
         if result_id in self.__results:
@@ -77,13 +78,26 @@ class ResultSet:
         return len(self.__results)
 
     def is_successful(self) -> bool:
-        return self.size() > 0 and self.__count_failures() == 0
+        return self.size() > 0 and self.failure_count() == 0
 
     def is_failure(self) -> bool:
         return not self.is_successful()
 
+    def success_count(self) -> int:
+        return self.size() - self.failure_count()
+
+    def failure_count(self) -> int:
+        failures: int = 0
+        for result in self.__results.values():
+            if not self.__success_test(result):
+                failures += 1
+        return failures
+
     def items(self):
         return self.__results.items()
+
+    def results(self):
+        return self.__results
 
     def pretty_str(self, separator: str = "\n", tab: str = "\t", offset: int = 0) -> str:
         output: str = ''
@@ -102,14 +116,7 @@ class ResultSet:
                 output = f'{output}{separator}{tab * (offset + 1)}{value}'
         return output
 
-    def __count_failures(self) -> int:
-        failures: int = 0
-        for result in self.__results.values():
-            if not self.__success_test(result):
-                failures += 1
-        return failures
-
-    def __check_closed(self):
+    def __required_not_closed(self):
         if self.__closed:
             raise ValueError('Cannot update result set when closed')
 
@@ -117,9 +124,7 @@ class ResultSet:
         return self.__closed == other.__closed and self.__results == other.__results
 
     def __str__(self) -> str:
-        size: int = self.size()
-        success: int = size - self.__count_failures()
-        return f'ResultSet(success-rate={success}/{size})'
+        return f'ResultSet(success-rate={self.success_count()}/{self.size()})'
 
 
 class ElementResultSet(ResultSet):
@@ -130,13 +135,7 @@ class ElementResultSet(ResultSet):
     def __init__(self, results: Union[dict[str, list[ActionResult]], None] = None):
         super().__init__(self.is_result_successful, results)
 
-    def add_all(self, result_set: 'ElementResultSet') -> 'ElementResultSet':
-        for result_list in result_set.values():
-            for result in result_list:
-                self.add(result)
-        return self
-
-    def add(self, result: ActionResult) -> 'ElementResultSet':
+    def add_action_result(self, result: ActionResult) -> 'ElementResultSet':
         stage_item_id: str = result.get_action().get_stage_item_id()
         result_list: list[ActionResult] = self.get(stage_item_id, [])
         result_list.append(result)
@@ -147,13 +146,13 @@ class ElementResultSet(ResultSet):
 
     def get_action_result(self,
                           stage_item_id: str,
-                          name: str,
+                          action_name: str,
                           result_if_none: Union[ActionResult, None] = None) -> ActionResult:
         result_list: list[ActionResult] = self.get(stage_item_id)
         if len(result_list) == 0:
             return result_if_none
         for result in result_list:
-            if result.get_action().get_name() == name:
+            if result.get_action().get_name() == action_name:
                 return result
         return result_if_none
 
@@ -163,43 +162,6 @@ class ElementResultSet(ResultSet):
             if r.is_success() is False:
                 return False
         return True
-
-    def is_path_successful(self, config: AgentConfig, config_path: ConfigPath) -> bool:
-        """
-        Determine if the result set has a failure, excluding stages and stage items
-        which ignore errors.
-
-        For stage items, it is sufficient to simply check if the result set is successful.
-        On the other hand, for stages, we need to exclude stage items which ignore errors.
-        These are stage items, which have `onerror: continue`.
-
-        If a stage-item fails:
-
-        - succeeding stage-items will not be executed, unless
-        `onerror` is set to `continue` for the stage-item.
-
-        - the stage will fail, unless `onerror` is set to
-        `continue` for the stage.
-
-        :param config: The agent configuration
-        :param config_path: The path to the aspect of the configuration which we are handling
-        :return: true if the result set has a failure, false otherwise
-        """
-        if config_path.is_stage_item():
-            return self.is_successful()
-        elif config_path.is_stage():
-            return not self.__has_failure_excluding_ignored(config, config_path)
-        else:
-            raise ValueError(f'Expected path to stage or stage item, got: {config_path}')
-
-    def __has_failure_excluding_ignored(self, config: AgentConfig, config_path: ConfigPath) -> bool:
-        for target_id, result_list in self.items():
-            target_cfg_path = config_path.join(target_id)
-            if config.is_continue_on_event(target_cfg_path, ON_ERROR):
-                continue
-            if ElementResultSet.is_result_successful(result_list) is False:
-                return True
-        return False
 
 
 NOOP_ELEMENT_RESULT_SET: ElementResultSet = ElementResultSet().close()
@@ -217,6 +179,24 @@ class StageResultSet(ResultSet):
     def is_result_successful(result: ElementResultSet) -> bool:
         return result.is_successful()
 
+    def add_action_result(self, result: ActionResult) -> 'StageResultSet':
+        stage_id = result.get_action().get_stage_id()
+        new_stage_element = False
+        element_result_set: ElementResultSet = self.get(stage_id, None)
+        if element_result_set is None:
+            new_stage_element = True
+            element_result_set = ElementResultSet()
+        element_result_set.add_action_result(result)
+        if new_stage_element:
+            self.set(stage_id, element_result_set)
+        return self
+
+    def get_element_results(self,
+                            stage_id: str,
+                            result_if_no: Union[ElementResultSet, None] = ElementResultSet.none()) \
+            -> ElementResultSet:
+        return self.get(stage_id, result_if_no)
+
 
 NOOP_STAGE_RESULT_SET: StageResultSet = StageResultSet().close()
 
@@ -228,3 +208,30 @@ class AgentResultSet(ResultSet):
     @staticmethod
     def is_result_successful(result: ResultSet) -> bool:
         return result.is_successful()
+
+    def add_action_result(self, result: ActionResult) -> 'AgentResultSet':
+        agent_name = result.get_action().get_agent_name()
+        new_stage = False
+        stage_result_set: StageResultSet = self.get_stage_results(agent_name, None)
+        if stage_result_set is None:
+            new_stage = True
+            stage_result_set = StageResultSet()
+        stage_result_set.add_action_result(result)
+        if new_stage:
+            self.set(agent_name, stage_result_set)
+        return self
+
+    def get_element_results(self,
+                            agent_name: str,
+                            stage_id: str,
+                            result_if_no: Union[ElementResultSet, None] = ElementResultSet.none()) \
+            -> ElementResultSet:
+        stage_result_set: StageResultSet = self.get_stage_results(agent_name)
+        return result_if_no if stage_result_set is None \
+            else stage_result_set.get_element_results(stage_id, result_if_no)
+
+    def get_stage_results(self,
+                          agent_name: str,
+                          result_if_none: Union[StageResultSet, None] = StageResultSet.none()) \
+            -> StageResultSet:
+        return self.get(agent_name, result_if_none)
