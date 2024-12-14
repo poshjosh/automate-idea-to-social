@@ -1,19 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ title }}</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/body.css') }}">
-</head>
-<body>
-    <div class="heading">{{ heading }}</div>
-    <div class="error">{{ error|safe }}</div>
-    <div class="info">{{ info|safe }}</div>
-    <p><a href="details.html?tag=generate-video">Click here</a> to generate video.</p>
-    <p><a href="details.html?tag=generate-image">Click here</a> to generate image.</p>
-    <p><a href="details.html?tag=post">Click here</a> to post to social media.</p>
-    <p><a href="details.html?tag=custom">Click here</a> for custom automation.</p>
-    <p><a href="details.html?tag=test">Click here</a> to test automation.</p>
-</body>
-</html>
+{% extends "common/page.html" %}
+
+{% block heading %}Automate tasks using agents{% endblock %}
+
+{% block content %}
+    <p><a href="details/generate-video.html">Click here</a> to generate video.</p>
+    <p><a href="details/generate-image.html">Click here</a> to generate image.</p>
+    <p><a href="details/post.html">Click here</a> to post to social media.</p>
+    <p><a href="details/custom.html">Click here</a> for custom automation.</p>
+    <p><a href="details/test.html">Click here</a> to test automation.</p>
+{% endblock %}

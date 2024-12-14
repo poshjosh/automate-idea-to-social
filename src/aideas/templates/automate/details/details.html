@@ -1,0 +1,45 @@
+{% extends "common/page.html" %}
+
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/form.css') }}">
+{% endblock %}
+
+{% block content %}
+    <form action="/automate/start" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="tag" value="{{ tag }}"/>
+        <div>
+            <label for="agents">Select agent(s) to run</label>
+            <div id="agents">
+                {% if agents|length > 1 %}
+                <div>
+                    <input type="checkbox" id="all-agents" class="control"
+                           onclick="aideas.toggle_checked('.control.agent-check');"/>
+                    <label for="all-agents">All</label>
+                </div>
+                {% endif %}
+                <div>
+                    {% for value, label in agents.items() %}
+                    <input type="checkbox" name="agents" class="control agent-check"
+                           value="{{ value }}"/>
+                    <label for="{{ value }}">{{ label }}</label>
+                    <br/>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        {% block form %}{% endblock %}
+
+        {% if agents|length > 1 %}
+            <p>
+                <label for="continue-on-error">Continue on error?</label>
+                <input type="checkbox" id="continue-on-error" name="continue-on-error"
+                       class="control" value="true" checked/>
+            </p>
+        {% endif %}
+        <button type="submit" id="submit" class="control">Submit</button>
+    </form>
+{% endblock %}
+
+

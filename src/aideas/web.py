@@ -17,39 +17,44 @@ def index():
     return render_template('index.html', **web_service.index())
 
 
-@web_app.route('/automate/index.html')
-def automate():
-    return render_template('automate/index.html', **web_service.automate())
+AUTOMATION_INDEX_TEMPLATE = 'automate/index.html'
 
 
-@web_app.route('/automate/details.html')
-def automate_task():
-    tag = request.args['tag']
-    return render_template('automate/details.html', **web_service.automate_task(tag))
+@web_app.route('/' + AUTOMATION_INDEX_TEMPLATE)
+def automaton_index():
+    return render_template(AUTOMATION_INDEX_TEMPLATE, **web_service.automation_index())
+
+
+@web_app.route('/automate/details/<tag>.html')
+def automation_details_form(tag: str):
+    if not tag:
+        error = {"error": "Specify what automation using a 'tag'."}
+        render_template(AUTOMATION_INDEX_TEMPLATE, {**web_service.automation_index(), **error})
+    return render_template(f'automate/details/{tag}.html', **web_service.automation_details_form(tag))
 
 
 TASK_INDEX_TEMPLATE = 'task/index.html'
 
 
 @web_app.route('/automate/start', methods=['POST'])
-def automate_start():
+def start_automation():
     asynch = request.args.get('async', True)
     task_id = str(uuid.uuid4().hex)
 
     if asynch is True:
-        web_service.automate_start_async(task_id, request.form, request.files)
+        web_service.start_automation_async(task_id, request.form, request.files)
         return _render_task_index_template(f"Submitted task: {task_id}")
 
     try:
-        task = web_service.automate_start(task_id, request.form, request.files)
+        task = web_service.start_automation(task_id, request.form, request.files)
         args = {"info": f'<span style="font-size:0.75rem;">{task.to_html()}</span>'}
     except Exception as ex:
         args = _convert_to_error_obj(ex)
-    template_args = {**web_service.automate(), **args}
+    template_args = {**web_service.automation_index(), **args}
     return render_template('automate/index.html', **template_args)
 
 
-@web_app.route(f'/{TASK_INDEX_TEMPLATE}')
+@web_app.route('/' + TASK_INDEX_TEMPLATE)
 def view_tasks():
     return _render_task_index_template()
 

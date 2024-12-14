@@ -79,6 +79,9 @@ class AppConfig:
     def app(self) -> dict[str, any]:
         return self.__config.get('app', {})
 
+    def get_app_name(self) -> str:
+        return self.app()['name']
+
     def get_title(self, default: Union[str, None] = None) -> str:
         return self.app().get('title', default)
 

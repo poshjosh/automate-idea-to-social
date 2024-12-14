@@ -6,7 +6,7 @@ body {
 
 body .heading {
     width: 100%;
-    background-color: #f0f3f6;
+    background-color: #def /** THEME_BG_COLOR */;
     font-size: 2rem;
     font-weight: 700;
     padding: 0.5rem;
@@ -24,4 +24,12 @@ body .info {
     background-color: white;
     color: navy;
     margin: 0.5rem;
+}
+
+#page_bottom {
+    width: 100%;
+    font-size: 0.75rem;
+    background-color: #def /** THEME_BG_COLOR */;
+    margin-top: 0.5rem;
+    padding: 0.5rem;
 }
