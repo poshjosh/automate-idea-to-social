@@ -74,7 +74,7 @@ stages:
           - //*[@id="root"]//input[@type="file" and @accept="video/*"]
           - //input[@type="file" and @accept="video/*"]
         actions:
-          - enter_text ${CONTENT_DIR}/video-portrait.${VIDEO_OUTPUT_TYPE}
+          - enter_text $VIDEO_FILE_PORTRAIT
           - wait 5 # It takes a while but the default wait will cover the rest
       click-upload-button:
         timeout-seconds: 5
@@ -92,7 +92,7 @@ stages:
           - //*[@id="root"]//*[starts-with(@class, "DraftEditor-root")]//*[@data-contents="true"]//span[@data-text="true"]
           - //*[@id="root"]//*[@data-contents="true"]//span[@data-text="true"]
           - //*[@id="root"]//*[@data-text="true"]
-        actions: enter_text $VIDEO_CONTENT_FULL
+        actions: enter_text $VIDEO_CONTENT
   submit-video:
     stage-items:
       click-submit-video:

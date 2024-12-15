@@ -11,6 +11,9 @@ browser:
 define:
   &default_wait 'wait 3'
 interval-seconds: 1
+# If specified, the name of the file will be used as VIDEO_TITLE
+# and the content of the file as VIDEO_CONTENT
+source: $TEXT_FILE
 stages:
   login:
     url: https://app.pictory.ai/login
@@ -99,7 +102,7 @@ stages:
           - //*[@id="file"]
           - //*[@id="tbinner-3"]//form/div/input[@type="file"]
         actions:
-          - enter_text $VIDEO_COVER_IMAGE
+          - enter_text $IMAGE_FILE
           - wait 2
   save-cover-image:
     stage-items:
@@ -380,17 +383,17 @@ stages:
             - log WARNING \n= = = = = = = FAILED TO DOWNLOAD SUBTITLES (Will retry) = = = = = = =\n
             - retry 1
         timeout-seconds: 7
-        #search-from: //*[@id="h-tb1"]//div[contains(text(), "${TRANSLATION_FILE_EXTENSION}")]
+        #search-from: //*[@id="h-tb1"]//div[contains(text(), "${SUBTITLES_FILE_EXTENSION}")]
         #search-for: //*[name()="svg"]
         search-for:
           - //*[@id="h-tb1"]/div/div/div/div/div/div[4]/div/div/div/div/div/div[2]/div[2]/*[name()="svg"]
-          - //*[@id="h-tb1"]//span[contains(text(), "${TRANSLATION_FILE_EXTENSION}")]//..//..//..//..//*[name()="svg"]
+          - //*[@id="h-tb1"]//span[contains(text(), "${SUBTITLES_FILE_EXTENSION}")]//..//..//..//..//*[name()="svg"]
         actions:
           - click
           - wait 5
       save-subtitles-file:
         actions:
           - wait 3 # Wait to make sure the file is downloaded
-          - get_newest_file_in_dir ${OUTPUT_DIR}/agent/pictory $TRANSLATION_FILE_EXTENSION 10
+          - get_newest_file_in_dir ${OUTPUT_DIR}/agent/pictory $SUBTITLES_FILE_EXTENSION 10
           # Save to current action's results dir, app input dir and user input dir
           - save_file $results.me[1]

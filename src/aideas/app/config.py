@@ -644,9 +644,6 @@ The following code is used to parse command line arguments.
 """
 T = TypeVar("T", bound=any)
 
-# A concatenation of VIDEO_CONTENT and VIDEO_CONTENT_SUFFIX
-VIDEO_CONTENT_FULL = "VIDEO_CONTENT_FULL"
-
 
 @unique
 class RunArg(str, Enum):
@@ -678,13 +675,16 @@ class RunArg(str, Enum):
 
     AGENTS = ('agents', 'a', 'list')
     CONTINUE_ON_ERROR = ('continue-on-error', 'coe', 'bool', True, False)
-    VIDEO_CONTENT_FILE = ('video-content-file', 'vcf', 'str', True, True)
-    VIDEO_CONTENT_SUFFIX_FILE = ('video-content-suffix-file', 'vcsf', 'str', True, True)
-    VIDEO_TITLE = ('video-title', 'vt', 'str', True, False)
+
+    IMAGE_FILE = ('image-file', 'vci', 'str', False, True)
+    IMAGE_FILE_SQUARE = ('image-file-square', 'vcis', 'str', True, True)
+    SUBTITLES_FILE = ('subtitles-file', 'sf', 'str', True, True)
+    TEXT_FILE = ('text-file', 'tf', 'str', True, True)
     VIDEO_CONTENT = ('video-content', 'vd', 'str', True, False)
-    VIDEO_CONTENT_SUFFIX = ('video-content-suffix', 'vds', 'str', True, False)
-    VIDEO_COVER_IMAGE = ('video-cover-image', 'vci', 'str', False, True)
-    VIDEO_COVER_IMAGE_SQUARE = ('video-cover-image-square', 'vcis', 'str', True, True)
+    VIDEO_FILE_LANDSCAPE = ('video-file-landscape', 'vfl', 'str', True, True)
+    VIDEO_FILE_PORTRAIT = ('video-file-portrait', 'vfp', 'str', True, True)
+    VIDEO_FILE_SQUARE = ('video-file-square', 'vfs', 'str', True, True)
+    VIDEO_TITLE = ('video-title', 'vt', 'str', True, False)
 
     @staticmethod
     def values() -> [str]:
@@ -728,7 +728,7 @@ class RunArg(str, Enum):
         # TODO - Find a better way to use the tag to decide whether to update defaults
         needy: bool = result.get('tag') and result.get('tag') in ['generate-video', 'post']
 
-        video_content_path = result.get(RunArg.VIDEO_CONTENT_FILE._value_)
+        video_content_path = result.get(RunArg.TEXT_FILE._value_)
         video_content = None if not video_content_path else read_content(video_content_path)
 
         if not result.get(RunArg.VIDEO_TITLE._value_):
@@ -743,23 +743,10 @@ class RunArg(str, Enum):
             if video_content:
                 result[RunArg.VIDEO_CONTENT._value_] = video_content
 
-        video_content_suffix_path = result.get(RunArg.VIDEO_CONTENT_SUFFIX_FILE._value_)
-
-        if not result.get(RunArg.VIDEO_CONTENT_SUFFIX._value_):
-            if video_content_suffix_path:
-                result[RunArg.VIDEO_CONTENT_SUFFIX._value_] \
-                    = read_content(video_content_suffix_path)
-
-        video_content = result.get(RunArg.VIDEO_CONTENT._value_)
-        if video_content:
-            video_content_suffix = result.get(RunArg.VIDEO_CONTENT_SUFFIX._value_)
-            video_content_suffix = '' if not video_content_suffix else f"\n{video_content_suffix}"
-            result[VIDEO_CONTENT_FULL] = f"{video_content}{video_content_suffix}"
-
-        if result.get(RunArg.VIDEO_COVER_IMAGE._value_):
-            if not result.get(RunArg.VIDEO_COVER_IMAGE_SQUARE._value_):
-                result[RunArg.VIDEO_COVER_IMAGE_SQUARE._value_] \
-                    = result[RunArg.VIDEO_COVER_IMAGE._value_]
+        if result.get(RunArg.IMAGE_FILE._value_):
+            if not result.get(RunArg.IMAGE_FILE_SQUARE._value_):
+                result[RunArg.IMAGE_FILE_SQUARE._value_] \
+                    = result[RunArg.IMAGE_FILE._value_]
         return result
 
     @staticmethod

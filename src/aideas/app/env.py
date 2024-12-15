@@ -63,7 +63,7 @@ class Env(str, Enum):
 
     TRANSLATION_OUTPUT_LANGUAGES = (f'{_translation}_OUTPUT_LANGUAGES',
                                     False, False, 'ar,bn,de,es,fr,hi,it,ja,ko,ru,zh,zh-TW')
-    TRANSLATION_FILE_EXTENSION = (f'{_translation}_FILE_EXTENSION', False, False, 'vtt')
+    SUBTITLES_FILE_EXTENSION = (f'{_translation}_FILE_EXTENSION', False, False, 'vtt')
 
     YOUTUBE_USER_EMAIL = f'{_youtube}_USER_EMAIL'
     YOUTUBE_USER_PASS = f'{_youtube}_USER_PASS'

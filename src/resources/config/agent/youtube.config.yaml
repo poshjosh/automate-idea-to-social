@@ -2,7 +2,7 @@
 agent-type: browser
 # Optional [generate-video|generate-text|post|test|custom]
 agent-tags: post
-sort-order: 1
+sort-order: 2
 browser:
   chrome:
     undetected: true
@@ -91,7 +91,7 @@ stages:
           - //*[@id="content"]/input[@type="file"]
           - //input[@type="file"]
         actions:
-          - enter_text ${CONTENT_DIR}/video-portrait.${VIDEO_OUTPUT_TYPE}
+          - enter_text $VIDEO_FILE_LANDSCAPE
           - wait 5
       enter-video-title:
         search-for:
@@ -106,7 +106,7 @@ stages:
           - //*[@id="description-wrapper"]//*[@id="textbox"]
           - //*[@id="description-wrapper"]//*[@id="description-textarea"]
           #- //*[@id="description-wrapper"]//*[@id="input"]
-        actions: enter_text $VIDEO_CONTENT_FULL
+        actions: enter_text $VIDEO_CONTENT
   add-video-playlist:
     events:
       onerror: continue

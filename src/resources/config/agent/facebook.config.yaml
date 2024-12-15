@@ -57,14 +57,14 @@ stages:
           - ${self.post-dialog}//form//input[@type="file"]
           - ${self.post-dialog}//input[@type="file"]
         actions:
-          - enter_text ${CONTENT_DIR}/video-landscape.${VIDEO_OUTPUT_TYPE}
+          - enter_text $VIDEO_FILE_LANDSCAPE
           - wait 10
       enter-post-text:
         search-for:
           - ${self.post-dialog}//form//div[@role="textbox"]
           - ${self.post-dialog}//*[@role="textbox"]
         actions:
-          - enter_text $VIDEO_CONTENT_FULL
+          - enter_text $VIDEO_CONTENT
           - wait 10 # Long posts take a while
       submit-post:
         search-for:

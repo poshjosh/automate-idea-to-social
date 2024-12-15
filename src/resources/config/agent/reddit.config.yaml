@@ -61,7 +61,7 @@ stages:
 #          - //*[@id="post-composer_bodytext"]/shreddit-composer/rte-toolbar-button-image//input
           shadow-attributes: type=file data-media-type=image
         actions:
-          - enter_text $VIDEO_COVER_IMAGE
+          - enter_text $IMAGE_FILE
           - wait 5
       enter-cover-image-caption:
         search-for:
@@ -77,7 +77,7 @@ stages:
         actions:
           - move_to_element
           - enter
-          - enter_text $VIDEO_CONTENT_FULL
+          - enter_text $VIDEO_CONTENT
           - wait 2
   post:
     stage-items:

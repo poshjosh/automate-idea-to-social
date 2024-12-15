@@ -2,10 +2,12 @@
 import os
 import unittest
 
+from pyu.io.variable_parser import SELF_KEY
+
 from aideas.app.action.action import Action
 from aideas.app.action.action_result import ActionResult
 from aideas.app.action.variable_parser import get_run_arg_replacement, replace_all_variables, \
-    to_results_variable
+    to_results_variable, get_variables
 from aideas.app.agent.agent_name import AgentName
 from aideas.app.run_context import RunContext
 from test.app.test_functions import load_agent_names, load_agent_config, get_run_context
@@ -48,6 +50,51 @@ class VariableParserTest(unittest.TestCase):
         result = get_run_arg_replacement(
             curr_path, f'{to_results_variable(["me"])}[1]', run_context)
         self.assertEqual(expected, result)
+
+    def test_get_variables_given_empty_data(self):
+        config = {}
+        variables: [str] = get_variables(config, True)
+        self.assertEqual(len(variables), 0)
+
+    def test_get_variables_given_no_variables(self):
+        config = {
+            'a': {
+                'b': {
+                    'bool': False, 'list': [0, 1], 'dict': {'k0': 'v0', 'k1': 'v1'}
+                }
+            },
+            'name': 'Jane'
+        }
+        variables: [str] = get_variables(config, True)
+        self.assertEqual(len(variables), 0)
+
+    def test_get_variables(self):
+        config = {
+            'a': {
+                'b': {
+                    'bool': False, 'list': [0, 1], 'dict': {'k0': 'v0', 'k1': 'v1'}
+                }
+            },
+            'scoped': '$' + SELF_KEY + '.user_name',
+            'unscoped': '$USER_NAME'
+        }
+
+        variables: [str] = get_variables(config, True)
+        self.assertEqual(len(variables), 2)
+
+    def test_get_unscoped_variables(self):
+        config = {
+            'a': {
+                'b': {
+                    'bool': False, 'list': [0, 1], 'dict': {'k0': 'v0', 'k1': 'v1'}
+                }
+            },
+            'scoped': '$' + SELF_KEY + '.user_name',
+            'unscoped': '$USER_NAME'
+        }
+
+        variables: [str] = get_variables(config, False)
+        self.assertEqual(len(variables), 1)
 
     def __given_run_context_with_results(self, results: [str]) -> RunContext:
         run_context: RunContext = get_run_context([agent_name])

@@ -1,4 +1,3 @@
-import glob
 import logging
 import os.path
 import shutil
@@ -10,8 +9,8 @@ from .translator import Translator
 from ..agent import Agent, Automator
 from ...action.action import Action
 from ...action.action_result import ActionResult
-from ...config import Name
-from ...env import Env, get_app_language, get_content_dir
+from ...config import Name, RunArg
+from ...env import Env, get_app_language
 from ...result.result_set import ElementResultSet
 from ...run_context import RunContext
 
@@ -50,14 +49,13 @@ class TranslationAgent(Agent):
         stage_id = DEFAULT_STAGE.id
         stage_item_id = DEFAULT_STAGE_ITEM.id
 
-        input_dir = get_content_dir()
-        file_type = run_context.get_env(Env.TRANSLATION_FILE_EXTENSION)
-        src_files = [f for f in glob.glob(f'{input_dir}/*.{file_type}')]
-        logger.debug(f'Files: {src_files}')
-
-        if len(src_files) == 0:
-            logger.warning(f'No translation files found in: {input_dir}')
+        src_file = run_context.get_arg(RunArg.SUBTITLES_FILE)
+        if not src_file:
+            logger.warning(f'File not found: {src_file}')
             return run_context.get_element_results(self.get_name(), stage_id)
+
+        src_files = [run_context.get_arg(RunArg.SUBTITLES_FILE)]
+        logger.debug(f'Files: {src_files}')
 
         target_languages_str: str = run_context.get_env(Env.TRANSLATION_OUTPUT_LANGUAGES)
         logger.debug(f'Output languages: {target_languages_str}')

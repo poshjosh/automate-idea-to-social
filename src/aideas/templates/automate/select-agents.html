@@ -5,8 +5,10 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/form.css') }}">
 {% endblock %}
 
+{% block heading %}Select agents to {{ tag|replace("-", " ") }}{% endblock %}
+
 {% block content %}
-    <form action="/automate/start" method="post" enctype="multipart/form-data">
+    <form action="enter-details.html">
         <input type="hidden" name="tag" value="{{ tag }}"/>
         <div>
             <label for="agents">Select agent(s) to run</label>
@@ -28,18 +30,6 @@
                 </div>
             </div>
         </div>
-
-        {% block form %}{% endblock %}
-
-        {% if agents|length > 1 %}
-            <p>
-                <label for="continue-on-error">Continue on error?</label>
-                <input type="checkbox" id="continue-on-error" name="continue-on-error"
-                       class="control" value="true" checked/>
-            </p>
-        {% endif %}
         <button type="submit" id="submit" class="control">Submit</button>
     </form>
 {% endblock %}
-
-

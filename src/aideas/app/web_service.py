@@ -1,22 +1,22 @@
 import logging
-import os.path
 from typing import Callable
 
-from .config import RunArg, AppConfig, AgentConfig
+from .config import AppConfig, AgentConfig
 from .config_loader import ConfigLoader
-from .env import is_production
-from .image_service import save_files
+from .env import is_production, Env
 from .task import AgentTask, Task, add_task, get_task_ids, require_task, submit_task
-
-CONFIG_PATH = os.path.join(os.getcwd(), 'resources', 'config')
 
 logger = logging.getLogger(__name__)
 
 
-class ValidationError(Exception):
-    def __init__(self, *args):
-        super().__init__(*args)
-        self.message = args[0]
+class HtmlFormat:
+    @staticmethod
+    def display(name: str) -> str:
+        return name.replace('-', ' ').replace('_', ' ').title()
+
+    @staticmethod
+    def form_field_name(name: str) -> str:
+        return name.lower().replace('_', '-').replace(' ', '-')
 
 
 class WebService:
@@ -29,51 +29,51 @@ class WebService:
             'heading': self.app_config.get_title()
         }
 
-    def index(self) -> dict[str, str]:
-        return self._with_default_page_variables()
+    def index(self, page_variables: dict[str, any] = None) -> dict[str, str]:
+        return self._with_default_page_variables(page_variables)
 
-    def automation_details_form(self, tag) -> dict[str, any]:
+    def automation_index(self, page_variables: dict[str, any] = None) -> dict[str, any]:
+        return self._with_default_page_variables(page_variables)
+
+    def select_automation_agents(self, tag) -> dict[str, any]:
         agents = {}
         for agent_name in self._get_agent_names(tag):
-            agents[agent_name] = agent_name.replace('-', ' ')
-        return self._with_default_page_variables({'agents': agents, 'tag': tag})
+            agents[agent_name] = HtmlFormat.display(agent_name)
+        return self._with_default_page_variables({'tag': tag, 'agents': agents})
 
-    def automation_index(self) -> dict[str, any]:
-        return self._with_default_page_variables()
+    def enter_automation_details(self, data: dict[str, any]) -> dict[str, any]:
+        tag = data['tag']
+        agent_names = data['agents']
 
-    def start_automation_async(self, task_id: str, form, files) -> Task:
+        # TODO - Find a better way. For example these fields may not be part of the run config.
+        unwanted_fields = [Env.VIDEO_OUTPUT_TYPE.name, Env.SUBTITLES_FILE_EXTENSION.name]
+
+        agents = {}
+        all_form_fields = []
+        for agent_name in agent_names:
+            agents[agent_name] = HtmlFormat.display(agent_name)
+            variables: [str] = self.__config_loader.get_agent_variable_names(agent_name)
+            variables = [e for e in variables if e not in unwanted_fields]
+            form_fields = [HtmlFormat.form_field_name(e) for e in variables]
+            logger.debug(f"Agent {agent_name} form fields: {form_fields}")
+            all_form_fields.extend(form_fields)
+        return self._with_default_page_variables(
+            {'tag': tag, 'agents': agents, 'form_fields': list(set(all_form_fields))})
+
+    def start_automation_async(self, task_id: str, data: dict[str, any]) -> Task:
         try:
-            task = self.new_task(task_id, form, files)
+            task = AgentTask.of_defaults(self.__config_loader, data)
             submit_task(task_id, task)
             return task
         except Exception as ex:
             logger.exception(ex)
             raise ex
 
-    def start_automation(self, task_id: str, form, files) -> Task:
+    def start_automation(self, task_id: str, data: dict[str, any]) -> Task:
         try:
-            task = self.new_task(task_id, form, files)
+            task = AgentTask.of_defaults(self.__config_loader, data)
             add_task(task_id, task).start()
             return task
-        except Exception as ex:
-            logger.exception(ex)
-            raise ex
-
-    def new_task(self, task_id: str, form, files) -> Task:
-        try:
-            form_data = dict(form)
-            try:
-                form_data.update(save_files(task_id, files))
-                logger.debug(f"Form data: {form_data}")
-                run_config = RunArg.of_dict(form_data)
-            except ValueError as value_ex:
-                raise ValidationError(value_ex.args[0])
-
-            agent_names = form.getlist(RunArg.AGENTS.value)
-
-            run_config = {**run_config, RunArg.AGENTS.value: agent_names}
-
-            return AgentTask.of_defaults(self.__config_loader, run_config)
         except Exception as ex:
             logger.exception(ex)
             raise ex

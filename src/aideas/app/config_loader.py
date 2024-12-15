@@ -4,12 +4,11 @@ from typing import Callable
 
 from pyu.io.file import load_yaml
 from pyu.io.yaml_loader import YamlLoader
-from .action.variable_parser import replace_all_variables
+from .action.variable_parser import replace_all_variables, get_variables
 from .config import RunArg
 from .env import Env
 
 logger = logging.getLogger(__name__)
-
 
 _SUFFIX = '.config'
 
@@ -23,6 +22,10 @@ class ConfigLoader(YamlLoader):
 
     def with_added_variable_source(self, source: dict[str, any]) -> 'ConfigLoader':
         return ConfigLoader(self.__config_path, self.__variable_source)._add_variable_source(source)
+
+    def get_agent_variable_names(self, agent_name: str) -> [str]:
+        config = self.__agent_configs_with_un_replaced_variables[agent_name]
+        return get_variables(config, False)
 
     def get_sorted_agent_names(self,
                                config_filter: Callable[[dict[str, any]], bool],
@@ -41,7 +44,7 @@ class ConfigLoader(YamlLoader):
     def load_agent_configs(
             self, check_replaced: bool = True, cfg_filter=None) -> dict[str, dict[str, any]]:
         configs = {}
-        for name in self.__all_agent_names():
+        for name in self.get_all_agent_names():
             config = self.load_agent_config(name, check_replaced)
             if not cfg_filter or cfg_filter(config):
                 configs[name] = config
@@ -65,16 +68,16 @@ class ConfigLoader(YamlLoader):
     def get_agent_config_path(self, agent_name: str) -> str:
         return self.get_path(os.path.join('agent', agent_name))
 
-    def _add_variable_source(self, source: dict[str, any]) -> 'ConfigLoader':
-        self.__variable_source.update(source)
-        return self
-
-    def __all_agent_names(self) -> [str]:
+    def get_all_agent_names(self) -> [str]:
         agents = []
         agent_dir = os.path.join(os.path.dirname(self.get_path("app")), 'agent')
         for agent_filename in os.listdir(agent_dir):
             agents.append(agent_filename[0:agent_filename.index(_SUFFIX)])
         return agents
+
+    def _add_variable_source(self, source: dict[str, any]) -> 'ConfigLoader':
+        self.__variable_source.update(source)
+        return self
 
 
 class SimpleConfigLoader(ConfigLoader):

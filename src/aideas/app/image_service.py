@@ -39,8 +39,8 @@ def _save_file(task_id, files, input_name) -> Union[str, None]:
         return None
     if not uploaded_file.filename:
         return None
-    if input_name == RunArg.VIDEO_COVER_IMAGE.value or \
-            input_name == RunArg.VIDEO_COVER_IMAGE_SQUARE.value:
+    if input_name == RunArg.IMAGE_FILE.value or \
+            input_name == RunArg.IMAGE_FILE_SQUARE.value:
         _validate_image_ext(uploaded_file)
     filepath = get_upload_file(task_id, _secure_filename(uploaded_file.filename))
     logger.debug(f"Will save: {input_name} to {filepath}")

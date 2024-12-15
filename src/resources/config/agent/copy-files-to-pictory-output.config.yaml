@@ -15,9 +15,9 @@ stages:
         events:
           onerror: continue
         actions:
-          - get_first_file ${CONTENT_DIR} $TRANSLATION_FILE_EXTENSION
+          - get_first_file ${CONTENT_DIR} $SUBTITLES_FILE_EXTENSION
           - eval importlib.import_module('os').makedirs('${self.output-dir}')
-          - eval importlib.import_module('shutil').copy2('${results.me[0]}', '${self.output-dir}/subtitles.${TRANSLATION_FILE_EXTENSION}')
+          - eval importlib.import_module('shutil').copy2('${results.me[0]}', '${self.output-dir}/subtitles.${SUBTITLES_FILE_EXTENSION}')
   copy-files:
     layouts:
       - landscape

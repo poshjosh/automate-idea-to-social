@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Use dynamic form generation, based on the variables set in agent's config.
 - Properly use jinja templates
 
 ## [0.2.1] - 2024-12-13

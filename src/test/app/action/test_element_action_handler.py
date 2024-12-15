@@ -25,7 +25,7 @@ class TestElementActionHandler(ElementActionHandler):
             action.get_name_without_negation())
         result_producing: bool = action_id.is_result_producing()
         if key == ActionId.GET_NEWEST_FILE_IN_DIR.value:
-            file_type = os.environ[Env.VIDEO_OUTPUT_TYPE.value]
+            file_type = action.get_args_as_str_list()[1]
             return ActionResult(action, True,
                                 f'test-downloaded-video.{file_type}' if result_producing else None)
 

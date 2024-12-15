@@ -112,7 +112,7 @@ stages:
           - /html/body//form/input[@type="file"]
           - //input[@type="file"]
         actions:
-          - enter_text ${CONTENT_DIR}/video-square.${VIDEO_OUTPUT_TYPE}
+          - enter_text $VIDEO_FILE_SQUARE
           - wait 7
       dismiss-alert:
         events:
@@ -137,7 +137,7 @@ stages:
 #          - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[2]/div[2]/div/div/div/div/div[1]/div[1]/div/div/form/input
 #          - //div[@role="dialog"]//form/input[@type="file"]
 #        actions:
-#          - enter_text $VIDEO_COVER_IMAGE_SQUARE
+#          - enter_text $IMAGE_FILE_SQUARE
 #          - wait 15
       proceed-to-content:
         search-for:
@@ -152,7 +152,7 @@ stages:
           - //div[@role="dialog"]//*[@role="textbox"]
           - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[2]/div[2]/div/div/div/div[1]/div[2]/div/div[1]/div[1]
           - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[2]/div[2]/div/div/div/div[1]/div[2]/div/div[1]/div[1]/p
-        actions: enter_text $VIDEO_CONTENT_FULL
+        actions: enter_text $VIDEO_CONTENT
       submit:
         search-for:
           - /html/body//div[@role="dialog"]//div[contains(text(), "Share")]

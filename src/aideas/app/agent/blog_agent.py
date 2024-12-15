@@ -80,7 +80,7 @@ class BlogAgent(Agent):
         if output_file is None:
             return ActionResult(action, False, output_file)
 
-        src_image_path = run_context.get_env(RunArg.VIDEO_COVER_IMAGE)
+        src_image_path = run_context.get_env(RunArg.IMAGE_FILE)
         self.__prepend_image_link_to_file_content(src_image_path, output_file)
 
         return ActionResult(action, True, output_file)
@@ -123,7 +123,7 @@ class BlogAgent(Agent):
 
     @staticmethod
     def __get_video_source(run_context: RunContext):
-        return run_context.get_env(RunArg.VIDEO_CONTENT_FILE)
+        return run_context.get_arg(RunArg.TEXT_FILE)
 
     def __update_blog(self, run_context: RunContext) -> bool:
 

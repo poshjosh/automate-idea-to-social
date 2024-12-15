@@ -15,19 +15,13 @@ agents:
 # Used to generate the video.
 video-content-file: test/resources/test-content/video.txt
 
-# Optional. Used for suffix to append to the description. If not set, description-suffix will be used
-video-content-suffix-file: test/resources/test-content/video-suffix.txt
-
 # Optional. If not set, the name (without extension) of video.content.file will be used
 #video-title:
 
 # Optional. If not set, the content of video.content.file will be used
 #video-content:
 
-# Optional. If not set, the content of video-content-suffix-file will be used.
-#video-content-suffix:
+image-file: test/resources/test-content/cover.jpg
 
-video-cover-image: test/resources/test-content/cover.jpg
-
-# Optional. If not set, video-cover-image will be used
-video-cover-image-square: test/resources/test-content/cover-square.jpg
+# Optional. If not set, image-file will be used
+image-file-square: test/resources/test-content/cover-square.jpg
