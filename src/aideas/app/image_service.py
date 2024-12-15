@@ -39,7 +39,7 @@ def _save_file(task_id, files, input_name) -> Union[str, None]:
         return None
     if not uploaded_file.filename:
         return None
-    if input_name == RunArg.IMAGE_FILE.value or \
+    if input_name == RunArg.IMAGE_FILE_LANDSCAPE.value or \
             input_name == RunArg.IMAGE_FILE_SQUARE.value:
         _validate_image_ext(uploaded_file)
     filepath = get_upload_file(task_id, _secure_filename(uploaded_file.filename))

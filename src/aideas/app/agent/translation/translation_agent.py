@@ -57,7 +57,7 @@ class TranslationAgent(Agent):
         src_files = [run_context.get_arg(RunArg.SUBTITLES_FILE)]
         logger.debug(f'Files: {src_files}')
 
-        target_languages_str: str = run_context.get_env(Env.TRANSLATION_OUTPUT_LANGUAGES)
+        target_languages_str: str = run_context.get_env(Env.SUBTITLES_OUTPUT_LANGUAGES)
         logger.debug(f'Output languages: {target_languages_str}')
 
         for src_file in src_files:

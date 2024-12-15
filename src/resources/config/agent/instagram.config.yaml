@@ -152,7 +152,7 @@ stages:
           - //div[@role="dialog"]//*[@role="textbox"]
           - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[2]/div[2]/div/div/div/div[1]/div[2]/div/div[1]/div[1]
           - /html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[2]/div[2]/div/div/div/div[1]/div[2]/div/div[1]/div[1]/p
-        actions: enter_text $VIDEO_CONTENT
+        actions: enter_text $TEXT_CONTENT
       submit:
         search-for:
           - /html/body//div[@role="dialog"]//div[contains(text(), "Share")]

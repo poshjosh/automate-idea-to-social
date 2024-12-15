@@ -80,7 +80,7 @@ class BlogAgent(Agent):
         if output_file is None:
             return ActionResult(action, False, output_file)
 
-        src_image_path = run_context.get_env(RunArg.IMAGE_FILE)
+        src_image_path = run_context.get_arg(RunArg.IMAGE_FILE_LANDSCAPE)
         self.__prepend_image_link_to_file_content(src_image_path, output_file)
 
         return ActionResult(action, True, output_file)
@@ -119,6 +119,8 @@ class BlogAgent(Agent):
     @staticmethod
     def get_blog_input_dir(run_context: RunContext) -> str:
         video_input_file = BlogAgent.__get_video_source(run_context)
+        # 'blog' is the name of the dir where the markdown content is saved
+        # @see function BlogAgent.__convert_to_markdown
         return os.path.join(os.path.dirname(video_input_file), 'blog')
 
     @staticmethod
@@ -202,6 +204,14 @@ class BlogAgent(Agent):
     def __convert_to_markdown(script_path: str,
                               src_file: str,
                               result_if_none: Union[str, None]) -> str:
+        """
+        Converts a file to markdown
+        Creates a directory of format "blog/YYYY/MM/DD" for the output files
+        :param script_path: The script to run
+        :param src_file: The file to convert to markdown
+        :param result_if_none: The result to return if the output is None
+        :return: The path to the markdown version of the input file
+        """
         if script_path is None or script_path == '':
             raise ValueError("Script path cannot be none or empty")
 

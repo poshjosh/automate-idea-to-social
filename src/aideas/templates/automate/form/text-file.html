@@ -1,0 +1,13 @@
+<label for="text-file">
+    {% if 'text-title' not in form_fields and 'text-content' not in form_fields %}
+        <span id="red-asterix">*</span>&nbsp;
+    {% endif %}
+    Select the text file containing the content you want to post.
+    {% if 'text-title' in form_fields and 'text-content' in form_fields %}
+        <br/>
+        <i>Or enter `title` and `content` in the provided fields</i>
+    {% endif %}
+</label>
+<br/>
+<input type="file" id="text-file" name="text-file"
+       class="control" accept="text/*"/>

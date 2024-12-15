@@ -23,12 +23,6 @@ secrets_masking_filter = SecretsMaskingFilter(
 RESULT = TypeVar("RESULT", bound=Union[any, None])
 
 
-class TaskError(Exception):
-    def __init__(self, *args):
-        super().__init__(*args)
-        self.message = args[0]
-
-
 class Task:
     def __init__(self):
         self.__started = False
@@ -37,10 +31,13 @@ class Task:
     def start(self) -> RESULT:
         try:
             if self.is_started():
-                raise TaskError(
+                logger.error(
                     "Task already running" if self.is_running() else "Task already completed")
+                return None
             self.__started = True
             return self._start()
+        except Exception as ex:
+            logger.exception("Task error", ex)
         finally:
             self.__completed = True
 
@@ -107,32 +104,42 @@ class AgentTask(Task):
 
         logger.debug(f"Running agents: {agent_names}")
 
-        for agent_name in agent_names:
-            agent = self.__agent_factory.get_agent(agent_name)
+        try:
+            for agent_name in agent_names:
 
-            try:
-                self.__agent_states[agent_name] = "RUNNING"
+                try:
 
-                stage_result_set = agent.run(self.__run_context)
+                    self.__add_agent_state(agent_name, "LOADING")
 
-                self.__agent_states[agent_name] = "SUCCESS"
+                    agent = self.__agent_factory.get_agent(agent_name)
 
-                self.__save_agent_results(agent_name, stage_result_set)
+                    self.__add_agent_state(agent_name, "RUNNING")
 
-            except Exception as ex:
+                    stage_result_set = agent.run(self.__run_context)
 
-                self.__agent_states[agent_name] = "FAILURE"
+                    self.__add_agent_state(agent_name, "SUCCESS")
 
-                if self.__run_context.get_run_config().is_continue_on_error() is True:
-                    logger.exception(ex)
-                    result = self.__run_context.get_stage_results(agent_name)
-                    if not result or result.is_empty():
-                        action = Action.of(agent_name, "*", "*", "*", self.__run_context)
-                        self.__run_context.add_action_result(ActionResult.failure(action, "Error"))
-                else:
-                    raise ex
+                    self.__save_agent_results(agent_name, stage_result_set)
 
-        return self.__run_context.get_result_set().close()
+                except Exception as ex:
+
+                    self.__add_agent_state(agent_name, "FAILURE")
+
+                    if self.__run_context.get_run_config().is_continue_on_error() is True:
+                        logger.exception(ex)
+                        result = self.__run_context.get_stage_results(agent_name)
+                        if not result or result.is_empty():
+                            action = Action.of(agent_name, "*", "*", "*", self.__run_context)
+                            self.__run_context.add_action_result(ActionResult.failure(action, "Error"))
+                    else:
+                        raise ex
+        finally:
+            self.__run_context.get_result_set().close()
+
+        return self.__run_context.get_result_set()
+
+    def __add_agent_state(self, agent_name: str, state: str):
+        self.__agent_states[agent_name] = self.__agent_states[agent_name] + ' >> ' + state
 
     def __save_agent_results(self, agent_name, result_set: StageResultSet):
         """

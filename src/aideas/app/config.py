@@ -676,15 +676,15 @@ class RunArg(str, Enum):
     AGENTS = ('agents', 'a', 'list')
     CONTINUE_ON_ERROR = ('continue-on-error', 'coe', 'bool', True, False)
 
-    IMAGE_FILE = ('image-file', 'vci', 'str', False, True)
+    IMAGE_FILE_LANDSCAPE = ('image-file-landscape', 'vci', 'str', False, True)
     IMAGE_FILE_SQUARE = ('image-file-square', 'vcis', 'str', True, True)
     SUBTITLES_FILE = ('subtitles-file', 'sf', 'str', True, True)
+    TEXT_CONTENT = ('text-content', 'tc', 'str', True, False)
     TEXT_FILE = ('text-file', 'tf', 'str', True, True)
-    VIDEO_CONTENT = ('video-content', 'vd', 'str', True, False)
+    TEXT_TITLE = ('text-title', 'tt', 'str', True, False)
     VIDEO_FILE_LANDSCAPE = ('video-file-landscape', 'vfl', 'str', True, True)
     VIDEO_FILE_PORTRAIT = ('video-file-portrait', 'vfp', 'str', True, True)
     VIDEO_FILE_SQUARE = ('video-file-square', 'vfs', 'str', True, True)
-    VIDEO_TITLE = ('video-title', 'vt', 'str', True, False)
 
     @staticmethod
     def values() -> [str]:
@@ -716,7 +716,7 @@ class RunArg(str, Enum):
 
     @staticmethod
     def _complain(name: str):
-        raise ValueError(f"Specify either {RunArg.VIDEO_CONTENT_FILE._value_} or {name}")
+        raise ValueError(f"Specify either {RunArg.TEXT_FILE._value_} or {name}")
 
     @staticmethod
     def _update_defaults(result: dict[str, any]) -> dict[str, any]:
@@ -731,22 +731,22 @@ class RunArg(str, Enum):
         video_content_path = result.get(RunArg.TEXT_FILE._value_)
         video_content = None if not video_content_path else read_content(video_content_path)
 
-        if not result.get(RunArg.VIDEO_TITLE._value_):
+        if not result.get(RunArg.TEXT_TITLE._value_):
             if needy and not video_content_path:
-                RunArg._complain(RunArg.VIDEO_TITLE._value_)
+                RunArg._complain(RunArg.TEXT_TITLE._value_)
             if video_content_path:
-                result[RunArg.VIDEO_TITLE._value_] = os.path.basename(video_content_path).split('.')[0]
+                result[RunArg.TEXT_TITLE._value_] = os.path.basename(video_content_path).split('.')[0]
 
-        if not result.get(RunArg.VIDEO_CONTENT._value_):
+        if not result.get(RunArg.TEXT_CONTENT._value_):
             if needy and not video_content_path:
-                RunArg._complain(RunArg.VIDEO_CONTENT._value_)
+                RunArg._complain(RunArg.TEXT_CONTENT._value_)
             if video_content:
-                result[RunArg.VIDEO_CONTENT._value_] = video_content
+                result[RunArg.TEXT_CONTENT._value_] = video_content
 
-        if result.get(RunArg.IMAGE_FILE._value_):
+        if result.get(RunArg.IMAGE_FILE_LANDSCAPE._value_):
             if not result.get(RunArg.IMAGE_FILE_SQUARE._value_):
                 result[RunArg.IMAGE_FILE_SQUARE._value_] \
-                    = result[RunArg.IMAGE_FILE._value_]
+                    = result[RunArg.IMAGE_FILE_LANDSCAPE._value_]
         return result
 
     @staticmethod

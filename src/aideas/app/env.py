@@ -6,9 +6,7 @@ from typing import Union
 from .config import RunArg
 from .paths import Paths
 
-_video = 'VIDEO'
 _pictory = 'PICTORY'
-_translation = 'TRANSLATION'
 _youtube = 'YOUTUBE'
 _tiktok = 'TIKTOK'
 _twitter = 'TWITTER'
@@ -52,7 +50,7 @@ class Env(str, Enum):
 
     OUTPUT_DIR = ('OUTPUT_DIR', False, True, 'resources/output')
 
-    VIDEO_OUTPUT_TYPE = (f'{_video}_OUTPUT_TYPE', False, False, 'mp4')
+    VIDEO_FILE_EXTENSION = ('VIDEO_FILE_EXTENSION', False, False, 'mp4')
 
     PICTORY_USER_EMAIL = f'{_pictory}_USER_EMAIL'
     PICTORY_USER_PASS = f'{_pictory}_USER_PASS'
@@ -61,9 +59,9 @@ class Env(str, Enum):
     PICTORY_VOICE_NAME = f'{_pictory}_VOICE_NAME'
     PICTORY_TEXT_STYLE = f'{_pictory}_TEXT_STYLE'
 
-    TRANSLATION_OUTPUT_LANGUAGES = (f'{_translation}_OUTPUT_LANGUAGES',
-                                    False, False, 'ar,bn,de,es,fr,hi,it,ja,ko,ru,zh,zh-TW')
-    SUBTITLES_FILE_EXTENSION = (f'{_translation}_FILE_EXTENSION', False, False, 'vtt')
+    SUBTITLES_OUTPUT_LANGUAGES = ('SUBTITLES_OUTPUT_LANGUAGES',
+                                  False, False, 'ar,bn,de,es,fr,hi,it,ja,ko,ru,zh,zh-TW')
+    SUBTITLES_FILE_EXTENSION = ('SUBTITLES_FILE_EXTENSION', False, False, 'vtt')
 
     YOUTUBE_USER_EMAIL = f'{_youtube}_USER_EMAIL'
     YOUTUBE_USER_PASS = f'{_youtube}_USER_PASS'
@@ -190,11 +188,16 @@ def get_agent_output_dir(agent_name: str):
     return os.path.join(get_env_value(Env.OUTPUT_DIR), 'agent', agent_name)
 
 
-def get_env_value(name: Union[str, Enum], default: str = None) -> str:
+def has_env_value(name: str) -> bool:
+    return name in Env.values() and get_env_value(name) is not None
+
+
+def get_env_value(name: Union[str, Enum], default: str = None) -> Union[str, None]:
     if not name:
         return default
     if isinstance(name, Env):
-        return os.environ.get(str(name.value), default if default is not None else name.get_default_value())
+        return os.environ.get(
+            str(name.value), default if default is not None else name.get_default_value())
     if isinstance(name, Enum):
         return os.environ.get(str(name.value), default)
     if isinstance(name, str):

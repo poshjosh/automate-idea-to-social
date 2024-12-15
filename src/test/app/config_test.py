@@ -80,9 +80,9 @@ class ConfigTest(unittest.TestCase):
         self.assertDictEqual({'k0': 'v0', 'k1': 'v1'}, b.get('dict'))
 
     def test_of_given_multiple_quotes_should_return_valid_action(self):
-        action_signature = 'first " " $VIDEO_TITLE "#shorts"'
+        action_signature = 'first " " $TEXT_TITLE "#shorts"'
         result = tokenize(action_signature)
-        self.assertEqual(['first', ' ', '$VIDEO_TITLE', '#shorts'], result)
+        self.assertEqual(['first', ' ', '$TEXT_TITLE', '#shorts'], result)
 
     def test_tokenize_given_multiple_quote_mixed_with_spaces_should_return_valid_action(self):
         action_signature = 'test-action " a boy shorts" tinkerer'

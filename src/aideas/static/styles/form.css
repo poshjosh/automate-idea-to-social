@@ -10,15 +10,20 @@ form #agents {
     overflow-x: hidden;
     overflow-y: scroll;
 }
-form .control { font-size: 1.5rem; }
+
+form #red-asterix { font-weight:900; color: red; }
+
+form .control { font-size: 1.5rem; margin-top: 0.5rem; margin-bottom:0.5rem; }
 
 form select { width: 20rem; }
+
+form label { color: #369; }
 
 form button {
     background-color: #0f9df7;
     padding: 0.5rem 1rem;
     border: none;
-    border-radius: 0.25rem;
+    border-radius: 0.5rem;
 }
 
 #expand-ctrl { background-color:#e0e3e6; padding: 0.25rem 0.5rem; border: none; border-radius: 0.25rem; }

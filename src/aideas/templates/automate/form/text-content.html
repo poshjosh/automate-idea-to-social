@@ -1,0 +1,14 @@
+<label for="text-content">
+    {% if 'text-file' not in form_fields %}
+        <span id="red-asterix">*</span>&nbsp;
+    {% endif %}
+    Enter the content you want to post.
+    {% if 'text-file' in form_fields %}
+        <br/>
+        <i>Or use the file option to select a file for the content.</i>
+    {% endif %}
+</label>
+<br/>
+<textarea id="text-content" name="text-content" class="control"
+          placeholder="content" rows="5" cols="42">
+                    </textarea>

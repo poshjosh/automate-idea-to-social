@@ -3,10 +3,10 @@ from flask import Flask, render_template, request
 import uuid
 import logging.config
 
-from aideas.app.request_data import RequestData, ValidationError
+from app.request_data import RequestData, ValidationError
 from app.app import App
 from app.env import get_app_port, is_production
-from app.task import get_task, stop_task, TaskError
+from app.task import get_task, stop_task
 from app.web_service import WebService
 
 web_app = Flask(__name__)
@@ -18,12 +18,6 @@ AUTOMATION_INDEX_TEMPLATE = 'automate/index.html'
 
 
 @web_app.errorhandler(ValidationError)
-def handle_validation_error(e):
-    return render_template(
-        AUTOMATION_INDEX_TEMPLATE, **web_service.automation_index({"error": e.message})), 400
-
-
-@web_app.errorhandler(TaskError)
 def handle_validation_error(e):
     return render_template(
         AUTOMATION_INDEX_TEMPLATE, **web_service.automation_index({"error": e.message})), 400

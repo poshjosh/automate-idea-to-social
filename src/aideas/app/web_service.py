@@ -3,7 +3,7 @@ from typing import Callable
 
 from .config import AppConfig, AgentConfig
 from .config_loader import ConfigLoader
-from .env import is_production, Env
+from .env import is_production, has_env_value
 from .task import AgentTask, Task, add_task, get_task_ids, require_task, submit_task
 
 logger = logging.getLogger(__name__)
@@ -45,20 +45,25 @@ class WebService:
         tag = data['tag']
         agent_names = data['agents']
 
-        # TODO - Find a better way. For example these fields may not be part of the run config.
-        unwanted_fields = [Env.VIDEO_OUTPUT_TYPE.name, Env.SUBTITLES_FILE_EXTENSION.name]
-
         agents = {}
         all_form_fields = []
         for agent_name in agent_names:
             agents[agent_name] = HtmlFormat.display(agent_name)
             variables: [str] = self.__config_loader.get_agent_variable_names(agent_name)
-            variables = [e for e in variables if e not in unwanted_fields]
-            form_fields = [HtmlFormat.form_field_name(e) for e in variables]
+            form_fields = [HtmlFormat.form_field_name(e)
+                           for e in variables if has_env_value(e) is False]
             logger.debug(f"Agent {agent_name} form fields: {form_fields}")
             all_form_fields.extend(form_fields)
+
+        # Input order preserved
+        # all_form_fields = list(dict.fromkeys(all_form_fields))
+
+        # Natural order sorted
+        all_form_fields = list(set(all_form_fields))
+        all_form_fields.sort()
+
         return self._with_default_page_variables(
-            {'tag': tag, 'agents': agents, 'form_fields': list(set(all_form_fields))})
+            {'tag': tag, 'agents': agents, 'form_fields': all_form_fields})
 
     def start_automation_async(self, task_id: str, data: dict[str, any]) -> Task:
         try:

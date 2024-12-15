@@ -1,0 +1,13 @@
+<label for="text-title">
+    {% if 'text-file' not in form_fields %}
+        <span id="red-asterix">*</span>&nbsp;
+    {% endif %}
+    Enter the title of the content you want to post.
+    {% if 'text-file' in form_fields %}
+        <br/>
+        <i>Or select a file and its name will be used as the `title`.</i>
+    {% endif %}
+</label>
+<br/>
+<input type="text" id="text-title" name="text-title" class="control"
+       placeholder="title" size="51" maxlength="120"/>

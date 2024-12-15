@@ -26,7 +26,7 @@ class AgentIT(unittest.TestCase):
     def format_tiktok_config(config: dict) -> dict:
         config = copy.deepcopy(config)
         action_signature = ('get_first_file ${OUTPUT_DIR}/agent/' + pictory_agent + '/' +
-                            pictory_stage + '/save-file $VIDEO_OUTPUT_TYPE')
+                            pictory_stage + '/save-file $VIDEO_FILE_EXTENSION')
         actions: [str] = [action_signature, 'log DEBUG $results.me[0]']
         config[STAGES_KEY][tiktok_stage] = {STAGE_ITEMS_KEY: {tiktok_target: {'actions': actions}}}
         return config

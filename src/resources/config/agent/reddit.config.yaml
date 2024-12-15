@@ -51,7 +51,7 @@ stages:
       enter-title:
         search-for:
           shadow-attributes: id=innerTextArea
-        actions: enter_text $VIDEO_TITLE
+        actions: enter_text $TEXT_TITLE
   cover-image:
     events:
       onerror: continue
@@ -61,13 +61,13 @@ stages:
 #          - //*[@id="post-composer_bodytext"]/shreddit-composer/rte-toolbar-button-image//input
           shadow-attributes: type=file data-media-type=image
         actions:
-          - enter_text $IMAGE_FILE
+          - enter_text $IMAGE_FILE_LANDSCAPE
           - wait 5
       enter-cover-image-caption:
         search-for:
           shadow-attributes: type=text placeholder="Add a caption"
         actions:
-          - enter_text $VIDEO_TITLE
+          - enter_text $TEXT_TITLE
           - wait 2
   content:
     stage-items:
@@ -77,7 +77,7 @@ stages:
         actions:
           - move_to_element
           - enter
-          - enter_text $VIDEO_CONTENT
+          - enter_text $TEXT_CONTENT
           - wait 2
   post:
     stage-items:
@@ -99,8 +99,8 @@ stages:
     stage-items:
       click-approve-button:
         search-for:
-          - //*[@data-testid="post-container"]/*[contains(text(), "${VIDEO_TITLE}")]//button[text()="approve"]
-          - //*[@data-testid="post-container"]/*[contains(text(), "${VIDEO_TITLE}")]//button[starts-with(@id, "ModToolsFlatlist-Approve")]
+          - //*[@data-testid="post-container"]/*[contains(text(), "${TEXT_TITLE}")]//button[text()="approve"]
+          - //*[@data-testid="post-container"]/*[contains(text(), "${TEXT_TITLE}")]//button[starts-with(@id, "ModToolsFlatlist-Approve")]
           - //*[starts-with(@id, "t3_1")]/div[3]/div[4]/div[2]/div[2]//button
         actions:
           - click

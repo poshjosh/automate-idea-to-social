@@ -21,7 +21,7 @@ stages:
           - //*[@id="root"]//form//textarea[@data-testid="test-text-area"]
           - //*[@id="root"]/div/div/div/div[3]/div[2]/div/div/form/div[1]/span/textarea
         actions:
-          - enter_text $VIDEO_TITLE
+          - enter_text $TEXT_TITLE
           - save_screenshot
           - save_webpage
 #      submit-image-description:

@@ -1,27 +1,37 @@
 # Run Options
 
 ```yaml
+# Name of agents to run
 agents:
-- test-log
+  - image-generator
+  - pictory  # A video generator
+  - translation
+  - youtube
+  - blog
+  - twitter
+  - facebook
+  - instagram
+  - tiktok
+  - reddit
 
-# video input
+# input
 #############################################################################
 # If running in docker (usually the case)
 # These can be full paths, because we are mounting their directory in docker
 # They must however be contained within our CONTENT_DIR
 # See environment variables for CONTENT_DIR
 #############################################################################
-# Optional. Used for title and description. Either set this, or provide a title and description
-video-content-file:
+# Optional. Used for title and description. Either set this, or provide a text-title and text-content
+text-file:
 
-# Optional. If not set, the name (without extension) of video-content-file will be used
-video-title:
+# Optional. If not set, the name (without extension) of text-file will be used
+text-title:
 
-# Optional. If not set, the content of video-content-file will be used
-video-content:
+# Optional. If not set, the content of text-file will be used
+text-content:
 
-image-file: 
+image-file-landscape: 
 
-# Optional. If not set, image-file will be used
+# Optional. If not set, image-file-landscape will be used
 image-file-square: 
 ```

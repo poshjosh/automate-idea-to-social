@@ -63,11 +63,11 @@ class Action:
         Get the directories where the result should be saved. Create the dirs if they don't exist.
         We save the result to multiple directories:
         1. At the current action's results directory.
-           (a) Format: ${OUTPUT_DIR}/agent/${agent_name}/results/${stage}/${stage-item}/original-file-name.${VIDEO_OUTPUT_TYPE}
+           (a) Format: ${OUTPUT_DIR}/agent/${agent_name}/results/${stage}/${stage-item}/original-file-name.${VIDEO_FILE_EXTENSION}
            (b) Example: resources/agent/pictory/results/video-landscape/save-file/original.mp4
            (c) This is cleared before each run of the agent.
         2. At the app's content directory, so that other agents can access it.
-           (a) Format: ${CONTENT_DIR}/${stage}.${VIDEO_OUTPUT_TYPE}
+           (a) Format: ${CONTENT_DIR}/${stage}.${VIDEO_FILE_EXTENSION}
            (b) Example: resources/input/video-landscape.mp4
            (c) This is cleared before each run of the app.
         :param sub_path: The sub-path to append to each output directory

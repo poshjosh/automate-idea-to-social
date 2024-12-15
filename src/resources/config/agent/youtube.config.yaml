@@ -100,13 +100,13 @@ stages:
         actions:
           - clear_text  # YouTube guesses a title for us, we don't want that.
           # We append a prefix here, because the guessed title was not cleared
-          - enter_text " " $VIDEO_TITLE "#shorts"
+          - enter_text " " $TEXT_TITLE "#shorts"
       enter-video-description:
         search-for:
           - //*[@id="description-wrapper"]//*[@id="textbox"]
           - //*[@id="description-wrapper"]//*[@id="description-textarea"]
           #- //*[@id="description-wrapper"]//*[@id="input"]
-        actions: enter_text $VIDEO_CONTENT
+        actions: enter_text $TEXT_CONTENT
   add-video-playlist:
     events:
       onerror: continue

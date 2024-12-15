@@ -79,6 +79,9 @@ class ConfigLoader(YamlLoader):
         self.__variable_source.update(source)
         return self
 
+    def get_variable_source(self) -> dict[str, any]:
+        return {**self.__variable_source}
+
 
 class SimpleConfigLoader(ConfigLoader):
     def __init__(self, config_path: str):

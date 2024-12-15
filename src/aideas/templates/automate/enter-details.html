@@ -8,11 +8,12 @@
 {% block heading %}Enter details for agents to {{ tag|replace("-", " ") }} {% endblock %}
 
 {% block content %}
-    <h4>Agents:&nbsp;
+    <p>
+        <b>Agents:</b>
         {% for agent_display_name in agents.values() %}
-            {{ agent_display_name }},&nbsp;
+            &nbsp;"{{ agent_display_name }}"&nbsp;
         {% endfor %}
-    </h4>
+    </p>
     <form action="/automate/start" method="post" enctype="multipart/form-data">
         <input type="hidden" name="tag" value="{{ tag }}"/>
         {% for agent_name in agents.keys() %}
@@ -20,15 +21,15 @@
         {% endfor %}
 
         {% for form_field in form_fields %}
-            <p>{% include 'automate/details/' + form_field + '.html' %}</p>
+            <p>{% include 'automate/form/' + form_field + '.html' %}</p>
         {% endfor %}
 
         {% if agents|length > 1 %}
-        <p>
-            <label for="continue-on-error">Continue on error?</label>
-            <input type="checkbox" id="continue-on-error" name="continue-on-error"
-                   class="control" value="true" checked/>
-        </p>
+            <p>
+                <label for="continue-on-error">Continue on error?</label>
+                <input type="checkbox" id="continue-on-error" name="continue-on-error"
+                       class="control" value="true" checked/>
+            </p>
         {% endif %}
         <button type="submit" id="submit" class="control">Submit</button>
     </form>
