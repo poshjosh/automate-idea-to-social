@@ -15,6 +15,7 @@ browser:
         # Window size should match that in docker-entrypoint.sh
         - window-size=1920,1080
         - start-maximized
+alternate-source: $TEXT_FILE
 stages:
   login:
     url: https://www.youtube.com/
@@ -91,7 +92,7 @@ stages:
           - //*[@id="content"]/input[@type="file"]
           - //input[@type="file"]
         actions:
-          - enter_text $VIDEO_FILE_LANDSCAPE
+          - enter_text $VIDEO_FILE_PORTRAIT
           - wait 5
       enter-video-title:
         search-for:

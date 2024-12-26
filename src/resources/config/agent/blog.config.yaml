@@ -25,7 +25,8 @@ blog:
   target:
     # git clone blog.src.url will create and populate this directory
     dir: ${BLOG_APP_DIR}/blogs/${self.blog.name}
-source: $TEXT_FILE
+alternate-source: $TEXT_FILE
+alternate-source-image: $IMAGE_FILE_LANDSCAPE
 stages:
   download-app:
   clone-blog:

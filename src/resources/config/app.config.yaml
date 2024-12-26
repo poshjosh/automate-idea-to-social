@@ -43,10 +43,15 @@ browser:
         - headless
         - disable-web-security
         - allow-running-insecure-content
+#########################################################################
+# If you use a dir on the host machine, make sure the version of chrome
+# on the host machine is compatible with the one in the docker container.
+#########################################################################
 #        Location where chrome stores profiles
-#        - user-data-dir=/Users/chinomso/Library/Application Support/Google/Chrome
+#        - user-data-dir=$CHROME_PROFILE_DIR
 #        Location relative to user-data-dir where chrome profile to be used is stored
-#        - profile-directory=Default
+#        To find out the location, type chrome://version in the address bar
+#        - profile-directory=Profile 5
 #        - remote-allow-origins=*
 #        - remote-debugging-port=9222
 #        - incognito

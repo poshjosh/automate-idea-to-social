@@ -368,23 +368,6 @@ class AgentConfig:
     def __init__(self, config: dict[str, any]):
         self.__config = check_for_typo(config, STAGES_KEY)
 
-    # TODO - See how this could be used to automatically generate
-    #  html forms for collecting details required to run the agent
-    # def get_variable_names(self) -> [str]:
-    #     variables = []
-    #
-    #     def collect_variable(variable, _, end):
-    #         variables.append(variable)
-    #         return end
-    #
-    #     def collect_string_value(sval, _):
-    #         visit_variables(sval, collect_variable)
-    #         return sval
-    #
-    #     visit_string_values(self.__config, collect_string_value)
-    #
-    #     return variables
-
     def to_dict(self) -> dict[str, any]:
         return {**self.__config}
 
@@ -694,10 +677,11 @@ class RunArg(str, Enum):
     def of_dict(source: dict[str, any], target: dict[str, any] = None) -> dict[str, any]:
         if target is None:
             target = {}
+        values = RunArg.values()
         for k, v in source.items():
             if not v:
                 continue
-            if k in RunArg.values():
+            if k in values:
                 v = RunArg._parse(RunArg(k), v)
             target[k] = v
         return RunArg._update_defaults(target)
@@ -715,33 +699,19 @@ class RunArg(str, Enum):
         return RunArg._update_defaults(add_to)
 
     @staticmethod
-    def _complain(name: str):
-        raise ValueError(f"Specify either {RunArg.TEXT_FILE._value_} or {name}")
-
-    @staticmethod
     def _update_defaults(result: dict[str, any]) -> dict[str, any]:
         # If target is empty, then no need update defaults,
         # To update defaults, we expect some values to be present
         if not result:
             return result
 
-        # TODO - Find a better way to use the tag to decide whether to update defaults
-        needy: bool = result.get('tag') and result.get('tag') in ['generate-video', 'post']
+        text_file = result.get(RunArg.TEXT_FILE._value_)
 
-        video_content_path = result.get(RunArg.TEXT_FILE._value_)
-        video_content = None if not video_content_path else read_content(video_content_path)
+        if not result.get(RunArg.TEXT_TITLE._value_) and text_file:
+            result[RunArg.TEXT_TITLE._value_] = os.path.basename(text_file).split('.')[0]
 
-        if not result.get(RunArg.TEXT_TITLE._value_):
-            if needy and not video_content_path:
-                RunArg._complain(RunArg.TEXT_TITLE._value_)
-            if video_content_path:
-                result[RunArg.TEXT_TITLE._value_] = os.path.basename(video_content_path).split('.')[0]
-
-        if not result.get(RunArg.TEXT_CONTENT._value_):
-            if needy and not video_content_path:
-                RunArg._complain(RunArg.TEXT_CONTENT._value_)
-            if video_content:
-                result[RunArg.TEXT_CONTENT._value_] = video_content
+        if not result.get(RunArg.TEXT_CONTENT._value_) and text_file:
+            result[RunArg.TEXT_CONTENT._value_] = read_content(text_file)
 
         if result.get(RunArg.IMAGE_FILE_LANDSCAPE._value_):
             if not result.get(RunArg.IMAGE_FILE_SQUARE._value_):

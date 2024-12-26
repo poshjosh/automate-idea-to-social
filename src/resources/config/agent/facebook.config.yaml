@@ -7,6 +7,7 @@ agent-type: browser
 # Optional [generate-video|generate-text|post|test|custom]
 agent-tags: post
 post-dialog: //*[starts-with(@id, "mount_0_0_")]//*[@role="dialog"]
+alternate-source: $TEXT_FILE
 stages:
   login:
     url: https://www.facebook.com/

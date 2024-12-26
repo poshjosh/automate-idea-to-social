@@ -15,7 +15,11 @@ APP_ENV=[prod|dev|test]
 APP_VERSION=[OPTIONAL]
 APP_LANGUAGE=en-GB
 CONTENT_DIR=
-BROWSER_PROFILE_DIR=
+#########################################################################
+# If you use a dir on the host machine, make sure the version of chrome 
+# on the host machine is compatible with the one in the docker container.
+#########################################################################
+CHROME_PROFILE_DIR=
 # This is needed if we want to user undetected chromedriver with display.
 # If we don't set this, we get error: cannot connect to chrome at 127.0.0.1:
 # https://github.com/ultrafunkamsterdam/undetected-chromedriver/issues/743#issuecomment-1420119272

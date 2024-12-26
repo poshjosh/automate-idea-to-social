@@ -26,6 +26,7 @@ RESULT = TypeVar("RESULT", bound=Union[any, None])
 class Task:
     def __init__(self):
         self.__started = False
+        self.__stopped = False
         self.__completed = False
 
     def start(self) -> RESULT:
@@ -48,7 +49,8 @@ class Task:
         raise NotImplementedError()
 
     def stop(self) -> 'Task':
-        self.__completed = True
+        if self.is_started() is True:
+            self.__stopped = True
         return self
 
     def is_started(self) -> bool:
@@ -59,6 +61,9 @@ class Task:
 
     def is_completed(self) -> bool:
         return self.__started and self.__completed
+
+    def is_stopped(self) -> bool:
+        return self.__stopped
 
 
 class AgentTask(Task):
@@ -76,6 +81,18 @@ class AgentTask(Task):
         self.__agent_states = {}
         for name in run_context.get_agent_names():
             self.__agent_states[name] = "PENDING"
+        self.__current_agent = None
+
+    def stop(self) -> 'AgentTask':
+        super().stop()
+        if self.is_started() is False:
+            return self
+        if self.__current_agent is not None:
+            self.__add_agent_state(self.__current_agent, "STOPPED")
+        logger.debug("Since stop has been requested, will close result set while task is running, "
+                     "though this may lead to an error.")
+        self.__run_context.get_result_set().close()
+        return self
 
     def get_run_context(self) -> RunContext:
         return self.__run_context
@@ -100,14 +117,21 @@ class AgentTask(Task):
 
     def _start(self) -> AgentResultSet:
 
-        agent_names = self.__run_context.get_agent_names()
+        logger.debug(f"Running agents: {self.__run_context.get_agent_names()}")
 
-        logger.debug(f"Running agents: {agent_names}")
+        failed = False
+        continue_on_error = self.__run_context.get_run_config().is_continue_on_error()
 
         try:
-            for agent_name in agent_names:
+            for agent_name in self.__run_context.get_agent_names():
+
+                if self.is_stopped() is True or (failed is True and continue_on_error is False):
+                    self.__add_agent_state(agent_name, "SKIPPED")
+                    continue
 
                 try:
+
+                    self.__current_agent = agent_name
 
                     self.__add_agent_state(agent_name, "LOADING")
 
@@ -117,22 +141,25 @@ class AgentTask(Task):
 
                     stage_result_set = agent.run(self.__run_context)
 
-                    self.__add_agent_state(agent_name, "SUCCESS")
+                    self.__add_agent_state(agent_name, "SUCCESS" if
+                                           stage_result_set.is_successful() is True else "FAILURE")
 
                     self.__save_agent_results(agent_name, stage_result_set)
 
                 except Exception as ex:
 
+                    failed = True
+
                     self.__add_agent_state(agent_name, "FAILURE")
 
-                    if self.__run_context.get_run_config().is_continue_on_error() is True:
-                        logger.exception(ex)
+                    logger.exception(ex)
+
+                    if continue_on_error is True:
                         result = self.__run_context.get_stage_results(agent_name)
                         if not result or result.is_empty():
                             action = Action.of(agent_name, "*", "*", "*", self.__run_context)
-                            self.__run_context.add_action_result(ActionResult.failure(action, "Error"))
-                    else:
-                        raise ex
+                            self.__run_context.add_action_result(
+                                ActionResult.failure(action, "Error"))
         finally:
             self.__run_context.get_result_set().close()
 
@@ -167,6 +194,7 @@ class AgentTask(Task):
 
 
 __tasks: dict[str, Task] = {}
+__futures: dict[str, Future] = {}
 __executor = ThreadPoolExecutor(max_workers=10)
 
 

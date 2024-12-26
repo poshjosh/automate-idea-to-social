@@ -41,6 +41,7 @@ class Env(str, Enum):
     APP_LANGUAGE = ('APP_LANGUAGE', True, False, 'en-GB')
 
     CONTENT_DIR = ('CONTENT_DIR', False, True)
+    CHROME_PROFILE_DIR = ('CHROME_PROFILE_DIR', False, True)
 
     SETUP_DISPLAY = ('SETUP_DISPLAY', True, False)
 

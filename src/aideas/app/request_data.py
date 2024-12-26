@@ -49,9 +49,27 @@ class RequestData:
         asynch = RequestData.get(request, 'async', True)
         try:
             form_data.update(save_files(task_id, request.files))
+            form_data = RequestData.strip_values(form_data)
             logger.debug(f"Form data: {form_data}")
             run_config = RunArg.of_dict(form_data)
+            RequestData.validate_task_config_form_data(run_config)
             agent_names = RequestData.require_agent_names(request)
-            return {**run_config, RunArg.AGENTS.value: agent_names, 'async': asynch}
+            result = {**run_config, RunArg.AGENTS.value: agent_names, 'async': asynch}
+            logger.debug(f"Result: {result}")
+            return result
         except ValueError as value_ex:
+            logger.exception(value_ex)
             raise ValidationError(value_ex.args[0])
+
+    @staticmethod
+    def strip_values(data: dict[str, any]):
+        for k, v in data.items():
+            v = v.strip() if isinstance(v, str) else v
+            data[k] = v
+        return data
+
+    @staticmethod
+    def validate_task_config_form_data(form_data: dict[str, any]):
+        for k, v in form_data.items():
+            if v == '':
+                raise ValidationError(f"'{k}' is required")

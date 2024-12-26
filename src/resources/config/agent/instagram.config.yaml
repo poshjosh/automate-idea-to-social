@@ -6,6 +6,7 @@ agent-type: browser
 agent-tags: post
 depends-on:
   - facebook
+alternate-source: $TEXT_FILE
 stages:
   # Direct login did not work for me, probably 'cos I signed up via facebook
   # So, after this stage, we add a stage to login via facebook

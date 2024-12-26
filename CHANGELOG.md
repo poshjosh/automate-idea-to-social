@@ -7,8 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Option to specify browser version to use
+
 ### Changed
 
+- Properly stop tasks
 - Use dynamic form generation, based on the variables set in agent's config.
 - Properly use jinja templates
 
