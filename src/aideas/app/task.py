@@ -17,9 +17,6 @@ from .run_context import RunContext
 
 logger = logging.getLogger(__name__)
 
-secrets_masking_filter = SecretsMaskingFilter(
-    ["(pass|key|secret|token|jwt|hash|signature|credential|auth|certificate|connection|pat)"])
-
 RESULT = TypeVar("RESULT", bound=Union[any, None])
 
 
@@ -67,6 +64,9 @@ class Task:
 
 
 class AgentTask(Task):
+    secrets_masking_filter = SecretsMaskingFilter(
+        ["(pass|key|secret|token|jwt|hash|signature|credential|auth|certificate|connection|pat)"])
+
     @staticmethod
     def of_defaults(config_loader: ConfigLoader, run_config: dict[str, any]) -> 'AgentTask':
         config_loader = config_loader.with_added_variable_source(run_config)
@@ -110,7 +110,7 @@ class AgentTask(Task):
                       .replace("(success=True,", '(<span style="color:green">SUCCESS</span>,')
                       .replace("(success=False,", '(<span style="color:red">FAILURE</span>,'))
 
-        result_str = secrets_masking_filter.redact(result_str)
+        result_str = AgentTask.secrets_masking_filter.redact(result_str)
 
         # Replace new-line only after masking secrets
         return state_str + result_str.replace("\n", "<br/>")
@@ -141,8 +141,10 @@ class AgentTask(Task):
 
                     stage_result_set = agent.run(self.__run_context)
 
-                    self.__add_agent_state(agent_name, "SUCCESS" if
-                                           stage_result_set.is_successful() is True else "FAILURE")
+                    msg = "SUCCESS" if stage_result_set.is_successful() \
+                        else "SUCCESS (with some errors)"
+
+                    self.__add_agent_state(agent_name, msg)
 
                     self.__save_agent_results(agent_name, stage_result_set)
 
