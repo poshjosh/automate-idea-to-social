@@ -20,7 +20,7 @@ agents:
 # See environment variables for CONTENT_DIR
 #############################################################################
 # Optional. Used for title and description. Either set this, or provide a text-title and text-content
-text-file: "/Users/chinomso/Desktop/live-above-3D/aideas-docker-mount/video.txt"
+text-file: "/Users/chinomso/Desktop/live-above-3D/aideas-docker-mount/input/video.txt"
 
 # Optional. If not set, the name (without extension) of text-file will be used
 #text-title:
@@ -28,7 +28,7 @@ text-file: "/Users/chinomso/Desktop/live-above-3D/aideas-docker-mount/video.txt"
 # Optional. If not set, the content of text-file will be used
 #text-content:
 
-image-file-landscape: /Users/chinomso/Desktop/live-above-3D/aideas-docker-mount/cover.jpg
+image-file-landscape: /Users/chinomso/Desktop/live-above-3D/aideas-docker-mount/input/cover.jpg
 
 # Optional. If not set, image-file-landscape will be used
-image-file-square: /Users/chinomso/Desktop/live-above-3D/aideas-docker-mount/cover-square.jpg
+image-file-square: /Users/chinomso/Desktop/live-above-3D/aideas-docker-mount/input/cover-square.jpg

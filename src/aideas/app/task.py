@@ -65,7 +65,7 @@ class Task:
 
 class AgentTask(Task):
     secrets_masking_filter = SecretsMaskingFilter(
-        ["(pass|key|secret|token|jwt|hash|signature|credential|auth|certificate|connection|pat)"])
+        ["(password|key|secret|token|jwt|hash|signature|credential|auth|certificate|connection)"])
 
     @staticmethod
     def of_defaults(config_loader: ConfigLoader, run_config: dict[str, any]) -> 'AgentTask':

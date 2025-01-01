@@ -33,6 +33,7 @@ class XPathTest(unittest.TestCase):
         file_path = os.path.join(
             dir_path, "resources", "output", "results", "pictory", "2024", "06", "06",
             "2024-06-06T18-42-06-pictory.download-video.ERROR@STAGE_FAIL-webpage.html")
+        # 2024-06-06T20-06-02-pictory.download-video.SUCCESS@STAGE_END-webpage.html
         webdriver = create_webdriver()
         url: str = f"file://{file_path}"
         webdriver.get(url)

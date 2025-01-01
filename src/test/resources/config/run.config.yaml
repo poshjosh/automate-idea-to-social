@@ -24,3 +24,11 @@ image-file-landscape: test/resources/test-content/cover.jpg
 
 # Optional. If not set, image-file-landscape will be used
 image-file-square: test/resources/test-content/cover-square.jpg
+
+subtitles-file: test/resources/test-content/subtitles.vtt
+
+video-file-landscape: test/resources/test-content/video-landscape.mp4
+
+video-file-square: test/resources/test-content/video-file-square.mp4
+
+video-file-portrait: test/resources/test-content/video-portrait.mp4
