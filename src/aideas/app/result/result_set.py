@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from collections.abc import Iterable
 import copy
 import logging
@@ -24,12 +25,12 @@ class ResultSet:
         if success_test is None:
             raise ValueError('success_test cannot be None')
         self.__success_test = success_test
-        self.__results: dict[str, RESULT] = {}
+        self.__results: OrderedDict[str, RESULT] = OrderedDict()
         if results is not None:
             self.__results.update(copy.deepcopy(results))
 
     def add_action_result(self, result: ActionResult) -> 'ResultSet':
-        raise ValueError('Please implement me')
+        raise NotImplementedError('Please implement me')
 
     def get(self, result_id: str, result_if_none: RESULT = None) -> RESULT:
         """Returns a copy of the result or the result_if_none when the result is not found."""

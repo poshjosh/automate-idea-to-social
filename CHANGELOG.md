@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Succeed if there are failures marked to be ignored.
+- Use `OrderdDict` for `ResultSet`.
+
+### Fixed
+
+- Bug caused by unquoted arg for translation agent.
 
 ## [0.2.2] - 2024-12-26
 
