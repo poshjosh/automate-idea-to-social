@@ -64,7 +64,7 @@ class TranslationAgent(Agent):
 
             action = Action.of(
                 self.get_name(), stage_id, stage_item_id,
-                f"{DEFAULT_ACTION} {src_file} {target_languages_str}",
+                f"{DEFAULT_ACTION} \"{src_file}\" {target_languages_str}",
                 run_context)
 
             self.__do_translate_subtitles(run_context, action)
