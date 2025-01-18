@@ -25,7 +25,7 @@ def handle_validation_error(e):
 
 @web_app.route('/')
 def index():
-    return render_template('index.html', **web_service.index())
+    return render_template(INDEX_TEMPLATE, **web_service.index())
 
 
 @web_app.route('/' + AUTOMATION_INDEX_TEMPLATE)

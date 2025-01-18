@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Use text-title as input-file name where applicable.
 - Succeed if there are failures marked to be ignored.
 - Use `OrderdDict` for `ResultSet`.
 

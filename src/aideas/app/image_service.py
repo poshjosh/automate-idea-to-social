@@ -1,18 +1,13 @@
 import imghdr
 import logging
 import os
-from typing import Union
+from typing import Union, Callable
 
 from pyu.io.file import create_file
 from .config import RunArg
 from .env import get_upload_file
 
 logger = logging.getLogger(__name__)
-
-
-def _secure_filename(filename: str) -> str:
-    # TODO - Implement this or use a library function like: werkzeug.utils.secure_filename
-    return filename
 
 
 def _get_image_ext(stream):
@@ -33,7 +28,8 @@ def _validate_image_ext(uploaded_file):
         raise ValueError(f"Invalid image type: {img_ext}")
 
 
-def _save_file(task_id, files, input_name) -> Union[str, None]:
+def _save_file(task_id, files, input_name,
+               get_file_name: Callable[[str, str], str]) -> Union[str, None]:
     uploaded_file = files.get(input_name)
     if not uploaded_file:
         return None
@@ -42,20 +38,20 @@ def _save_file(task_id, files, input_name) -> Union[str, None]:
     if input_name == RunArg.IMAGE_FILE_LANDSCAPE.value or \
             input_name == RunArg.IMAGE_FILE_SQUARE.value:
         _validate_image_ext(uploaded_file)
-    filepath = get_upload_file(task_id, _secure_filename(uploaded_file.filename))
+    filepath = get_upload_file(task_id, get_file_name(input_name, uploaded_file.filename))
     logger.debug(f"Will save: {input_name} to {filepath}")
     create_file(filepath)
     uploaded_file.save(filepath)
     return filepath
 
 
-def save_files(task_id, files) -> dict[str, any]:
+def save_files(task_id, files, get_file_name: Callable[[str, str], str]) -> dict[str, any]:
     saved_files = {}
     for e in RunArg:
         run_arg = RunArg(e)
         if not run_arg.is_path:
             continue
-        saved_file = _save_file(task_id, files, run_arg.value)
+        saved_file = _save_file(task_id, files, run_arg.value, get_file_name)
         if not saved_file:
             continue
         saved_files[run_arg.value] = saved_file
