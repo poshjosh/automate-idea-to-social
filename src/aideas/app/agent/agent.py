@@ -100,7 +100,7 @@ class Agent:
             except Exception as ex:
                 logger.warning(f"Error closing agent: {self.__name}. {ex}")
             logger.debug(f"Agent: {self.get_name()}, "
-                         f"results:\n{run_context.get_stage_results(self.get_name())}")
+                         f"result: {run_context.get_stage_results(self.get_name())}")
 
     def _run_agent_stages(self,
                           run_context: RunContext,

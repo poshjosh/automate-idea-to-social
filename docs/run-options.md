@@ -21,6 +21,8 @@ agents:
 # They must however be contained within our CONTENT_DIR
 # See environment variables for CONTENT_DIR
 #############################################################################
+language-code: en
+
 # Optional. Used for title and description. Either set this, or provide a text-title and text-content
 text-file:
 

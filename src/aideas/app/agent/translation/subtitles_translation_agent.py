@@ -2,6 +2,9 @@ import logging
 import os.path
 import shutil
 
+import webvtt
+
+from .subtitles import grouping_subtitle, subtitle_read, subtitle_save
 from .translator import Translator
 from ..agent import Agent, Automator
 from ...action.action import Action
@@ -11,17 +14,15 @@ from ...env import Env, get_app_language
 from ...result.result_set import ElementResultSet
 from ...run_context import RunContext
 
-from pyu.io.file import read_content, write_content
-
 logger = logging.getLogger(__name__)
 
-DIR_NAME = "translations"
-DEFAULT_STAGE = Name.of("translate")
+DIR_NAME = "subtitles"
+DEFAULT_STAGE = Name.of("translate-subtitles")
 DEFAULT_STAGE_ITEM = DEFAULT_STAGE
-DEFAULT_ACTION = "translate"
+DEFAULT_ACTION = "translate_subtitles"
 
 
-class TranslationAgent(Agent):
+class SubtitlesTranslationAgent(Agent):
     __verbose = False
 
     @staticmethod
@@ -40,22 +41,21 @@ class TranslationAgent(Agent):
 
     def run_stage(self, run_context: RunContext, stage: Name) -> ElementResultSet:
         if stage == DEFAULT_STAGE:
-            return self.__run_default_stage(run_context)
+            return self.__translate_subtitles(run_context)
         else:
             return super().run_stage(run_context, stage)
 
-    def __run_default_stage(self, run_context: RunContext) -> ElementResultSet:
+    def __translate_subtitles(self, run_context: RunContext) -> ElementResultSet:
         stage_id = DEFAULT_STAGE.id
         stage_item_id = DEFAULT_STAGE_ITEM.id
 
-        src_file = run_context.get_arg(RunArg.TEXT_FILE)
+        src_file = run_context.get_arg(RunArg.SUBTITLES_FILE)
         if not src_file:
             logger.warning(f'File not found: {src_file}')
             return run_context.get_element_results(self.get_name(), stage_id)
 
         logger.debug(f'Source file: {src_file}')
 
-        # TODO - Do not use subtitles output languages, create own env variable
         target_languages_str: str = run_context.get_env(Env.SUBTITLES_OUTPUT_LANGUAGES)
         logger.debug(f'Output languages: {target_languages_str}')
 
@@ -64,11 +64,11 @@ class TranslationAgent(Agent):
             f"{DEFAULT_ACTION} \"{src_file}\" {target_languages_str}",
             run_context)
 
-        self.__do_run_default_stage(run_context, action)
+        self.__do_translate_subtitles(run_context, action)
 
         return run_context.get_element_results(self.get_name(), stage_id)
 
-    def __do_run_default_stage(self, run_context: RunContext, action: Action) -> ElementResultSet:
+    def __do_translate_subtitles(self, run_context: RunContext, action: Action) -> ElementResultSet:
 
         args = action.get_args_as_str_list()
 
@@ -80,7 +80,7 @@ class TranslationAgent(Agent):
 
         for lang in output_language_codes:
 
-            result: ActionResult = self.__translate(action, lang)
+            result: ActionResult = self.__translate_subtitle(action, lang)
 
             run_context.add_action_result(result)
 
@@ -95,7 +95,10 @@ class TranslationAgent(Agent):
         logger.debug(f"Copied to: {tgt} from: {src}")
         shutil.copy2(src, tgt)
 
-    def __translate(self, action: Action, output_language_code: str) -> ActionResult:
+    def __translate_subtitle(self,
+                             action: Action,
+                             output_language_code: str) -> ActionResult:
+
         try:
             filepath_in = action.get_first_arg()
             filepath_out = _add_language_code_to_path(filepath_in, output_language_code)
@@ -103,7 +106,7 @@ class TranslationAgent(Agent):
 
             filepaths_out = [os.path.join(e, filename) for e in action.get_output_dirs(DIR_NAME)]
 
-            self.__do_translate(filepath_in, filepaths_out, output_language_code)
+            self.__do_translate_subtitle(filepath_in, filepaths_out, output_language_code)
 
             return ActionResult(action, True, filepaths_out)
 
@@ -111,28 +114,37 @@ class TranslationAgent(Agent):
             logger.exception(ex)
             return ActionResult(action, False)
 
-    def __do_translate(self, filepath_in: str, filepaths_out: [str], output_language_code: str):
+    def __do_translate_subtitle(self,
+                                filepath_in: str,
+                                filepaths_out: [str],
+                                output_language_code: str):
 
-        lines_of_text: [str] = read_content(filepath_in).splitlines()
+        subtitles_list = subtitle_read(filepath_in)
+        grouped_list = grouping_subtitle(subtitles_list)
 
-        self.__print_if_verbose(lines_of_text)
+        self.__print_subtitles_if_verbose(grouped_list)
 
-        lines_translated: [str] = self.__translator.translate(lines_of_text, self.__from_lang, output_language_code)
+        q = (c.text for c in grouped_list)
 
-        result_text = '\n'.join(lines_translated)
+        translated_result = self.__translator.translate(q, self.__from_lang, output_language_code)
 
-        self.__print_if_verbose(lines_translated)
+        for group_capt, translated_row in zip(grouped_list, translated_result):
+            group_capt.text = translated_row
+
+        self.__print_subtitles_if_verbose(grouped_list)
 
         for filepath_out in filepaths_out:
-            write_content(filepath_out, result_text)
+            subtitle_save(filepath_out, grouped_list)
             logger.debug(f'{output_language_code} subtitles saved to: '
                          f'{filepath_out}, from: {filepath_in}')
 
-    def __print_if_verbose(self, lines_of_text: list[str], title: str = ""):
+    def __print_subtitles_if_verbose(self, subtitles_list: list[webvtt.Caption], title: str = ""):
         if self.__verbose is not True:
             return
-        text = '\n'.join(lines_of_text)
-        logger.debug(f'{title}\n{text}')
+        output: str = title
+        for i in subtitles_list:
+            output += f'\n{i}'
+        logger.debug(output)
 
 
 def _add_language_code_to_path(filename: str, target_language_code: str):

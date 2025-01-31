@@ -36,7 +36,7 @@ class BlogAgent(Agent):
         elif stage_id == AgentName.BlogUpdaterStage.CONVERT_TO_MARKDOWN:
             result: ActionResult = self.convert_to_markdown(action, run_context)
         elif stage_id == AgentName.BlogUpdaterStage.UPDATE_BLOG_CONTENT:
-            result: ActionResult = self.update_blog_content(action, run_context)
+            result: ActionResult = self.push_new_content_to_blog_repository(action, run_context)
         elif stage_id == AgentName.BlogUpdaterStage.UPDATE_BLOG:
             result: ActionResult = self.update_blog(action, run_context)
         else:
@@ -73,8 +73,9 @@ class BlogAgent(Agent):
     def convert_to_markdown(self, action: Action, run_context: RunContext) -> ActionResult:
         script_path: str = self.get_convert_to_markdown_script()
         input_file: str = self.__get_video_source(run_context)
+        language_code: str = run_context.get_arg(RunArg.LANGUAGE_CODE, '')
 
-        output_file: str = self.__convert_to_markdown(script_path, input_file, None)
+        output_file: str = self.__convert_to_markdown(script_path, input_file, language_code, None)
         logger.debug(f"Converted to markdown: {output_file}, from: {input_file}, "
                      f"using script: {script_path}")
         if output_file is None:
@@ -85,7 +86,7 @@ class BlogAgent(Agent):
 
         return ActionResult(action, True, output_file)
 
-    def update_blog_content(self, action: Action, run_context: RunContext) -> ActionResult:
+    def push_new_content_to_blog_repository(self, action: Action, run_context: RunContext) -> ActionResult:
         blog_src_dir: str = self.get_blog_input_dir(run_context)
         if not os.path.exists(blog_src_dir):
             raise ValueError(f"Blog source directory does not exist: {blog_src_dir}")
@@ -203,6 +204,7 @@ class BlogAgent(Agent):
     @staticmethod
     def __convert_to_markdown(script_path: str,
                               src_file: str,
+                              language_code: str,
                               result_if_none: Union[str, None]) -> str:
         """
         Converts a file to markdown
@@ -227,7 +229,7 @@ class BlogAgent(Agent):
         if not src_file.endswith(".txt"):
             raise ValueError(f"Input file must end with .txt, file: {src_file}")
 
-        args = ['-f', f'"{src_file}"']
+        args = BlogAgent._get_convert_to_markdown_args(src_file, language_code)
 
         found_text: str = ''
         completed_process = run_script(script_path, args, timeout=30, stdout=subprocess.PIPE)
@@ -237,6 +239,18 @@ class BlogAgent(Agent):
             if m is not None:
                 found_text = m.group(1)
         return result_if_none if found_text is None or found_text == '' else found_text
+
+    @staticmethod
+    def _get_convert_to_markdown_args(src_file, language_code) -> [str]:
+        if language_code:
+
+            if len(language_code) != 2:
+                raise ValueError(f"Language code must be 2 characters, code: {language_code}")
+
+            return ['-f', f'"{src_file}"', '-p', f'"/{language_code}"']
+        else:
+            return ['-f', f'"{src_file}"']
+
 
     @staticmethod
     def __prepend_image_link_to_file_content(src_image_path: str, target_file: str):

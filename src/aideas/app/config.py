@@ -661,6 +661,7 @@ class RunArg(str, Enum):
 
     IMAGE_FILE_LANDSCAPE = ('image-file-landscape', 'vci', 'str', False, True)
     IMAGE_FILE_SQUARE = ('image-file-square', 'vcis', 'str', True, True)
+    LANGUAGE_CODE = ('language-code', 'lc', 'str', True, False)
     SUBTITLES_FILE = ('subtitles-file', 'sf', 'str', True, True)
     TEXT_CONTENT = ('text-content', 'tc', 'str', True, False)
     TEXT_FILE = ('text-file', 'tf', 'str', True, True)

@@ -5,6 +5,7 @@ from .agent import Agent
 from .agent_name import AgentName
 from .blog_agent import BlogAgent
 from .browser_agent import BrowserAgent
+from .translation.subtitles_translation_agent import SubtitlesTranslationAgent
 from .translation.translation_agent import TranslationAgent
 from ..config import AgentConfig, AgentType
 from ..config_loader import ConfigLoader
@@ -27,6 +28,8 @@ class AgentFactory:
         agent_type = AgentConfig(agent_config).get_agent_type()
         if agent_name == AgentName.TRANSLATION:
             agent = self.create_translation_agent(agent_name, agent_config)
+        elif agent_name == AgentName.SUBTITLES_TRANSLATION:
+            agent = self.create_subtitles_translation_agent(agent_name, agent_config)
         elif agent_type == AgentType.BLOG:
             agent = self.create_blog_agent(agent_name, agent_config)
         elif agent_type == AgentType.GENERIC:
@@ -67,12 +70,25 @@ class AgentFactory:
             dependencies: Union[dict[str, Agent], None] = None) -> TranslationAgent:
         return TranslationAgent.of_config(agent_name, self.__app_config, agent_config, dependencies)
 
+    def create_subtitles_translation_agent(
+            self,
+            agent_name: str,
+            agent_config,
+            dependencies: Union[dict[str, Agent], None] = None) -> SubtitlesTranslationAgent:
+        return SubtitlesTranslationAgent.of_config(agent_name, self.__app_config, agent_config, dependencies)
+
     def __add_dependencies(self, author: Union[Agent, None]):
         author_name = author.get_name()
         author_config: AgentConfig = author.get_config()
         dependencies: [str] = author_config.get_depends_on()
         for dep_name in dependencies:
-            dep_config = self.__load_agent_config(dep_name)
+
+            # We choose not to check if variables in the dependencies config have been replaced.
+            # Even though instagram depends on facebook for login, instagram does not need the
+            # facebook variable `video-file-landscape` to be available for it to succeed.
+            # Facebook variables common to instagram should already be available.
+            dep_config = self.__load_agent_config(dep_name, False)
+
             if author_name in AgentConfig(dep_config).get_depends_on():
                 # We try to detect some circular dependencies. Other circular
                 # dependencies will be detected by the recursive call involved.
@@ -105,5 +121,5 @@ class AgentFactory:
     def get_config_loader(self) -> ConfigLoader:
         return self.__config_loader
 
-    def __load_agent_config(self, agent_name: str) -> dict[str, any]:
-        return self.__config_loader.load_agent_config(agent_name)
+    def __load_agent_config(self, agent_name: str, check_variables_replaced = True) -> dict[str, any]:
+        return self.__config_loader.load_agent_config(agent_name, check_variables_replaced)

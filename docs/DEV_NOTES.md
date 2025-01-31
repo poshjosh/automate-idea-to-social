@@ -1,11 +1,19 @@
 ### Directory Structure
 
-Run the app with the working directory set to `${PROJECT_DIR}/src/python/main`
+Run the app with the working directory set to `${PROJECT_DIR}/src`
 
 Run tests with the working directory set to `${PROJECT_DIR}/src`
 - Tests need to be able to access both test and main sources.
 
-Agents use yaml configurations in `${PROJECT_DIR}/src/python/main/aideas/config/agent` 
+Agents use yaml configurations in `${PROJECT_DIR}/src/aideas/config/agent`
+
+### Run args
+
+Each run argument is represented as a form field. This makes it possible
+to provide the value via a html form. The form fields are located at:
+`${PROJECT_DIR}/src/aideas/templates/automate/form/`
+
+
 
 ### Tips & Tricks
 

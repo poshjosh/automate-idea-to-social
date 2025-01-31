@@ -59,19 +59,22 @@ class RequestData:
                 return f'{text_title}{ext}'
             return upload_file_name
 
-        asynch = RequestData.get(request, 'async', True)
+        is_async = RequestData.get(request, 'async', True)
         try:
             form_data = RequestData.strip_values(form_data)
-            logger.debug(f"Form data: {form_data}")
+            logger.debug(f" Input form data: {form_data}")
 
-            run_config = RunArg.of_dict(form_data)
-            RequestData.validate_task_config_form_data(run_config)
-            agent_names = RequestData.require_agent_names(request)
-
+            # first this
             form_data.update(save_files(task_id, request.files, get_file_name))
 
-            result = {**run_config, RunArg.AGENTS.value: agent_names, 'async': asynch}
-            logger.debug(f"Result: {result}")
+            # then this, otherwise the world will end.
+            form_data = RunArg.of_dict(form_data)
+
+            RequestData.validate_task_config_form_data(form_data)
+            agent_names = RequestData.require_agent_names(request)
+
+            result = {**form_data, RunArg.AGENTS.value: agent_names, 'async': is_async}
+            logger.debug(f"Output form data: {result}")
             return result
         except ValueError as value_ex:
             logger.exception(value_ex)

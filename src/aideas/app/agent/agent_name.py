@@ -2,6 +2,7 @@ class AgentName:
     IMAGE_GENERATOR: str = "image-generator"
     PICTORY: str = "pictory"
     TRANSLATION: str = "translation"
+    SUBTITLES_TRANSLATION: str = "subtitles-translation"
     YOUTUBE: str = "youtube"
     BLOG: str = "blog"
     TWITTER: str = "twitter"
