@@ -73,7 +73,12 @@ class BlogAgent(Agent):
     def convert_to_markdown(self, action: Action, run_context: RunContext) -> ActionResult:
         script_path: str = self.get_convert_to_markdown_script()
         input_file: str = self.__get_video_source(run_context)
-        language_code: str = run_context.get_arg(RunArg.LANGUAGE_CODE, '')
+        language_codes_str: str = run_context.get_arg(RunArg.LANGUAGE_CODES, '')
+
+        # TODO - Use translation agent to convert the text to the other languages.
+        # Given multiple lang codes e.g `en,de,ar`, we expect the text to be in the first language.
+        # We can (and should) translate the text to the other languages after the first.
+        language_code: str = None if not language_codes_str else language_codes_str.split(',')[0].strip()
 
         output_file: str = self.__convert_to_markdown(script_path, input_file, language_code, None)
         logger.debug(f"Converted to markdown: {output_file}, from: {input_file}, "

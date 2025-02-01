@@ -4,7 +4,7 @@ agent-type: blog
 agent-tags: post
 app:
   name: automate-jamstack
-  version: 0.1.3
+  version: 0.1.4
   docker:
     image: poshjosh/${self.app.name}
   source:
@@ -20,13 +20,14 @@ app:
     docker-entrypoint: ${BLOG_APP_DIR}/app/${self.app.name}-${self.app.version}/app/config/setup-scripts/docker-entrypoint.sh
 blog:
   name: liveabove3d.com
-  language-code: $LANGUAGE_CODE
+  language-codes: $LANGUAGE_CODES
   source:
     url: https://github.com/poshjosh/${self.blog.name}.git
   target:
     # git clone blog.src.url will create and populate this directory
     dir: ${BLOG_APP_DIR}/blogs/${self.blog.name}
 alternate-source: $TEXT_FILE
+alternate-title: $TEXT_TITLE
 alternate-source-image: $IMAGE_FILE_LANDSCAPE
 stages:
   download-app:

@@ -20,7 +20,7 @@ agents:
 # See environment variables for CONTENT_DIR
 #############################################################################
 
-language-code: en
+language-codes: en
 
 # Optional. Used for title and description. Either set this, or provide a text-title and text-content
 text-file: "/Users/chinomso/Desktop/live-above-3D/aideas-docker-mount/input/video.txt"

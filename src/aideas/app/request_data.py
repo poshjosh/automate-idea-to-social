@@ -16,17 +16,15 @@ class ValidationError(Exception):
 
 class RequestData:
     @staticmethod
-    def require_tag(request) -> Union[str, None]:
-        tag = RequestData.get(request, 'tag')
-        if not tag:
-            raise ValidationError("Specify what you want to automate using a 'tag'.")
-        return tag
+    def get_list(request, key: str, result_if_none: [str]) -> [str]:
+        values = request.args.to_dict(flat=False).get(key)
+        if not values:
+            values = request.form.getlist(key)
+        return values if values else result_if_none
 
     @staticmethod
     def require_agent_names(request) -> [str]:
-        agent_names = request.args.to_dict(flat=False).get(RunArg.AGENTS.value)
-        if not agent_names:
-            agent_names = request.form.getlist(RunArg.AGENTS.value)
+        agent_names = RequestData.get_list(request, RunArg.AGENTS.value, None)
         if not agent_names:
             raise ValidationError("No agents specified.")
         return agent_names
@@ -39,6 +37,13 @@ class RequestData:
         return result_if_none if not val else val
 
     @staticmethod
+    def require_tag(request) -> Union[str, None]:
+        tag = RequestData.get(request, 'tag')
+        if not tag:
+            raise ValidationError("Specify what you want to automate using a 'tag'.")
+        return tag
+
+    @staticmethod
     def automation_details(request) -> dict[str, any]:
         return {
             'tag': RequestData.require_tag(request),
@@ -47,6 +52,9 @@ class RequestData:
     @staticmethod
     def task_config(task_id: str, request) -> dict[str, any]:
         form_data = dict(request.form)
+        lang_codes = RequestData.get_list(request, RunArg.LANGUAGE_CODES.value, None)
+        if lang_codes:
+            form_data[RunArg.LANGUAGE_CODES.value] = ",".join(lang_codes)
 
         def get_file_name(input_name: str, upload_file_name: str) -> str:
             text_title = form_data.get(RunArg.TEXT_TITLE.value, None)

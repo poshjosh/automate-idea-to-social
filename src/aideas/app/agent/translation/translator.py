@@ -1,7 +1,39 @@
 import logging
+from typing import Union
+
 import requests
 
 logger = logging.getLogger(__name__)
+
+class TextLines:
+    def __init__(self, text: str):
+        if not text:
+            raise ValueError("Text is required")
+        self.__lines_without_breaks: [str] = []
+        self.__breaks: [int] = []
+        self.__len = 0
+        for line in text.splitlines(False):
+            line = line.strip()
+            if line == '' or len(line) == 0:
+                self.__breaks.append(self.__len)
+            else:
+                self.__lines_without_breaks.append(line)
+            self.__len += 1
+
+    def with_breaks(self, lines: [str]) -> [str]:
+        result = [*lines]
+        for break_idx in self.__breaks:
+            result.insert(break_idx, "")
+        return result
+
+    def get_lines_without_breaks(self) -> [str]:
+        return [e for e in self.__lines_without_breaks]
+
+    def get_break_count(self) -> int:
+        return len(self.__breaks)
+
+    def __len__(self):
+        return self.__len
 
 
 class Translator:
@@ -13,60 +45,79 @@ class Translator:
                    net_config.get('user-agent'))
 
     __verbose = True
-    __default_user_agent = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+    _default_user_agent = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
                             "(KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36")
 
     def __init__(self,
                  service_url: str,
                  chunk_size: int = 10000,
-                 user_agent: str = __default_user_agent):
+                 user_agent: str = _default_user_agent):
         self.__service_url = service_url
         self.__user_agent = user_agent
         self.__chunk_size = chunk_size
-        self.__separator: str = "u~~~u"
+        # Do not put letters here, they may be translated or cause other inconsistencies.
+        self.__separator: str = "~~~"
 
-    def translate(self, text_list: list[str], from_lang: str, to_lang: str) -> list[str]:
+    @staticmethod
+    def _chunkify(text_list: list[str], chunk_size: int) -> [str]:
         text_size = 0
         result_list = []
         chunk = []
         for line in text_list:
             line = line.strip()
-            if text_size + len(line) < self.__chunk_size:
+            if text_size + len(line) < chunk_size:
                 chunk.append(line)
                 text_size += len(line)
-            elif chunk and len(line) < self.__chunk_size:
+            elif chunk and len(line) < chunk_size:
                 result_list.append(chunk)
                 chunk = [line]
                 text_size = len(line)
         result_list.append(chunk)
+        return result_list
+
+    def translate(self, text: Union[list[str], str], from_lang: str, to_lang: str) -> list[str]:
+        if isinstance(text, str):
+            text_lines = TextLines(text)
+            text_list = text_lines.get_lines_without_breaks()
+        else:
+            text_lines = None
+            text_list = text
+
+        chunks = Translator._chunkify(text_list, self.__chunk_size)
+
         result_big_list = []
-        for part in result_list:
-            if part:
-                if self.__verbose:
-                    chars = sum(len(i) for i in part)
-                    logger.debug(f"Translate new chunk with {chars} chars")
-                result = self.__translate(part, from_lang, to_lang)
-                result_big_list.extend(result)
-        return result_big_list
+        for chunk in chunks:
+            if not chunk:
+                continue
+            result = self.__translate(chunk, from_lang, to_lang)
+            result_big_list.extend(result)
+
+        return text_lines.with_breaks(result_big_list) if text_lines else result_big_list
 
     def __translate(self,
                     text_list: list[str],
                     from_lang: str,
                     to_lang: str) -> list[str]:
+        if self.__verbose:
+            logger.debug(f"Translate new chunk with {sum(len(i) for i in text_list)} chars")
         text = f" {self.__separator} ".join(text_list)
         params = {"client": "gtx", "sl": from_lang, "tl": to_lang, "dt": "t", "q": text}
         headers = {
             "User-Agent": self.__user_agent
         }
-        result = []
         json_result = self.call_translation_service(params=params, headers=headers)
-        if json_result and json_result[0]:
-            return_string = " ".join(i[0].strip() for i in json_result[0])
-            split = return_string.split(self.__separator)
-            split = map(lambda x: x.strip(), split)
-            result.extend(split)
-            result = list(filter(lambda x: x, result))
-        return result
+        return self._handle_result(json_result)
+
+    def _handle_result(self, json_result) -> list[str]:
+        if not json_result or not json_result[0]:
+            return []
+
+        result = []
+        return_string = " ".join(i[0].strip() for i in json_result[0])
+        split = return_string.split(self.__separator)
+        split = map(lambda x: x.strip(), split)
+        result.extend(split)
+        return list(filter(lambda x: x, result))
 
     def call_translation_service(self, params: dict, headers: dict) -> list[str]:
         logger.debug(f"Requesting translation from: {self.__service_url}")

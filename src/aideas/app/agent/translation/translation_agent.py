@@ -7,7 +7,7 @@ from ..agent import Agent, Automator
 from ...action.action import Action
 from ...action.action_result import ActionResult
 from ...config import Name, RunArg
-from ...env import Env, get_app_language
+from ...env import get_app_language
 from ...result.result_set import ElementResultSet
 from ...run_context import RunContext
 
@@ -55,8 +55,7 @@ class TranslationAgent(Agent):
 
         logger.debug(f'Source file: {src_file}')
 
-        # TODO - Do not use subtitles output languages, create own env variable
-        target_languages_str: str = run_context.get_env(Env.SUBTITLES_OUTPUT_LANGUAGES)
+        target_languages_str: str = run_context.get_arg(RunArg.LANGUAGE_CODES)
         logger.debug(f'Output languages: {target_languages_str}')
 
         action = Action.of(
@@ -79,6 +78,9 @@ class TranslationAgent(Agent):
             self.__copy_to_dir(filepath_in, target_dir)
 
         for lang in output_language_codes:
+
+            if not lang:
+                continue
 
             result: ActionResult = self.__translate(action, lang)
 
@@ -113,26 +115,25 @@ class TranslationAgent(Agent):
 
     def __do_translate(self, filepath_in: str, filepaths_out: [str], output_language_code: str):
 
-        lines_of_text: [str] = read_content(filepath_in).splitlines()
+        input_text:str = read_content(filepath_in).strip()
 
-        self.__print_if_verbose(lines_of_text)
+        self.__print_if_verbose(input_text)
 
-        lines_translated: [str] = self.__translator.translate(lines_of_text, self.__from_lang, output_language_code)
+        lines_translated: [str] = self.__translator.translate(input_text, self.__from_lang, output_language_code)
 
         result_text = '\n'.join(lines_translated)
 
-        self.__print_if_verbose(lines_translated)
+        self.__print_if_verbose(result_text)
 
         for filepath_out in filepaths_out:
-            write_content(filepath_out, result_text)
+            write_content(result_text, filepath_out)
             logger.debug(f'{output_language_code} subtitles saved to: '
                          f'{filepath_out}, from: {filepath_in}')
 
-    def __print_if_verbose(self, lines_of_text: list[str], title: str = ""):
+    def __print_if_verbose(self, text: str):
         if self.__verbose is not True:
             return
-        text = '\n'.join(lines_of_text)
-        logger.debug(f'{title}\n{text}')
+        logger.debug(text)
 
 
 def _add_language_code_to_path(filename: str, target_language_code: str):
