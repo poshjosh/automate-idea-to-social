@@ -7,8 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.3] - 2025-02-13
+
 ### Changed
 
+- No longer add `#shorts` to youtube video title.
 - Use text-title as input-file name where applicable.
 - Succeed if there are failures marked to be ignored.
 - Use `OrderdDict` for `ResultSet`.
