@@ -127,7 +127,7 @@ class TranslationAgent(Agent):
 
         for filepath_out in filepaths_out:
             write_content(result_text, filepath_out)
-            logger.debug(f'{output_language_code} subtitles saved to: '
+            logger.debug(f'{output_language_code} translations saved to: '
                          f'{filepath_out}, from: {filepath_in}')
 
     def __print_if_verbose(self, text: str):
