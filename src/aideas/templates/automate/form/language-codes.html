@@ -3,18 +3,8 @@
 </label>
 <br/>
 <select id="language-codes" name="language-codes" class="control" multiple>
-    <!-- TODO - Add all languages -->
-    <option value="ar">العربية</option>
-    <option value="bn">বাংলা</option>
-    <option value="de">Deutsch</option>
-    <option value="en" selected>English</option>
-    <option value="es">Español</option>
-    <option value="fr">Français</option>
-    <!--option value="hi"></option-->
-    <option value="it">Italiano</option>
-    <option value="ja">日本語</option>
-    <option value="ko">한국어</option>
-    <option value="ru">Русский</option>
-    <option value="zh">中文</option>
-    <option value="zh-TW">中文</option>
+    <option selected disabled>Select language(s)</option>
+    {% for supported_language in supported_languages %}
+        <option value="{{ supported_language.code }}">{{ supported_language.display_name }} ({{ supported_language.code }})</option>
+    {% endfor %}
 </select>

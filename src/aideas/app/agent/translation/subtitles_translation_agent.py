@@ -56,7 +56,7 @@ class SubtitlesTranslationAgent(Agent):
 
         logger.debug(f'Source file: {src_file}')
 
-        target_languages_str: str = run_context.get_env(Env.SUBTITLES_OUTPUT_LANGUAGES)
+        target_languages_str: str = run_context.get_env(Env.TRANSLATION_OUTPUT_LANGUAGE_CODES)
         logger.debug(f'Output languages: {target_languages_str}')
 
         action = Action.of(

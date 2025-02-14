@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Turkish and Ukrainian to supported languages.
+- Dynamic generation of language options in the UI.
+
+### Changed
+
+- SUBTITLES_OUTPUT_LANGUAGES to TRANSLATION_OUTPUT_LANGUAGE_CODES
+
 ## [0.2.3] - 2025-02-13
 
 ### Changed
