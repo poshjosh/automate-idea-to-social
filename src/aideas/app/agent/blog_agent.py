@@ -7,14 +7,16 @@ import tempfile
 import uuid
 from typing import Union
 
-from pyu.io.file import extract_zip_file, prepend_line, read_content, visit_dirs
+from pyu.io.file import extract_zip_file, prepend_line, read_content, visit_dirs, write_content
 from pyu.io.shell import execute_command, run_command, run_commands_from_dir, run_script
 from .agent import Agent
+from .automator import Automator
+from .translation.translator import Translator
 from ..agent.agent_name import AgentName
 from ..action.action import Action
 from ..action.action_result import ActionResult
 from ..config import Name, RunArg
-from ..env import Env, is_docker
+from ..env import Env, is_docker, get_app_language
 from ..io.net import download_file
 from ..result.result_set import ElementResultSet
 from ..run_context import RunContext
@@ -23,6 +25,15 @@ logger = logging.getLogger(__name__)
 
 
 class BlogAgent(Agent):
+    def __init__(self,
+                 name: str,
+                 agent_config: dict[str, any],
+                 dependencies: dict[str, 'Agent'] = None,
+                 automator: Automator = None,
+                 interval_seconds: int = 0):
+        super().__init__(name, agent_config, dependencies, automator, interval_seconds)
+        self.__translator = Translator.of_config(agent_config)
+
     def run_stage(self,
                   run_context: RunContext,
                   stage: Name) -> ElementResultSet:
@@ -71,25 +82,30 @@ class BlogAgent(Agent):
         return ActionResult(action, success, target_dir)
 
     def convert_to_markdown(self, action: Action, run_context: RunContext) -> ActionResult:
-        script_path: str = self.get_convert_to_markdown_script()
         input_file: str = self.__get_video_source(run_context)
+        input_text: str = read_content(input_file)
+        cover_image_path = run_context.get_arg(RunArg.IMAGE_FILE_LANDSCAPE)
+        share_cover_image_str = run_context.get_arg(RunArg.SHARE_COVER_IMAGE)
+        share_cover_image = False if not share_cover_image_str else bool(share_cover_image_str)
         language_codes_str: str = run_context.get_arg(RunArg.LANGUAGE_CODES, '')
+        language_codes = [] if not language_codes_str else [e.strip() for e in language_codes_str.split(',') if e]
 
-        # TODO - Use translation agent to convert the text to the other languages.
-        # Given multiple lang codes e.g `en,de,ar`, we expect the text to be in the first language.
-        # We can (and should) translate the text to the other languages after the first.
-        language_code: str = None if not language_codes_str else language_codes_str.split(',')[0].strip()
+        from_lang_code = get_app_language(False)
 
-        output_file: str = self.__convert_to_markdown(script_path, input_file, language_code, None)
-        logger.debug(f"Converted to markdown: {output_file}, from: {input_file}, "
-                     f"using script: {script_path}")
-        if output_file is None:
-            return ActionResult(action, False, output_file)
+        result = []
 
-        src_image_path = run_context.get_arg(RunArg.IMAGE_FILE_LANDSCAPE)
-        self.__prepend_image_link_to_file_content(src_image_path, output_file)
+        result.append(self._convert_to_markdown(input_file, from_lang_code, cover_image_path, share_cover_image))
 
-        return ActionResult(action, True, output_file)
+        for to_lang_code in language_codes:
+            if to_lang_code == from_lang_code:
+                continue
+            path_translated = self.__translator.translate_file_path(input_file, from_lang_code, to_lang_code)
+            text_translated = self.__translator.translate(input_text, from_lang_code, to_lang_code)
+            write_content(text_translated, path_translated)
+
+            result.append(self._convert_to_markdown(path_translated, to_lang_code, cover_image_path, share_cover_image))
+
+        return ActionResult(action, True, result) if result else ActionResult(action, False)
 
     def push_new_content_to_blog_repository(self, action: Action, run_context: RunContext) -> ActionResult:
         blog_src_dir: str = self.get_blog_input_dir(run_context)
@@ -206,6 +222,15 @@ class BlogAgent(Agent):
         else:
             raise ValueError("URL must start with https://")
 
+    def _convert_to_markdown(self, filepath: str, lang_code: str, cover_image_path: str, share_cover_image: bool = False):
+        script_path: str = self.get_convert_to_markdown_script()
+        output_file: str = self.__convert_to_markdown(script_path, filepath, lang_code, None)
+        logger.debug(f"Converted to markdown: {output_file}, from: {filepath}, "
+                     f"using script: {script_path}")
+        if output_file:
+            self.__prepend_image_link_to_file_content(cover_image_path, output_file, share_cover_image)
+        return output_file
+
     @staticmethod
     def __convert_to_markdown(script_path: str,
                               src_file: str,
@@ -258,13 +283,22 @@ class BlogAgent(Agent):
 
 
     @staticmethod
-    def __prepend_image_link_to_file_content(src_image_path: str, target_file: str):
+    def __prepend_image_link_to_file_content(src_image_path: str, target_file: str, share_cover_image: bool = False):
         # Move cover image to the same directory as the output file
         tgt_image_name = os.path.basename(src_image_path)
-        shutil.copy2(src_image_path, os.path.join(os.path.dirname(target_file), tgt_image_name))
+        parent_dir = os.path.dirname(target_file)
+        if share_cover_image is True:
+            parent_dir = os.path.dirname(parent_dir)
+
+        tgt_image_path = os.path.join(parent_dir, tgt_image_name)
+        if not os.path.exists(tgt_image_path):
+            logger.debug(f"Copied to: {tgt_image_path} from: {src_image_path}")
+            shutil.copy2(src_image_path, tgt_image_path)
+
+        image_dir = f".." if share_cover_image is True else f"."
 
         # Add the cover image at the top of the file
-        prepend_line(target_file, f"![Video cover image](./{tgt_image_name})\n")
+        prepend_line(target_file, f"![Video cover image]({image_dir}/{tgt_image_name})\n")
 
     def _get_update_blog_content_commands(self, run_context: RunContext) -> list[list[str]]:
         return [

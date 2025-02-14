@@ -34,8 +34,7 @@ supported_language_code_to_display_name = {
     "ru":"Русский",
     "tr":"Türkçe",
     "uk":"українська",
-    "zh":"中文",
-    "zh-TW":"中文"
+    "zh":"中文"
 }
 
 def _get_supported_languages():

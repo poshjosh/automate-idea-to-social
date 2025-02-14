@@ -13,7 +13,27 @@ Each run argument is represented as a form field. This makes it possible
 to provide the value via a html form. The form fields are located at:
 `${PROJECT_DIR}/src/aideas/templates/automate/form/`
 
+#### To introduce a new run arg
 
+For example to introduce a new `bool` variable named `ignore-fools`, do the following:
+
+- Add `IGNORE_FOOLS = 'ignore-fools'` to enum `src/aideas/app/config.RunArg`
+
+- Specify `ignore-fools` in the config which will be run using that variable, e.g. in `src/resources/config/agent/fake.config.yml`:
+```yaml
+extras: $IGNORE_FOOLS 
+```
+
+- Add the appropriate form input HTML `ignore-fools.html` in `src/aideas/templates/automate/form`, e.g.:
+```html
+<label for="ignore-fools">Ignore fools</label>
+<input type="checkbox" id="ignore-fools" name="ignore-fools" class="control" value="true"/>
+```
+
+- Add the value in:
+  - `docs/run-options.md` 
+  - `src/resources/config/run.config.yaml`
+  - `src/test/resources/config/run.config.yaml`
 
 ### Tips & Tricks
 

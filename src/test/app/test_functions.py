@@ -36,8 +36,8 @@ def load_app_config() -> dict[str, any]:
     return get_main_config_loader().load_app_config()
 
 
-def load_agent_config(agent_name: str) -> dict[str, any]:
-    return get_main_config_loader().load_agent_config(agent_name)
+def load_agent_config(agent_name: str, check_replaced: bool = True) -> dict[str, any]:
+    return get_main_config_loader().load_agent_config(agent_name, check_replaced)
 
 
 def load_run_config(agent_names: [str] = None) -> dict[str, any]:

@@ -15,7 +15,7 @@ browser:
         # Window size should match that in docker-entrypoint.sh
         - window-size=1920,1080
         - start-maximized
-alternate-source: $TEXT_FILE
+form-field-source: $TEXT_FILE
 stages:
   login:
     url: https://www.youtube.com/

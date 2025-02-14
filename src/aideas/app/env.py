@@ -61,7 +61,7 @@ class Env(str, Enum):
     PICTORY_TEXT_STYLE = f'{_pictory}_TEXT_STYLE'
 
     TRANSLATION_OUTPUT_LANGUAGE_CODES = ('TRANSLATION_OUTPUT_LANGUAGE_CODES',
-                                         False, False, 'ar,bn,de,es,fr,hi,it,ja,ko,ru,tr,uk,zh,zh-TW')
+                                         False, False, 'ar,bn,de,es,fr,hi,it,ja,ko,ru,tr,uk,zh')
     SUBTITLES_FILE_EXTENSION = ('SUBTITLES_FILE_EXTENSION', False, False, 'vtt')
 
     YOUTUBE_USER_EMAIL = f'{_youtube}_USER_EMAIL'

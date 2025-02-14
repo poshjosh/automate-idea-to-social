@@ -26,9 +26,15 @@ blog:
   target:
     # git clone blog.src.url will create and populate this directory
     dir: ${BLOG_APP_DIR}/blogs/${self.blog.name}
-alternate-source: $TEXT_FILE
-alternate-title: $TEXT_TITLE
-alternate-source-image: $IMAGE_FILE_LANDSCAPE
+form-field-source: $TEXT_FILE
+form-field-title: $TEXT_TITLE
+form-field-source-image: $IMAGE_FILE_LANDSCAPE
+form-field-share-cover-image: $SHARE_COVER_IMAGE
+net:
+  # https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=uk&dt=t&q=TEXT
+  service-url: https://translate.googleapis.com/translate_a/single
+  user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36
+  chunk_size: 10000
 stages:
   download-app:
   clone-blog:

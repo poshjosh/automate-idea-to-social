@@ -35,3 +35,5 @@ image-file-landscape: /Users/chinomso/Desktop/live-above-3D/aideas-docker-mount/
 
 # Optional. If not set, image-file-landscape will be used
 image-file-square: /Users/chinomso/Desktop/live-above-3D/aideas-docker-mount/input/cover-square.jpg
+
+share-cover-image: false

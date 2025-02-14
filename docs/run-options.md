@@ -37,4 +37,7 @@ image-file-landscape:
 
 # Optional. If not set, image-file-landscape will be used
 image-file-square: 
+
+# Optional. If cover image should be shared when multiple translations of one post is being made.
+share-cover-image:
 ```

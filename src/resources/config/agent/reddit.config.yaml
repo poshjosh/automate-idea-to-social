@@ -6,7 +6,7 @@
 agent-type: browser
 # Optional [generate-video|generate-text|post|test|custom]
 agent-tags: post
-alternate-source: $TEXT_FILE
+form-field-source: $TEXT_FILE
 stages:
   login:
     url: https://www.reddit.com/login/
