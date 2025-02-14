@@ -100,7 +100,8 @@ class TranslationAgent(Agent):
     def __translate(self, action: Action, output_language_code: str) -> ActionResult:
         try:
             filepath_in = action.get_first_arg()
-            filepath_out = _add_language_code_to_path(filepath_in, output_language_code)
+            filepath_out = self._get_output_file_path(filepath_in, output_language_code)
+
             filename = os.path.basename(filepath_out)
 
             filepaths_out = [os.path.join(e, filename) for e in action.get_output_dirs(DIR_NAME)]
@@ -135,10 +136,19 @@ class TranslationAgent(Agent):
             return
         logger.debug(text)
 
+    def _get_output_file_path(self, filepath_in: str, output_language_code: str):
+        name, ext = os.path.splitext(os.path.basename(filepath_in))
+        name_translation_result: [str] = self.__translator.translate(name, self.__from_lang, output_language_code)
+        if name_translation_result and name_translation_result[0]:
+            name_translated = name_translation_result[0]
+            if name_translated != name:
+                return os.path.join(os.path.dirname(filepath_in), f'{name_translated}{ext}')
+        return self._add_language_code_to_path(filepath_in, output_language_code)
 
-def _add_language_code_to_path(filename: str, target_language_code: str):
-    parts: [str] = filename.rsplit('.', 1)
-    if len(parts) < 2:
-        return filename + "." + target_language_code
-    else:
-        return parts[0] + "." + target_language_code + "." + parts[1]
+    @staticmethod
+    def _add_language_code_to_path(filename: str, target_language_code: str):
+        parts: [str] = filename.rsplit('.', 1)
+        if len(parts) < 2:
+            return filename + "." + target_language_code
+        else:
+            return parts[0] + "." + target_language_code + "." + parts[1]

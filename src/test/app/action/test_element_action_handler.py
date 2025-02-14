@@ -30,8 +30,9 @@ class TestElementActionHandler(ElementActionHandler):
                                 f'test-downloaded-video.{file_type}' if result_producing else None)
 
         if (key == ActionId.LOG.value
-                # or key == ActionId.EVAL.value
-                # or key == ActionId.EXEC.value
+                or key == ActionId.RUN_SUBPROCESS.value
+                or key == ActionId.EVAL.value
+                or key == ActionId.EXEC.value
                 or key == ActionId.SET_CONTEXT_VALUES.value):
             return super()._execute(run_context, action, key)
 

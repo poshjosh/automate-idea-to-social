@@ -17,6 +17,25 @@ init_logging(logging.config)
 
 
 class BrowserAgentTest(unittest.TestCase):
+    def test_run_subprocess(self):
+        agent_name: str = "test-agent"
+        run_context: RunContext = get_run_context([agent_name])
+        yaml = """
+stages:
+  run_subprocess-stage-1:
+    stage-items:
+      run_subprocess-stage-1-item-1:
+        actions: 
+          - run_subprocess ls -al
+        """
+        agent_config = load_yaml_str(yaml)
+        agent = TestBrowserAgent.of_config(
+            agent_name, run_context.get_app_config().to_dict(), agent_config)
+
+        result: StageResultSet = self._agent_should_run_successfully(agent, run_context)
+
+        self.assertEqual(1, result.size())
+
     def test_given_successful_result_when_may_proceed_is_false_result_is_successful(self):
         agent_name: str = "test-agent"
         run_context: RunContext = get_run_context([agent_name])

@@ -1,6 +1,7 @@
 import logging
 import os
 import shutil
+import subprocess
 import time
 from enum import Enum, unique
 from typing import Union, TypeVar
@@ -40,6 +41,7 @@ class ActionId(BaseActionId):
     GET_FIRST_FILE = 'get_first_file'
     GET_NEWEST_FILE_IN_DIR = 'get_newest_file_in_dir'
     LOG = ('log', False)
+    RUN_SUBPROCESS = 'run_subprocess'
     SAVE_FILE = 'save_file'
     SAVE_TEXT = 'save_text'
     SET_CONTEXT_VALUES = ('set_context_values', False)
@@ -104,6 +106,8 @@ class ActionHandler:
             result: ActionResult = self.get_newest_file_in_dir(action)
         elif key == ActionId.LOG.value:
             result: ActionResult = self.log(action)
+        elif key == ActionId.RUN_SUBPROCESS.value:
+            result: ActionResult = self.run_subprocess(action)
         elif key == ActionId.SAVE_FILE.value:
             result: ActionResult = self.save_file(action)
         elif key == ActionId.SAVE_TEXT.value:
@@ -150,6 +154,12 @@ class ActionHandler:
         arg_list: [] = action.get_args_as_str_list()
         logger.log(logging.getLevelName(arg_list[0]), ' '.join(arg_list[1:]))
         return ActionResult(action, True)
+
+    @staticmethod
+    def run_subprocess(action: Action) -> ActionResult:
+        arg_list: [] = action.get_args_as_str_list()
+        result = subprocess.run(arg_list, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        return ActionResult(action, True, result.stdout)
 
     @staticmethod
     def save_file(action: Action) -> ActionResult:
