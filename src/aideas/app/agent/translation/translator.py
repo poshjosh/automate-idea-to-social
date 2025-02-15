@@ -21,6 +21,9 @@ class TextLines:
                 self.__lines_without_breaks.append(line)
             self.__len += 1
 
+    def is_multiline(self):
+        return len(self.__lines_without_breaks) > 1
+
     def compose(self, lines: [str]) -> str:
         return '\n'.join(self.with_breaks(lines))
 
