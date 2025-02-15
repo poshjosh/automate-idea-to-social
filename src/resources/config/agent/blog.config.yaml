@@ -4,7 +4,7 @@ agent-type: blog
 agent-tags: post
 app:
   name: automate-jamstack
-  version: 0.1.4
+  version: 0.1.5
   docker:
     image: poshjosh/${self.app.name}
   source:
