@@ -3,8 +3,9 @@ from typing import Union
 
 from .action.action_result import ActionResult
 from .action.variable_parser import replace_all_variables
-from .config import AppConfig, RunConfig
-from .env import Env
+from .config import AppConfig, RunConfig, RunArg
+from .env import Env, get_app_language as env_get_app_language
+from .i18n import DEFAULT_LANGUAGE_CODE
 from .result.result_set import AgentResultSet, StageResultSet, ElementResultSet
 
 CURRENT_URL = 'current_url'
@@ -66,6 +67,9 @@ class RunContext:
 
     def get_agent_names(self) -> list[str]:
         return [e for e in self.__agent_names]
+
+    def get_app_language(self) -> str:
+        return self.get_arg(RunArg.INPUT_LANGUAGE_CODE, env_get_app_language(True, self.__app_config.get_app_language(DEFAULT_LANGUAGE_CODE)))
 
     @staticmethod
     def _format_key(key: str):

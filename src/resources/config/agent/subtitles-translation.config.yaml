@@ -8,6 +8,7 @@ net:
   service-url: https://translate.googleapis.com/translate_a/single
   user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36
   chunk_size: 10000
+form-field-lang-codes: $LANGUAGE_CODES
 source: $SUBTITLES_FILE
 stages:
   translate-subtitles:

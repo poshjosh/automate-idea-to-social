@@ -3,6 +3,7 @@
 # minimal options e.g: window-size,start-maximized,user-agent
 # minimal prefs e.g: download.default_directory
 app:
+  language: en-GB
   name: aideas
   title: AIDEAS | Automate posting your ideas to social
   agent:

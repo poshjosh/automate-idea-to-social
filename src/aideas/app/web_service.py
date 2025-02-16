@@ -1,10 +1,10 @@
 import logging
-import os
 from typing import Callable
 
 from .config import AppConfig, AgentConfig
 from .config_loader import ConfigLoader
-from .env import is_production, has_env_value, Env
+from .env import is_production, has_env_value
+from .i18n import I18n
 from .task import AgentTask, Task, add_task, get_task_ids, require_task, submit_task
 
 logger = logging.getLogger(__name__)
@@ -19,39 +19,6 @@ class HtmlFormat:
     def form_field_name(name: str) -> str:
         return name.lower().replace('_', '-').replace(' ', '-')
 
-default_language_code="en"
-supported_language_code_to_display_name = {
-    "ar":"العربية",
-    "bn":"বাংলা",
-    "de":"Deutsch",
-    "en":"English",
-    "es":"Español",
-    "fr":"Français",
-    "hi":"हिन्दी",
-    "it":"Italiano",
-    "ja":"日本語",
-    "ko":"한국어",
-    "ru":"Русский",
-    "tr":"Türkçe",
-    "uk":"українська",
-    "zh":"中文"
-}
-
-def _get_supported_languages():
-    supported_languages = []
-    codes_str = os.environ.get(Env.TRANSLATION_OUTPUT_LANGUAGE_CODES,
-                               Env.TRANSLATION_OUTPUT_LANGUAGE_CODES.get_default_value())
-    codes: [str] = [str(e) for e in codes_str.split(',') if e]
-    if default_language_code not in codes:
-        codes.insert(0, default_language_code)
-    for code in codes:
-        if not code:
-            continue
-        lang = {"code":code, "display_name":supported_language_code_to_display_name.get(code, code)}
-        supported_languages.append(lang)
-    return supported_languages
-
-
 class WebService:
     def __init__(self, config_loader: ConfigLoader):
         self.__config_loader = config_loader
@@ -60,7 +27,7 @@ class WebService:
             'app_name': self.app_config.get_app_name(),
             'title': self.app_config.get_title(),
             'heading': self.app_config.get_title(),
-            'supported_languages': _get_supported_languages()
+            'supported_languages': I18n.get_supported_languages()
         }
 
     def index(self, page_variables: dict[str, any] = None) -> dict[str, str]:

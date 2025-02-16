@@ -124,8 +124,8 @@ class Env(str, Enum):
         return add_to
 
 
-def get_app_language(full: bool) -> str:
-    lang = get_env_value(Env.APP_LANGUAGE)
+def get_app_language(full: bool, result_if_none: str) -> str:
+    lang = get_env_value(Env.APP_LANGUAGE, result_if_none)
     return lang if full else lang.split('-')[0]
 
 

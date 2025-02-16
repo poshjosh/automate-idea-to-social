@@ -99,7 +99,7 @@ class Translator:
 
         return text_lines.compose(result_big_list) if text_lines else result_big_list
 
-    def translate_file_path(self, filepath: str, from_lang: str, to_lang: str):
+    def translate_file_path(self, filepath: str, from_lang: str, to_lang: str) -> str:
         name, ext = os.path.splitext(os.path.basename(filepath))
         name_translated: str = self.translate(name, from_lang, to_lang)
         if name_translated and name_translated != name:

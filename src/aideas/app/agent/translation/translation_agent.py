@@ -7,7 +7,7 @@ from ..agent import Agent, Automator
 from ...action.action import Action
 from ...action.action_result import ActionResult
 from ...config import Name, RunArg
-from ...env import get_app_language
+from ...env import Env
 from ...result.result_set import ElementResultSet
 from ...run_context import RunContext
 
@@ -36,7 +36,6 @@ class TranslationAgent(Agent):
                  interval_seconds: int = 0):
         super().__init__(name, agent_config, dependencies, automator, interval_seconds)
         self.__translator = self.__class__.create_translator(agent_config)
-        self.__from_lang = get_app_language(False)
 
     def run_stage(self, run_context: RunContext, stage: Name) -> ElementResultSet:
         if stage == DEFAULT_STAGE:
@@ -55,12 +54,14 @@ class TranslationAgent(Agent):
 
         logger.debug(f'Source file: {src_file}')
 
-        target_languages_str: str = run_context.get_arg(RunArg.LANGUAGE_CODES)
-        logger.debug(f'Output languages: {target_languages_str}')
+        from_lang: str = run_context.get_app_language()
+        to_langs_str: str = run_context.get_arg(RunArg.LANGUAGE_CODES,
+                                                        run_context.get_env(Env.TRANSLATION_OUTPUT_LANGUAGE_CODES))
+        logger.debug(f'Translate from: {from_lang}, to: {to_langs_str}')
 
         action = Action.of(
             self.get_name(), stage_id, stage_item_id,
-            f"{DEFAULT_ACTION} \"{src_file}\" {target_languages_str}",
+            f"{DEFAULT_ACTION} \"{src_file}\" {from_lang} {to_langs_str}",
             run_context)
 
         self.__do_run_default_stage(run_context, action)
@@ -72,17 +73,18 @@ class TranslationAgent(Agent):
         args = action.get_args_as_str_list()
 
         filepath_in: str = args[0]
-        output_language_codes: [str] = args[1].split(',')
+        from_lang: str = args[1]
+        output_language_codes: [str] = args[2].split(',')
 
         for target_dir in action.get_output_dirs(DIR_NAME):
             self.__copy_to_dir(filepath_in, target_dir)
 
-        for lang in output_language_codes:
+        for to_lang in output_language_codes:
 
-            if not lang:
+            if not to_lang:
                 continue
 
-            result: ActionResult = self.__translate(action, lang)
+            result: ActionResult = self.__translate(action, from_lang, to_lang)
 
             run_context.add_action_result(result)
 
@@ -97,16 +99,16 @@ class TranslationAgent(Agent):
         logger.debug(f"Copied to: {tgt} from: {src}")
         shutil.copy2(src, tgt)
 
-    def __translate(self, action: Action, output_language_code: str) -> ActionResult:
+    def __translate(self, action: Action, input_language_code: str, output_language_code: str) -> ActionResult:
         try:
             filepath_in = action.get_first_arg()
-            filepath_out = self.__translator.translate_file_paths([filepath_in], self.__from_lang, output_language_code)[0]
+            filepath_out = self.__translator.translate_file_path(filepath_in, input_language_code, output_language_code)
 
             filename = os.path.basename(filepath_out)
 
             filepaths_out = [os.path.join(e, filename) for e in action.get_output_dirs(DIR_NAME)]
 
-            self.__do_translate(filepath_in, filepaths_out, output_language_code)
+            self.__do_translate(filepath_in, filepaths_out, input_language_code, output_language_code)
 
             return ActionResult(action, True, filepaths_out)
 
@@ -114,13 +116,13 @@ class TranslationAgent(Agent):
             logger.exception(ex)
             return ActionResult(action, False)
 
-    def __do_translate(self, filepath_in: str, filepaths_out: [str], output_language_code: str):
+    def __do_translate(self, filepath_in: str, filepaths_out: [str], input_language_code: str, output_language_code: str):
 
         input_text:str = read_content(filepath_in).strip()
 
         self.__print_if_verbose(input_text)
 
-        result_text = self.__translator.translate(input_text, self.__from_lang, output_language_code)
+        result_text = self.__translator.translate(input_text, input_language_code, output_language_code)
 
         self.__print_if_verbose(result_text)
 

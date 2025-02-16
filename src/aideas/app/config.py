@@ -82,6 +82,9 @@ class AppConfig:
     def get_app_name(self) -> str:
         return self.app()['name']
 
+    def get_app_language(self, default: str or None) -> str or None:
+        return self.app().get('language', default)
+
     def get_title(self, default: Union[str, None] = None) -> str:
         return self.app().get('title', default)
 
@@ -659,6 +662,7 @@ class RunArg(str, Enum):
     AGENTS = ('agents', 'a', 'list')
     CONTINUE_ON_ERROR = ('continue-on-error', 'coe', 'bool', True, False)
 
+    INPUT_LANGUAGE_CODE = ('input-language-code', 'ilc', 'str', False, False)
     IMAGE_FILE_LANDSCAPE = ('image-file-landscape', 'vci', 'str', False, True)
     IMAGE_FILE_SQUARE = ('image-file-square', 'vcis', 'str', True, True)
     LANGUAGE_CODES = ('language-codes', 'lc', 'str', True, False)

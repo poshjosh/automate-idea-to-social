@@ -16,7 +16,7 @@ from ..agent.agent_name import AgentName
 from ..action.action import Action
 from ..action.action_result import ActionResult
 from ..config import Name, RunArg
-from ..env import Env, is_docker, get_app_language
+from ..env import Env, is_docker
 from ..io.net import download_file
 from ..result.result_set import ElementResultSet
 from ..run_context import RunContext
@@ -90,7 +90,7 @@ class BlogAgent(Agent):
         language_codes_str: str = run_context.get_arg(RunArg.LANGUAGE_CODES, '')
         language_codes = [] if not language_codes_str else [e.strip() for e in language_codes_str.split(',') if e]
 
-        from_lang_code = get_app_language(False)
+        from_lang_code = run_context.get_app_language()
 
         result = []
 
