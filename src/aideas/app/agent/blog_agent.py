@@ -273,10 +273,6 @@ class BlogAgent(Agent):
     @staticmethod
     def _get_convert_to_markdown_args(src_file, language_code) -> [str]:
         if language_code:
-
-            if len(language_code) != 2:
-                raise ValueError(f"Language code must be 2 characters, code: {language_code}")
-
             return ['-f', f'"{src_file}"', '-p', f'"/{language_code}"']
         else:
             return ['-f', f'"{src_file}"']

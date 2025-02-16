@@ -10,14 +10,13 @@ init_logging(logging.config)
 
 
 class BlogAgentTest(unittest.TestCase):
-    # TODO - Fix this test
-    @unittest.skip("We are unable to replace some variables in the loaded config")
     def test_run(self):
         agent_name = AgentName.BLOG
         run_context: RunContext = get_run_context([agent_name])
-        print(f"Run config:\n{run_context.get_run_config().to_dict()}")
         agent = TestBlogAgent.of_config(
-            agent_name, run_context.get_app_config().to_dict(), load_agent_config(agent_name))
+            agent_name,
+            run_context.get_app_config().to_dict(),
+            load_agent_config(agent_name))
 
         result = agent.run(run_context)
 

@@ -110,8 +110,6 @@ class VariableParserTest(unittest.TestCase):
             output.append(action_result)
         return output
 
-    # TODO - Fix this test
-    @unittest.skip("We are unable to replace some variables in the loaded config")
     def test_replace_all_variables(self):
         agents: [str] = load_agent_names()
         for agent in agents:

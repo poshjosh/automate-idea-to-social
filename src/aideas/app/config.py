@@ -685,7 +685,7 @@ class RunArg(str, Enum):
             target = {}
         values = RunArg.values()
         for k, v in source.items():
-            if not v:
+            if v is None:
                 continue
             if k in values:
                 v = RunArg._parse(RunArg(k), v)
