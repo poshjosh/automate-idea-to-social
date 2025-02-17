@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Increase blog update timeout to 60 minutes.
 - SUBTITLES_OUTPUT_LANGUAGES to TRANSLATION_OUTPUT_LANGUAGE_CODES
 
 ## [0.2.3] - 2025-02-13
