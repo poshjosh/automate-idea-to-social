@@ -8,7 +8,8 @@ if __name__ == "__main__":
           description="Automate generating and publishing content from ideas to social media.",
           author="PoshJosh",
           author_email="posh.bc@gmail.com",
-          install_requires=["ruamel.yaml", "selenium", "requests",
+          install_requires=["flask", "flask-cors",
+                            "ruamel.yaml", "selenium", "requests",
                             "webvtt-py", "undetected-chromedriver"],
           license="MIT",
           classifiers=[

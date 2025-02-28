@@ -17,6 +17,8 @@ source "${VIRTUAL_ENV_DIR}/bin/activate"
 
 python3 -m pip install --upgrade pip
 
+python3 -m pip install pip-tools
+
 cd "src/aideas"
 
 printf "\nCompiling dependencies to requirements.txt\n"

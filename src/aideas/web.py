@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request
-# from flask_cors import CORS
+from flask_cors import CORS
 import uuid
 import logging.config
 
@@ -10,7 +10,7 @@ from app.task import get_task, stop_task
 from app.web_service import WebService
 
 web_app = Flask(__name__)
-# CORS(web_app)
+CORS(web_app)
 
 
 INDEX_TEMPLATE = 'index.html'
