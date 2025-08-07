@@ -745,7 +745,7 @@ class RunArg(str, Enum):
     @staticmethod
     def _parse(run_arg: 'RunArg', value: str) -> any:
         if run_arg.type == "bool":
-            value = value == "true"
+            value = value == "true" or value == True
         elif run_arg.type == "list":
             value = value if isinstance(value, list) else str(value).split(',')
         if run_arg.is_path:
