@@ -49,6 +49,7 @@ class Env(str, Enum):
 
     WEB_APP = ('WEB_APP', True, False, 'true')
 
+    CONFIG_DIR = ('CONFIG_DIR', True, True, 'resources/config')
     OUTPUT_DIR = ('OUTPUT_DIR', False, True, 'resources/output')
 
     VIDEO_FILE_EXTENSION = ('VIDEO_FILE_EXTENSION', False, False, 'mp4')

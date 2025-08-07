@@ -1,13 +1,17 @@
 #!/usr/bin/env bash
 
+ENV_FILE="${ENV_FILE:-.env}"
 WORKING_DIR="src"
+
+printf "\nEnvironment file: %s\n" "$ENV_FILE"
 
 cd .. && source .venv/bin/activate || exit 1
 
 printf "\nExporting environment\n"
 
 set -a
-source .env
+# shellcheck source=.env
+source "$ENV_FILE"
 set +a
 
 export PYTHONUNBUFFERED=1

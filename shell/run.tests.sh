@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# shellcheck disable=SC2034
+ENV_FILE=".env.test"
 source ./pre_run.sh
 
 printf "\nStarting tests\n\n"

@@ -7,6 +7,7 @@ from pyu.io.yaml_loader import YamlLoader
 from .action.variable_parser import replace_all_variables, get_variables
 from .config import RunArg
 from .env import Env
+from .paths import Paths
 
 logger = logging.getLogger(__name__)
 
@@ -14,10 +15,12 @@ _SUFFIX = '.config'
 
 
 class ConfigLoader(YamlLoader):
-    def __init__(self, config_path: str, variable_source: dict[str, any] = Env.collect()):
+    def __init__(self,
+                 config_path: str,
+                 variable_source: dict[str, any] or None = None):
         super().__init__(config_path, suffix=_SUFFIX)
         self.__config_path = config_path
-        self.__variable_source = variable_source
+        self.__variable_source = variable_source if variable_source else Env.collect()
         self.__agent_configs_with_un_replaced_variables = self.load_agent_configs(False)
 
     def with_added_variable_source(self, source: dict[str, any]) -> 'ConfigLoader':
@@ -59,7 +62,7 @@ class ConfigLoader(YamlLoader):
         try:
             return replace_all_variables(load_yaml(path), self.__variable_source, check_replaced)
         except FileNotFoundError:
-            logger.warning(f'Could not find config file for: {path}')
+            print(f'Could not find config file for: {path}')
             return {}
 
     def load_agent_config(self, agent_name: str, check_replaced: bool = True) -> dict[str, any]:
@@ -84,6 +87,24 @@ class ConfigLoader(YamlLoader):
 
 
 class SimpleConfigLoader(ConfigLoader):
-    def __init__(self, config_path: str):
-        super().__init__(config_path)
-        super()._add_variable_source(RunArg.of_sys_argv())  # sys.argv
+    def __init__(self, config_path: str, variable_source: dict[str, any] or None = None):
+        self.__external_config_dir = {}
+        super().__init__(config_path, variable_source)
+        self._init_variable_source()
+        self.__external_config_dir = Paths.get_path(self.get_variable_source().get(Env.CONFIG_DIR.value))
+        print(f'External config dir: {self.__external_config_dir}')
+
+    def _init_variable_source(self):
+        super()._add_variable_source(RunArg.of_sys_argv()) # sys.argv
+
+    def load_from_path(self, path: str, check_replaced: bool = True) -> dict[str, any]:
+        loaded: dict[str, any] = self._load_from_path(path, check_replaced)
+        if self.__external_config_dir:
+            external_path = os.path.join(self.__external_config_dir, os.path.split(path)[1])
+            external_config = self._load_from_path(external_path, check_replaced)
+            if external_config:
+                loaded.update(external_config)
+        return loaded
+
+    def _load_from_path(self, path: str, check_replaced: bool = True) -> dict[str, any]:
+        return super().load_from_path(path, check_replaced)

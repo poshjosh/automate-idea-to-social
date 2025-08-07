@@ -23,7 +23,7 @@ agents:
 language-codes: en
 
 # Optional. Used for title and description. Either set this, or provide a text-title and text-content
-text-file: "/Users/chinomso/Desktop/live-above-3D/aideas-docker-mount/input/video.txt"
+#text-file:
 
 # Optional. If not set, the name (without extension) of text-file will be used
 #text-title:
@@ -31,9 +31,9 @@ text-file: "/Users/chinomso/Desktop/live-above-3D/aideas-docker-mount/input/vide
 # Optional. If not set, the content of text-file will be used
 #text-content:
 
-image-file-landscape: /Users/chinomso/Desktop/live-above-3D/aideas-docker-mount/input/cover.jpg
+#image-file-landscape:
 
 # Optional. If not set, image-file-landscape will be used
-image-file-square: /Users/chinomso/Desktop/live-above-3D/aideas-docker-mount/input/cover-square.jpg
+#image-file-square:
 
 share-cover-image: false

@@ -30,6 +30,10 @@ APP_PORT=5001
 
 WEB_APP=true
 
+# If you specify a different location, values from that location
+# will override values in the default location: 'resources/config'.
+CONFIG_DIR=resources/config
+
 OUTPUT_DIR=resources/output
 
 # video output

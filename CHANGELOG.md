@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Option to specify external config dir
 - Bump blog app to v0.1.5
 - Publishing multiple translations of blog posts.
 - Turkish and Ukrainian to supported languages.

@@ -5,7 +5,7 @@ from selenium import webdriver
 
 from aideas.app.action.action_result import ActionResult
 from aideas.app.config import RunArg
-from aideas.app.config_loader import ConfigLoader
+from aideas.app.config_loader import ConfigLoader, SimpleConfigLoader
 from aideas.app.result.result_set import ElementResultSet
 from aideas.app.run_context import RunContext
 from aideas.app.web.webdriver_creator import WebDriverCreator
@@ -13,19 +13,21 @@ from aideas.app.web.webdriver_creator import WebDriverCreator
 __TEST_SRC_DIR = f'{os.getcwd()}/test/app'
 
 
-class TestConfigLoader(ConfigLoader):
-    def __init__(self, config_path: str):
-        super().__init__(config_path)
+class TestConfigLoader(SimpleConfigLoader):
+    def __init__(self, config_path: str, variable_source: dict[str, any] or None = None):
+        super().__init__(config_path, variable_source)
+
+    def _init_variable_source(self):
         super()._add_variable_source(self.load_run_config())  # Properties file
-        super()._add_variable_source(RunArg.of_sys_argv())  # sys.argv
+        super()._init_variable_source()
 
 
-def get_main_config_loader() -> ConfigLoader:
-    return TestConfigLoader(os.path.join("resources", "config"))
+def get_main_config_loader(variable_source: dict[str, any] or None = None) -> ConfigLoader:
+    return TestConfigLoader(os.path.join("resources", "config"), variable_source)
 
 
-def get_test_config_loader() -> ConfigLoader:
-    return TestConfigLoader(os.path.join("test", "resources", "config"))
+def get_test_config_loader(variable_source: dict[str, any] or None = None) -> ConfigLoader:
+    return TestConfigLoader(os.path.join("test", "resources", "config"), variable_source)
 
 
 def load_agent_names() -> [str]:
