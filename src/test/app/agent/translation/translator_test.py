@@ -31,7 +31,7 @@ class TranslatorTest(unittest.TestCase):
         with mock.patch.object(Translator, "translate") as translate:
             translate.return_value = text_translated
 
-            translator: Translator = Translator.of_config(load_agent_config(AgentName.TRANSLATION))
+            translator: Translator = Translator.of_config(load_agent_config(AgentName.TRANSLATION, False))
 
             input_file_path = os.path.join(parent_dir, f"{text}.txt")
             result = translator.translate_file_path(input_file_path, from_lang, to_lang)

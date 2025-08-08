@@ -30,8 +30,8 @@ def get_test_config_loader(variable_source: dict[str, any] or None = None) -> Co
     return TestConfigLoader(os.path.join("test", "resources", "config"), variable_source)
 
 
-def load_agent_names() -> [str]:
-    return get_main_config_loader().load_agent_configs().keys()
+def load_agent_names(check_replaced: bool = True) -> [str]:
+    return get_main_config_loader().load_agent_configs(check_replaced).keys()
 
 
 def load_app_config() -> dict[str, any]:

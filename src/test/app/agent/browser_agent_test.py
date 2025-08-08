@@ -81,7 +81,7 @@ stages:
 
     def _named_agent_should_run_successfully(self, agent_name: str, run_context: RunContext):
 
-        agent_config = load_agent_config(agent_name)
+        agent_config = load_agent_config(agent_name, False)
 
         agent = TestBrowserAgent.of_config(
             agent_name, run_context.get_app_config().to_dict(), agent_config)

@@ -111,13 +111,11 @@ class VariableParserTest(unittest.TestCase):
         return output
 
     def test_replace_all_variables(self):
-        agents: [str] = load_agent_names()
+        agents: [str] = load_agent_names(False)
         for agent in agents:
-            self.replace_all_variables(load_agent_config(agent))
-
-    @staticmethod
-    def replace_all_variables(agent_config: dict[str, any]):
-        replace_all_variables(agent_config, dict(os.environ))
+            agent_config = load_agent_config(agent, False)
+            variable_source = get_run_context([agent]).get_run_config().to_dict()
+            replace_all_variables(agent_config, variable_source)
 
 
 if __name__ == '__main__':

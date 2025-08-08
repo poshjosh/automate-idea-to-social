@@ -18,7 +18,7 @@ class SubtitlesTranslationAgentTest(unittest.TestCase):
     def test_run():
         agent_name: str = AgentName.SUBTITLES_TRANSLATION
         run_context: RunContext = get_run_context([agent_name])
-        agent_config = load_agent_config(agent_name)
+        agent_config = load_agent_config(agent_name, False)
 
         with mock.patch.object(Translator, "translate") as translate:
             translate.return_value = ["Fake translation result"]

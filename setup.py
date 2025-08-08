@@ -10,7 +10,8 @@ if __name__ == "__main__":
           author_email="posh.bc@gmail.com",
           install_requires=["flask", "flask-cors",
                             "ruamel.yaml", "selenium", "requests",
-                            "webvtt-py", "undetected-chromedriver"],
+                            "webvtt-py", "undetected-chromedriver",
+                            "git+https://github.com/poshjosh/pyu.git@v0.1.9#egg=pyu"],
           license="MIT",
           classifiers=[
               "Programming Language :: Python :: 3",
