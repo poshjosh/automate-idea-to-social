@@ -35,12 +35,14 @@ class ConfigTest(unittest.TestCase):
         }
 
     def test_merge_configs_given_lists_are_merged(self):
-        self._merge_configs(True)
+        expected = {'name': 'Jane', 'gender': 'f', 'a': {'b': {'int': 0, 'dict': {'k1': 'v1', 'k2': 'v2', 'k0': 'v0'}, 'bool': False, 'list': [0, 1, 2]}}}
+        self._merge_configs(True, expected)
 
     def test_merge_configs_given_lists_are_not_merged(self):
-        self._merge_configs(False)
+        expected = {'name': 'Jane', 'gender': 'f', 'a': {'b': {'int': 0, 'dict': {'k1': 'v1', 'k2': 'v2', 'k0': 'v0'}, 'bool': False, 'list': [0, 1]}}}
+        self._merge_configs(False, expected)
 
-    def _merge_configs(self, merge_lists: bool):
+    def _merge_configs(self, merge_lists: bool, expected: dict[str, any]):
         src = copy.deepcopy(self.src)
         tgt = copy.deepcopy(self.tgt)
 
@@ -50,16 +52,7 @@ class ConfigTest(unittest.TestCase):
         self.assertDictEqual(self.src, src)
         self.assertDictEqual(self.tgt, tgt)
 
-        self.assertEqual('f', output.get('gender'))
-        self.assertEqual('Jane', output.get('name'))
-        b = output.get('a', {}).get('b', {})
-        self.assertEqual(0, b.get('int'))
-        self.assertFalse(b.get('bool'))
-        if merge_lists is True:
-            self.assertListEqual([0, 1, 2], b.get('list'))
-        else:
-            self.assertListEqual([0, 1], b.get('list'))
-        self.assertDictEqual({'k0': 'v0', 'k1': 'v1', 'k2': 'v2'}, b.get('dict'))
+        self.assertDictEqual(output, expected)
 
     def test_update_config(self):
         src = copy.deepcopy(self.src)
