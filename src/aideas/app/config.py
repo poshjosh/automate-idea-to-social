@@ -2,6 +2,7 @@ import copy
 import logging
 import os
 import sys
+from collections import OrderedDict
 from collections.abc import Iterable
 from enum import Enum, unique
 from typing import Union, TypeVar, Callable
@@ -13,8 +14,11 @@ from .paths import Paths
 logger = logging.getLogger(__name__)
 
 
-def __default_get_keys(src: dict, tgt: dict) -> Iterable:
-    return set(src.keys()).union(tgt.keys())
+def __default_get_keys(main: dict, fallback: dict) -> Iterable:
+    main_keys = list(main.keys())
+    fallback_keys = list(fallback.keys())
+    main_keys.extend(x for x in fallback_keys if x not in main_keys)
+    return main_keys
 
 
 def update_config(src: dict[str, any],
@@ -34,35 +38,37 @@ def update_config(src: dict[str, any],
     return output
 
 
-def merge_configs(src: dict[str, any],
-                  tgt: dict[str, any],
+def merge_configs(main: dict[str, any],
+                  fallback: dict[str, any],
                   merge_lists: bool = False,
                   get_keys: Callable[[dict, dict], Iterable] = __default_get_keys) \
         -> dict[str, any]:
-    if not src:
-        return copy.deepcopy(tgt)
-    if not tgt:
-        return copy.deepcopy(src)
+    main = OrderedDict(main) if main else main
+    fallback = OrderedDict(fallback) if fallback else fallback
+    if not main:
+        return copy.deepcopy(fallback)
+    if not fallback:
+        return copy.deepcopy(main)
 
-    keys = get_keys(src, tgt)
+    keys = get_keys(main, fallback)
 
-    output = {}
+    output = OrderedDict()
 
     for key in keys:
-        src_value = src.get(key)
-        tgt_value = tgt.get(key)
-        if src_value is None and tgt_value is None:
+        main_val = main.get(key)
+        ext_val = fallback.get(key)
+        if main_val is None and ext_val is None:
             continue
-        ref_value = src_value if src_value is not None else tgt_value
+        ref_value = main_val if main_val is not None else ext_val
         # We save our yaml comments
         # These config dicts come from yaml files.
         # This section of code will lead to loss of comments.
         # TODO - Implement preservation of comments
         if isinstance(ref_value, dict):
-            output[key] = merge_configs(src_value, tgt_value, merge_lists, get_keys)
+            output[key] = merge_configs(main_val, ext_val, merge_lists, get_keys)
         elif merge_lists is True and isinstance(ref_value, list):
-            existing_value = set() if not tgt_value else set(tgt_value)
-            existing_value.update(src_value)
+            existing_value = set() if not ext_val else set(ext_val)
+            existing_value.update(main_val)
             output[key] = list(existing_value)
         else:
             output[key] = ref_value
