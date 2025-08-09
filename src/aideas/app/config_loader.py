@@ -1,3 +1,5 @@
+from collections.abc import Iterable
+
 import logging
 import os
 from typing import Callable
@@ -5,7 +7,7 @@ from typing import Callable
 from pyu.io.file import load_yaml
 from pyu.io.yaml_loader import YamlLoader
 from .action.variable_parser import replace_all_variables, get_variables
-from .config import RunArg
+from .config import RunArg, merge_configs
 from .env import Env
 from .paths import Paths
 
@@ -66,7 +68,12 @@ class ConfigLoader(YamlLoader):
             return {}
 
     def load_agent_config(self, agent_name: str, check_replaced: bool = True) -> dict[str, any]:
-        return self.load_from_path(self.get_agent_config_path(agent_name), check_replaced)
+        loaded = self.load_from_path(self.get_agent_config_path(agent_name), check_replaced)
+        parent_name = loaded.pop("extends", "")
+        if parent_name:
+            parent = self.load_agent_config(parent_name, check_replaced)
+            loaded = merge_configs(loaded, parent, False, self.__get_keys_for_merging)
+        return loaded
 
     def get_agent_config_path(self, agent_name: str) -> str:
         return self.get_path(os.path.join('agent', agent_name))
@@ -78,12 +85,19 @@ class ConfigLoader(YamlLoader):
             agents.append(agent_filename[0:agent_filename.index(_SUFFIX)])
         return agents
 
+    def get_variable_source(self) -> dict[str, any]:
+        return {**self.__variable_source}
+
     def _add_variable_source(self, source: dict[str, any]) -> 'ConfigLoader':
         self.__variable_source.update(source)
         return self
 
-    def get_variable_source(self) -> dict[str, any]:
-        return {**self.__variable_source}
+    @staticmethod
+    def __get_keys_for_merging(candidate: dict, parent: dict) -> Iterable:
+        parent_keys = list(parent.keys())
+        candidate_keys = list(candidate.keys())
+        parent_keys.extend(x for x in candidate_keys if x not in parent_keys)
+        return parent_keys
 
 
 class SimpleConfigLoader(ConfigLoader):
