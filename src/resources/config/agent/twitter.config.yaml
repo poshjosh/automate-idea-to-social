@@ -78,7 +78,7 @@ stages:
           - //*[@id="react-root"]/div/div/div[2]/main/div/div/div/div[1]/div/div[3]/div/div[2]/div[1]/div/div/div/div[2]/div[1]/div/div/div/div/div/div/div/div/div/div/label/div[1]/div/div/div/div/div/div[2]/div
         actions:
           - enter_text $TEXT_CONTENT
-          # When we enter a link, twitter retrieves some metadata from the link
+          # If we entered a link, twitter retrieves some metadata from the link
           - wait 5
       post-tweet:
         search-for:

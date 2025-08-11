@@ -6,5 +6,5 @@ stages:
         actions:
           - get_file_content ${CONTENT_DIR}/youtube-video-link.txt
           - enter_text $TEXT_TITLE $results.me[0]
-          # When we enter a link, twitter retrieves some metadata from the link
+          # If we entered a link, twitter retrieves some metadata from the link
           - wait 5
