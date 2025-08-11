@@ -1,3 +1,5 @@
+import logging
+
 import os
 from datetime import datetime
 from enum import Enum, unique
@@ -5,6 +7,8 @@ from typing import Union
 
 from .config import RunArg
 from .paths import Paths
+
+logger = logging.getLogger(__name__)
 
 _pictory = 'PICTORY'
 _youtube = 'YOUTUBE'
@@ -120,7 +124,11 @@ class Env(str, Enum):
             if k in names:
                 env = Env(k)
                 if env.is_path():
-                    v = Paths.get_path(v) if env.is_optional() else Paths.require_path(v)
+                    try:
+                        v = Paths.get_path(v) if env.is_optional() else Paths.require_path(v)
+                    except FileNotFoundError as ex:
+                        logger.warning(f"The following error occurred while processing path for environment variable '{k}' = '{v}'")
+                        raise ex
                 add_to[k] = v
         return add_to
 
