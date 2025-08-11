@@ -307,7 +307,7 @@ class BlogAgent(Agent):
         ]
 
     def _get_build_update_blog_image_command_args(self) -> list[str]:
-        return ['docker', 'build', '-t', self.get_app_docker_image_name(), '.']
+        return ['docker', 'build', '--no-cache', '-t', self.get_app_docker_image_name(), '.']
 
     def _get_update_blog_command_args(self, run_context: RunContext) -> list[str]:
 
