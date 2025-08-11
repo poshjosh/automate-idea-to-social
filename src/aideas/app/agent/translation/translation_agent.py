@@ -74,7 +74,9 @@ class TranslationAgent(Agent):
 
         filepath_in: str = args[0]
         from_lang: str = args[1]
-        output_language_codes: [str] = args[2].split(',')
+        output_language_codes: list[str] = args[2].split(',')
+        if from_lang in output_language_codes:
+            output_language_codes.remove(from_lang)
 
         for target_dir in action.get_output_dirs(DIR_NAME):
             self.__copy_to_dir(filepath_in, target_dir)
