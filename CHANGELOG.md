@@ -7,8 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.5] - 2025-08-11
+
+### CHANGED
+
+- Python (in Dockerfile) to v3.9.23-bullseye
+- Blog app (automate-jamstack) to v0.1.6
+
 ### Added
 
+- Environment variable `BLOG_APP_VERSION` to specify the blog app version to use.
 - Extension of configs, using the `extends` keyword.
 - Ordering to configs which are merged
 - Option to specify external config dir

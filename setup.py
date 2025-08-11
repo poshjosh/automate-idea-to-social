@@ -4,14 +4,14 @@ from setuptools import setup, find_packages
 
 if __name__ == "__main__":
     setup(name="automate-idea-to-social",
-          version="0.2.3",
+          version="0.2.5",
           description="Automate generating and publishing content from ideas to social media.",
           author="PoshJosh",
           author_email="posh.bc@gmail.com",
           install_requires=["flask", "flask-cors",
                             "ruamel.yaml", "selenium", "requests",
                             "webvtt-py", "undetected-chromedriver",
-                            "git+https://github.com/poshjosh/pyu.git@v0.1.9#egg=pyu"],
+                            "pyu"],
           license="MIT",
           classifiers=[
               "Programming Language :: Python :: 3",
