@@ -34,5 +34,5 @@ services:
         target: ${CHROME_PROFILE_DIR}
       - type: bind
         # TODO - This should be dynamic. By the way it is only required by the blog agent
-        source: ./src/resources/output/blog-app/app/automate-jamstack-0.1.5/app
+        source: "./src/resources/output/blog-app/app/automate-jamstack-${BLOG_APP_VERSION:-0.1.6}/app"
         target: /aideas/blog-app # must be within our WORKDIR (i.e. 'aideas')

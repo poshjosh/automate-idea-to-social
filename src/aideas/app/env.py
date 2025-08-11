@@ -5,21 +5,9 @@ from datetime import datetime
 from enum import Enum, unique
 from typing import Union
 
-from .config import RunArg
 from .paths import Paths
 
 logger = logging.getLogger(__name__)
-
-_pictory = 'PICTORY'
-_youtube = 'YOUTUBE'
-_tiktok = 'TIKTOK'
-_twitter = 'TWITTER'
-_reddit = 'REDDIT'
-_facebook = 'FACEBOOK'
-_instagram = 'INSTAGRAM'
-_git = 'GIT'
-_blog = 'BLOG'
-_browser_chrome = 'BROWSER_CHROME'
 
 
 @unique
@@ -45,7 +33,7 @@ class Env(str, Enum):
     APP_LANGUAGE = ('APP_LANGUAGE', True, False, 'en-GB')
 
     CONTENT_DIR = ('CONTENT_DIR', False, True)
-    CHROME_PROFILE_DIR = ('CHROME_PROFILE_DIR', False, True)
+    CHROME_PROFILE_DIR = ('CHROME_PROFILE_DIR', True, True)
 
     SETUP_DISPLAY = ('SETUP_DISPLAY', True, False)
 
@@ -58,48 +46,49 @@ class Env(str, Enum):
 
     VIDEO_FILE_EXTENSION = ('VIDEO_FILE_EXTENSION', False, False, 'mp4')
 
-    PICTORY_USER_EMAIL = f'{_pictory}_USER_EMAIL'
-    PICTORY_USER_PASS = f'{_pictory}_USER_PASS'
-    PICTORY_BRAND_NAME = f'{_pictory}_BRAND_NAME'
-    PICTORY_BG_MUSIC_NAME = f'{_pictory}_BG_MUSIC_NAME'
-    PICTORY_VOICE_NAME = f'{_pictory}_VOICE_NAME'
-    PICTORY_TEXT_STYLE = f'{_pictory}_TEXT_STYLE'
+    PICTORY_USER_EMAIL = 'PICTORY_USER_EMAIL'
+    PICTORY_USER_PASS = 'PICTORY_USER_PASS'
+    PICTORY_BRAND_NAME = 'PICTORY_BRAND_NAME'
+    PICTORY_BG_MUSIC_NAME = 'PICTORY_BG_MUSIC_NAME'
+    PICTORY_VOICE_NAME = 'PICTORY_VOICE_NAME'
+    PICTORY_TEXT_STYLE = 'PICTORY_TEXT_STYLE'
 
     TRANSLATION_OUTPUT_LANGUAGE_CODES = ('TRANSLATION_OUTPUT_LANGUAGE_CODES',
                                          False, False, 'ar,bn,de,es,fr,hi,it,ja,ko,ru,tr,uk,zh')
     SUBTITLES_FILE_EXTENSION = ('SUBTITLES_FILE_EXTENSION', False, False, 'vtt')
 
-    YOUTUBE_USER_EMAIL = f'{_youtube}_USER_EMAIL'
-    YOUTUBE_USER_PASS = f'{_youtube}_USER_PASS'
-    YOUTUBE_PLAYLIST_NAME = f'{_youtube}_PLAYLIST_NAME'
+    YOUTUBE_USER_EMAIL = 'YOUTUBE_USER_EMAIL'
+    YOUTUBE_USER_PASS = 'YOUTUBE_USER_PASS'
+    YOUTUBE_PLAYLIST_NAME = 'YOUTUBE_PLAYLIST_NAME'
 
-    TIKTOK_USER_EMAIL = f'{_tiktok}_USER_EMAIL'
-    TIKTOK_USER_PASS = f'{_tiktok}_USER_PASS'
+    TIKTOK_USER_EMAIL = 'TIKTOK_USER_EMAIL'
+    TIKTOK_USER_PASS = 'TIKTOK_USER_PASS'
 
-    TWITTER_USER_EMAIL = f'{_twitter}_USER_EMAIL'
-    TWITTER_USER_NAME = f'{_twitter}_USER_NAME'
-    TWITTER_USER_PASS = f'{_twitter}_USER_PASS'
+    TWITTER_USER_EMAIL = 'TWITTER_USER_EMAIL'
+    TWITTER_USER_NAME = 'TWITTER_USER_NAME'
+    TWITTER_USER_PASS = 'TWITTER_USER_PASS'
 
-    REDDIT_USER_NAME = f'{_reddit}_USER_NAME'
-    REDDIT_USER_PASS = f'{_reddit}_USER_PASS'
-    REDDIT_COMMUNITY_NAME = f'{_reddit}_COMMUNITY_NAME'
+    REDDIT_USER_NAME = 'REDDIT_USER_NAME'
+    REDDIT_USER_PASS = 'REDDIT_USER_PASS'
+    REDDIT_COMMUNITY_NAME = 'REDDIT_COMMUNITY_NAME'
 
-    FACEBOOK_USER_EMAIL = f'{_facebook}_USER_EMAIL'
-    FACEBOOK_USER_PASS = f'{_facebook}_USER_PASS'
+    FACEBOOK_USER_EMAIL = 'FACEBOOK_USER_EMAIL'
+    FACEBOOK_USER_PASS = 'FACEBOOK_USER_PASS'
 
-    INSTAGRAM_USER_EMAIL = f'{_instagram}_USER_EMAIL'
-    INSTAGRAM_USER_PASS = f'{_instagram}_USER_PASS'
+    INSTAGRAM_USER_EMAIL = 'INSTAGRAM_USER_EMAIL'
+    INSTAGRAM_USER_PASS = 'INSTAGRAM_USER_PASS'
 
-    GIT_USER_NAME = f'{_git}_USER_NAME'
-    GIT_USER_EMAIL = f'{_git}_USER_EMAIL'
-    GIT_TOKEN = f'{_git}_TOKEN'
+    GIT_USER_NAME = 'GIT_USER_NAME'
+    GIT_USER_EMAIL = 'GIT_USER_EMAIL'
+    GIT_TOKEN = 'GIT_TOKEN'
 
-    BLOG_ENV_FILE = (f'{_blog}_ENV_FILE', False, True)
-    BLOG_APP_DIR = (f'{_blog}_APP_DIR', False, True)
+    BLOG_ENV_FILE = ('BLOG_ENV_FILE', False, True)
+    BLOG_APP_DIR = ('BLOG_APP_DIR', False, True)
+    BLOG_APP_VERSION = ('BLOG_APP_VERSION', True, False, '0.1.6')
 
     @staticmethod
-    def values() -> [str]:
-        return [Env(e).value for e in Env]
+    def values() -> list[str]:
+        return [str(Env(e).value) for e in Env]
 
     @staticmethod
     def set_defaults():
@@ -114,22 +103,21 @@ class Env(str, Enum):
         os.environ[k] = os.environ.get(k, v)
 
     @staticmethod
-    def collect(add_to: dict[str, any] = None, names: [str] = None) -> dict[str, any]:
+    def collect(add_to: dict[str, any] = None) -> dict[str, any]:
         if add_to is None:
             add_to = {}
-        if names is None:
-            names = Env.values()
-            names.extend(RunArg.values())
-        for k, v in os.environ.items():
-            if k in names:
-                env = Env(k)
-                if env.is_path():
-                    try:
-                        v = Paths.get_path(v) if env.is_optional() else Paths.require_path(v)
-                    except FileNotFoundError as ex:
-                        logger.warning(f"The following error occurred while processing path for environment variable '{k}' = '{v}'")
-                        raise ex
-                add_to[k] = v
+        names = Env.values()
+        for name in names:
+            env = Env(name)
+            value = os.environ.get(name, env.get_default_value())
+            # print(f"'{name}' = '{value}' or '{env.get_default_value()}'")
+            if env.is_path():
+                try:
+                    value = Paths.get_path(value) if env.is_optional() else Paths.require_path(value)
+                except FileNotFoundError as ex:
+                    logger.warning(f"The following error occurred while processing path for environment variable '{name}' = '{value}'")
+                    raise ex
+            add_to[name] = value
         return add_to
 
 

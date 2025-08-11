@@ -4,20 +4,19 @@ agent-type: blog
 agent-tags: post
 app:
   name: automate-jamstack
-  version: 0.1.5
   docker:
     image: poshjosh/${self.app.name}
   source:
-    url: https://github.com/poshjosh/${self.app.name}/archive/refs/tags/v${self.app.version}.zip
+    url: https://github.com/poshjosh/${self.app.name}/archive/refs/tags/v${BLOG_APP_VERSION}.zip
   target:
     dir: ${BLOG_APP_DIR}/app
   base:
     # Downloading and extracting app.source.url will create this directory
-    dir: ${BLOG_APP_DIR}/app/${self.app.name}-${self.app.version}
+    dir: ${BLOG_APP_DIR}/app/${self.app.name}-${BLOG_APP_VERSION}
   script:
-    convert-to-markdown: ${BLOG_APP_DIR}/app/${self.app.name}-${self.app.version}/scripts/convert-to-markdown.sh
-    update-blog: ${BLOG_APP_DIR}/app/${self.app.name}-${self.app.version}/scripts/docker-run-app.sh
-    docker-entrypoint: ${BLOG_APP_DIR}/app/${self.app.name}-${self.app.version}/app/config/setup-scripts/docker-entrypoint.sh
+    convert-to-markdown: ${BLOG_APP_DIR}/app/${self.app.name}-${BLOG_APP_VERSION}/scripts/convert-to-markdown.sh
+    update-blog: ${BLOG_APP_DIR}/app/${self.app.name}-${BLOG_APP_VERSION}/scripts/docker-run-app.sh
+    docker-entrypoint: ${BLOG_APP_DIR}/app/${self.app.name}-${BLOG_APP_VERSION}/app/config/setup-scripts/docker-entrypoint.sh
 blog:
   name: liveabove3d.com
   language-codes: $LANGUAGE_CODES

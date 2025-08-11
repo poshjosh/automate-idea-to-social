@@ -682,8 +682,8 @@ class RunArg(str, Enum):
     VIDEO_FILE_SQUARE = ('video-file-square', 'vfs', 'str', True, True)
 
     @staticmethod
-    def values() -> [str]:
-        return [RunArg(e).value for e in RunArg]
+    def values() -> list[str]:
+        return [str(RunArg(e).value) for e in RunArg]
 
     @staticmethod
     def of_dict(source: dict[str, any], target: dict[str, any] = None) -> dict[str, any]:
