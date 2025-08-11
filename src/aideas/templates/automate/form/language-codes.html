@@ -1,10 +1,9 @@
 <label for="language-codes">
     <span id="red-asterix">*</span>&nbsp;Select language(s).
 </label>
-<br/>
-<select id="language-codes" name="language-codes" class="control" multiple>
-    <option selected disabled>Select language(s)</option>
-    {% for supported_language in supported_languages %}
-        <option value="{{ supported_language.code }}">{{ supported_language.display_name }} ({{ supported_language.code }})</option>
-    {% endfor %}
-</select>
+&nbsp
+<span id="language-codes">
+    {% with name='language-codes', items=supported_languages.items() %}
+        {% include "automate/form/common/checkbox-group.html" %}
+    {% endwith %}
+</span>

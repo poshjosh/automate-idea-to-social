@@ -13,21 +13,9 @@
         <div>
             <label for="agents">Select agent(s) to run</label>
             <div id="agents">
-                {% if agents|length > 1 %}
-                <div>
-                    <input type="checkbox" id="all-agents" class="control"
-                           onclick="aideas.toggle_checked('.control.agent-check');"/>
-                    <label for="all-agents">All</label>
-                </div>
-                {% endif %}
-                <div>
-                    {% for value, label in agents.items() %}
-                    <input type="checkbox" name="agents" class="control agent-check"
-                           value="{{ value }}"/>
-                    <label for="{{ value }}">{{ label }}</label>
-                    <br/>
-                    {% endfor %}
-                </div>
+                {% with name='agents', items=agents.items() %}
+                    {% include "automate/form/common/checkbox-group.html" %}
+                {% endwith %}
             </div>
         </div>
         <br/>

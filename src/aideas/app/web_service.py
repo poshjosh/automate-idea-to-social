@@ -23,11 +23,14 @@ class WebService:
     def __init__(self, config_loader: ConfigLoader):
         self.__config_loader = config_loader
         self.app_config = AppConfig(config_loader.load_app_config())
+        supported_languages = {}
+        for language in I18n.get_supported_languages():
+            supported_languages[language.code] = language.display_name
         self.default_page_variables = {
             'app_name': self.app_config.get_app_name(),
             'title': self.app_config.get_title(),
             'heading': self.app_config.get_title(),
-            'supported_languages': I18n.get_supported_languages()
+            'supported_languages': supported_languages
         }
 
     def index(self, page_variables: dict[str, any] = None) -> dict[str, str]:
