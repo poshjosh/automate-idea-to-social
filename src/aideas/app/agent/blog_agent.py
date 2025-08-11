@@ -113,7 +113,7 @@ class BlogAgent(Agent):
             raise ValueError(f"Blog source directory does not exist: {blog_src_dir}")
         blog_target_dir: str = self.get_blog_tgt_dir()
 
-        moved: [str] = []
+        moved: list[str] = []
 
         def move(src: str, dst: str):
             shutil.move(src, dst)
@@ -271,7 +271,7 @@ class BlogAgent(Agent):
         return result_if_none if found_text is None or found_text == '' else found_text
 
     @staticmethod
-    def _get_convert_to_markdown_args(src_file, language_code) -> [str]:
+    def _get_convert_to_markdown_args(src_file, language_code) -> list[str]:
         if language_code:
             return ['-f', f'"{src_file}"', '-p', f'"/{language_code}"']
         else:
@@ -283,7 +283,7 @@ class BlogAgent(Agent):
         # Move cover image to the same directory as the output file
         tgt_image_name = os.path.basename(src_image_path)
         parent_dir = os.path.dirname(target_file)
-        if share_cover_image is True:
+        if share_cover_image:
             parent_dir = os.path.dirname(parent_dir)
 
         tgt_image_path = os.path.join(parent_dir, tgt_image_name)
@@ -291,7 +291,7 @@ class BlogAgent(Agent):
             logger.debug(f"Copied to: {tgt_image_path} from: {src_image_path}")
             shutil.copy2(src_image_path, tgt_image_path)
 
-        image_dir = f".." if share_cover_image is True else f"."
+        image_dir = ".." if share_cover_image is True else "."
 
         # Add the cover image at the top of the file
         prepend_line(target_file, f"![Video cover image]({image_dir}/{tgt_image_name})\n")
@@ -306,10 +306,10 @@ class BlogAgent(Agent):
             ['git', 'push']
         ]
 
-    def _get_build_update_blog_image_command_args(self) -> [str]:
+    def _get_build_update_blog_image_command_args(self) -> list[str]:
         return ['docker', 'build', '-t', self.get_app_docker_image_name(), '.']
 
-    def _get_update_blog_command_args(self, run_context: RunContext) -> [str]:
+    def _get_update_blog_command_args(self, run_context: RunContext) -> list[str]:
 
         blog_env_file = run_context.get_env(Env.BLOG_ENV_FILE)
 
@@ -319,7 +319,7 @@ class BlogAgent(Agent):
 
         commands = ['docker', 'run', '--name', self.get_app_docker_container_name(), '--rm']
 
-        if is_docker() is False:
+        if not is_docker():
             app_base_dir = os.path.join(os.getcwd(), self.get_app_base_dir())
             commands.extend(['-v', f'"{app_base_dir}/app:/blog-app"'])
 
