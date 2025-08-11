@@ -1,4 +1,5 @@
-FROM python:3.9.5
+# we use bullseye to fix this https://github.com/docker-library/python/issues/837
+FROM python:3.9.23-bullseye
 
 # Set the working directory to override any set by base image
 # This will create the directory if it doesn't exist
