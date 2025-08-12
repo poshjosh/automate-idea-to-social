@@ -36,8 +36,10 @@ class EnvTest(unittest.TestCase):
         output_filename = os.path.basename(filepath)
         self.assertIn(self.agent_name, filepath)
         self.assertTrue(output_filename.startswith(datetime.now().strftime("%Y-%m-%d")))
+        print(f"Expected suffix: {expected_suffix}, file: {output_filename}")
         if expected_suffix:
-            self.assertTrue(output_filename.endswith(expected_suffix))
+            self.assertTrue(output_filename.endswith(expected_suffix),
+                            f"file name should end with: {expected_suffix}, but does not; file: {output_filename}")
 
     @staticmethod
     def __create_file(path):
