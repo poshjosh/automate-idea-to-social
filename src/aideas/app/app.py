@@ -3,7 +3,7 @@ import os
 import signal
 import sys
 
-from .config_loader import ConfigLoader, SimpleConfigLoader
+from .config_loader import ConfigLoader
 from .env import Env, is_production
 from .task import shutdown as shutdown_tasks, init_tasks_cleanup
 
@@ -22,7 +22,7 @@ class App:
         Env.set_defaults()
         if is_production() is True:
             init_tasks_cleanup(lambda: App.__shutting_down, 600)
-        return SimpleConfigLoader(os.path.join(os.getcwd(), 'resources', 'config'))
+        return ConfigLoader(os.path.join(os.getcwd(), 'resources', 'config'))
 
     @staticmethod
     def shutdown(signum, _):

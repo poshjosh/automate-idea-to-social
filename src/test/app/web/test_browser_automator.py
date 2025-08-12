@@ -19,7 +19,7 @@ class TestBrowserAutomator(BrowserAutomator):
            agent_config: dict[str, any] = None,
            run_stages: Callable[[RunContext, OrderedDict[str, [Name]]], None] = None) \
             -> 'BrowserAutomator':
-        web_driver = create_webdriver(app_config, agent_name)
+        web_driver = create_webdriver(agent_config)
         timeout_seconds = BrowserAutomator.get_agent_timeout(app_config, agent_config)
         element_selector = TestElementSelector.of(web_driver, agent_name, timeout_seconds)
         action_handler = TestElementActionHandler(element_selector, timeout_seconds)

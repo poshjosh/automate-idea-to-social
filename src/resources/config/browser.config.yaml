@@ -1,0 +1,51 @@
+chrome:
+  # executable_path:
+  undetected: false
+  prefs:
+    intl.accept_languages: en-GB
+    # prevent credentials based popups (e.g. save password popups)
+    credentials_enable_service: false
+    profile.password_manager_enabled: false
+    # prevent general popups
+    profile.managed_default_content_settings.popups : 2
+    profile.default_content_setting_values.notifications: 2
+    download.prompt_for_download: false
+    directory_upgrade: true
+    safebrowsing.enabled: false
+  options:
+    args:
+      - lang=en-GB
+      - no-sandbox
+      - disable-setuid-sandbox
+      - disable-application-cache
+      - disable-dev-shm-usage  # We have shm_size: 2g, specified in docker-compose.yml
+      - disable-notifications
+      - enable-javascript
+      - user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36
+      - disable-infobars
+      - disable-extensions
+      # Use either (headless and start-maximized) or kiosk
+      # Trying to change window size, while using kiosk, will crash the driver
+      # Without this custom window size, we got ElementNotInteractableException
+      # Window size should match that in docker-entrypoint.sh
+      # - kiosk
+      - window-size=1920,1080
+      - start-maximized
+      - headless
+      - disable-web-security
+      - allow-running-insecure-content
+#########################################################################
+# If you use a dir on the host machine, make sure the version of chrome
+# on the host machine is compatible with the one in the docker container.
+#########################################################################
+#      Location where chrome stores profiles
+#      - user-data-dir=$CHROME_PROFILE_DIR
+#      Location relative to user-data-dir where chrome profile to be used is stored
+#      To find out the location, type chrome://version in the address bar
+#      - profile-directory=Profile 5
+#      - remote-allow-origins=*
+#      - remote-debugging-port=9222
+#      - incognito
+#      - crash-dumps-dir=/tmp
+
+

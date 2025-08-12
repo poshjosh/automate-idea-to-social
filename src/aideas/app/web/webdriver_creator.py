@@ -20,9 +20,7 @@ WEB_DRIVER = TypeVar("WEB_DRIVER", bound=Union[webdriver.Chrome, uc.Chrome])
 
 class WebDriverCreator:
     @staticmethod
-    def create(config: dict[str, any]) -> WEB_DRIVER:
-
-        browser_config: BrowserConfig = BrowserConfig(config)
+    def create(browser_config: BrowserConfig) -> WEB_DRIVER:
 
         WebDriverCreator.__create_dirs_if_need([browser_config.get_download_dir()])
 

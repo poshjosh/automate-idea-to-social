@@ -1,0 +1,17 @@
+extends: browser
+chrome:
+  options:
+    args:
+      - lang=en-GB
+      - no-sandbox
+      - disable-setuid-sandbox
+      - disable-application-cache
+      - disable-dev-shm-usage  # We have shm_size: 2g, specified in docker-compose.yml
+      - disable-notifications
+      - enable-javascript
+      - user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36
+      - disable-infobars
+      - disable-extensions
+      - kiosk
+      - disable-web-security
+      - allow-running-insecure-content

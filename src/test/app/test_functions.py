@@ -4,8 +4,8 @@ from typing import Union, Callable
 from selenium import webdriver
 
 from aideas.app.action.action_result import ActionResult
-from aideas.app.config import RunArg
-from aideas.app.config_loader import ConfigLoader, SimpleConfigLoader
+from aideas.app.config import RunArg, BrowserConfig, merge_configs
+from aideas.app.config_loader import ConfigLoader
 from aideas.app.result.result_set import ElementResultSet
 from aideas.app.run_context import RunContext
 from aideas.app.web.webdriver_creator import WebDriverCreator
@@ -13,13 +13,10 @@ from aideas.app.web.webdriver_creator import WebDriverCreator
 __TEST_SRC_DIR = f'{os.getcwd()}/test/app'
 
 
-class TestConfigLoader(SimpleConfigLoader):
+class TestConfigLoader(ConfigLoader):
     def __init__(self, config_path: str, variable_source: dict[str, any] or None = None):
         super().__init__(config_path, variable_source)
-
-    def _init_variable_source(self):
         super()._add_variable_source(self.load_run_config())  # Properties file
-        super()._init_variable_source()
 
 
 def get_main_config_loader(variable_source: dict[str, any] or None = None) -> ConfigLoader:
@@ -67,31 +64,15 @@ def __get_logging_config() -> dict[str, any]:
     }
 
 
-def create_webdriver(config: Union[dict, None] = None, agent_name: str = None) -> webdriver:
-    if config is None:
-        config = get_main_config_loader().load_app_config()
+def create_webdriver(agent_config: Union[dict, None] = None) -> webdriver:
 
-    chrome_config = config.get("browser", {}).get("chrome", {})
-
-    args = chrome_config.get("options", {}).get("args", [])
-
-    for e in args:
-        if e.startswith("window-size="):
-            args.remove(e)
-            break
-
-    if "start-maximized" in args:
-        args.remove("start-maximized")
-    if "kiosk" in args:
-        args.remove("kiosk")
-    if "headless" not in args:
-        args.append("headless")
-
-    # For now undetected Chrome browser is crashing during tests.
-    # So we set undetected to False, for the time being.
-    chrome_config['undetected'] = False
-
-    return WebDriverCreator.create(config)
+    if agent_config is None:
+        browser_config = get_main_config_loader().load_browser_config()
+    else:
+        browser_config = merge_configs(
+            agent_config.get('browser', {}), get_main_config_loader().load_browser_config(), False)
+    # print(f'{__name__} Browser config: {browser_config}')
+    return WebDriverCreator.create(BrowserConfig(browser_config))
 
 
 def get_agent_resource(agent_name: str, file_name: str) -> str:

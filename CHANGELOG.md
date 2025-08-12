@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Run arg `browser-visible` (`bv`) to control whether the browser will be visible.
+
+### Changed
+
+- Make config extension applicable to all config types.
+- Separate browser config from app config.
+
 ## [0.2.5] - 2025-08-11
 
 ### CHANGED

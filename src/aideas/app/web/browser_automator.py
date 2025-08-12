@@ -1,5 +1,4 @@
 from collections import OrderedDict
-import copy
 import logging
 from enum import unique
 
@@ -16,7 +15,7 @@ from ..action.element_action_handler import ElementActionHandler
 from ..action.variable_parser import get_run_arg_replacement
 from ..agent.automator import Automator, AutomationListener, AutomationEvent
 from ..agent.event_handler import EventHandler
-from ..config import AgentConfig, ConfigPath, Name, SearchConfigs, merge_configs
+from ..config import AgentConfig, ConfigPath, Name, SearchConfigs, merge_configs, BrowserConfig
 from ..result.result_set import ElementResultSet
 from ..run_context import RunContext
 
@@ -73,11 +72,7 @@ class BrowserAutomator(Automator):
            agent_config: dict[str, any] = None,
            run_stages: Callable[[RunContext, OrderedDict[str, [Name]]], None] = None) \
             -> 'BrowserAutomator':
-        # app_config['browser'].update(agent_config.get('browser', {}))
-        app_config = copy.deepcopy(app_config)  # Don't update the original
-        app_config['browser'] = merge_configs(
-            agent_config.get('browser', {}), app_config['browser'], False)
-        web_driver = WebDriverCreator.create(app_config)
+        web_driver = WebDriverCreator.create(BrowserConfig(agent_config.get('browser', {})))
         timeout_seconds = BrowserAutomator.get_agent_timeout(app_config, agent_config)
         element_selector = ElementSelector.of(web_driver, agent_name, timeout_seconds)
         action_handler = ElementActionHandler(element_selector, timeout_seconds)

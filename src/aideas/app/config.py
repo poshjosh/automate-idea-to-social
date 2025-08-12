@@ -43,8 +43,8 @@ def merge_configs(main: dict[str, any],
                   merge_lists: bool = False,
                   get_keys: Callable[[dict, dict], Iterable] = __default_get_keys) \
         -> dict[str, any]:
-    main = OrderedDict(main) if main else main
-    fallback = OrderedDict(fallback) if fallback else fallback
+    main = OrderedDict(copy.deepcopy(main)) if main else main
+    fallback = OrderedDict(copy.deepcopy(fallback)) if fallback else fallback
     if not main:
         return copy.deepcopy(fallback)
     if not fallback:
@@ -111,7 +111,7 @@ class RunConfig:
 
 class BrowserConfig:
     def __init__(self, config: dict[str, any]):
-        self.__config = config.get('browser', {})
+        self.__config = config if config is not None else {}
 
     def get_executable_path(self, default: Union[str, None] = None) -> str:
         return self.chrome_config().get('executable_path', default)
@@ -666,8 +666,8 @@ class RunArg(str, Enum):
         return self.__path
 
     AGENTS = ('agents', 'a', 'list')
+    BROWSER_VISIBLE = ('browser-visible', 'bv', 'bool', True, False)
     CONTINUE_ON_ERROR = ('continue-on-error', 'coe', 'bool', True, False)
-
     INPUT_LANGUAGE_CODE = ('input-language-code', 'ilc', 'str', False, False)
     IMAGE_FILE_LANDSCAPE = ('image-file-landscape', 'vci', 'str', False, True)
     IMAGE_FILE_SQUARE = ('image-file-square', 'vcis', 'str', True, True)

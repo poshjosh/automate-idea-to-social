@@ -21,9 +21,9 @@ class ElementActionHandlerTest(unittest.TestCase):
     def test_pictory_branding_actions(self):
         agent_name = 'pictory'
         stage_name = 'branding'
-        webdriver = create_webdriver(agent_name=agent_name)
-        webdriver.get(get_agent_resource(agent_name, 'storyboard_page.html'))
         config = load_agent_config(agent_name, False)
+        webdriver = create_webdriver(config)
+        webdriver.get(get_agent_resource(agent_name, 'storyboard_page.html'))
         stage_config = config[STAGES_KEY][stage_name]
         targets = stage_config[STAGE_ITEMS_KEY].keys()
         run_context = get_run_context([agent_name])

@@ -1,0 +1,16 @@
+# For undetected browser, some options and prefs cause some websites
+# (e.g. YouTube) to detect the browser as a bot. Therefore, we use:
+# minimal options e.g: window-size,start-maximized,user-agent
+# minimal prefs e.g: download.default_directory
+extends: browser
+chrome:
+  undetected: true
+  prefs:
+    safebrowsing.enabled: true
+  options:
+    args:
+      - user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36
+      - window-size=1920,1080
+      - start-maximized
+
+
