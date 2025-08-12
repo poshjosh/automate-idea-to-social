@@ -16,7 +16,7 @@ stages:
           - //*[@id="layers"]/div[1]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div/div/div/div[5]/label/div/div[2]/div/input
           - //*[@id="layers"]/div[2]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div/div/div/div[5]/label/div/div[2]/div/input
           - //*[@id="layers"]//input[@name="text"]
-        actions: enter_text $TWITTER_USER_EMAIL
+        actions: send_keys $TWITTER_USER_EMAIL
       submit-email:
         search-for:
           - //*[@id="layers"]//span[contains(text(), "Next")]//..//..//..
@@ -35,7 +35,7 @@ stages:
         search-for:
           - //*[@id="layers"]/div[1]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[1]/div/div[2]/label/div/div[2]/div/input
           - //*[@id="layers"]/div[2]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[1]/div/div[2]/label/div/div[2]/div/input
-        actions: enter_text $TWITTER_USER_NAME
+        actions: send_keys $TWITTER_USER_NAME
       submit-username:
         search-for:
           - //*[@id="layers"]/div[1]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[2]/div/div/div/div
@@ -48,7 +48,7 @@ stages:
         search-for:
           - //*[@id="layers"]//input[@type="password" and @name="password"]
           - //*[@id="layers"]//input[@type="password"]
-        actions: enter_text $TWITTER_USER_PASS
+        actions: send_keys $TWITTER_USER_PASS
       submit-password:
         search-for:
           - //*[@id="layers"]/div[1]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[2]/div/div/div/div

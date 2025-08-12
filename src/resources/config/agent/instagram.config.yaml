@@ -38,12 +38,12 @@ stages:
         search-for:
           - //*[@id="loginForm"]/div/div[1]/div/label/input
           - //*[@id="loginForm"]//input[@name="username"]
-        actions: enter_text $INSTAGRAM_USER_EMAIL
+        actions: send_keys $INSTAGRAM_USER_EMAIL
       password:
         search-for:
           - //*[@id="loginForm"]/div/div[2]/div/label/input
           - //*[@id="loginForm"]//input[@name="password"]
-        actions: enter_text $INSTAGRAM_USER_PASS
+        actions: send_keys $INSTAGRAM_USER_PASS
       submit:
         search-for:
           - //*[@id="loginForm"]/div/div[3]/button

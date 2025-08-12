@@ -20,10 +20,10 @@ stages:
           - //*[@id="facebook"]//button[contains(text(), "cookies")]
       fill-username:
         search-for: //*[@id="email"]
-        actions: enter_text $FACEBOOK_USER_EMAIL
+        actions: send_keys $FACEBOOK_USER_EMAIL
       fill-password:
         search-for: //*[@id="pass"]
-        actions: enter_text $FACEBOOK_USER_PASS
+        actions: send_keys $FACEBOOK_USER_PASS
       click-login:
         search-for:
           - //*[starts-with(@id, "u_0_5_")]

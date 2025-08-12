@@ -20,10 +20,10 @@ stages:
     stage-items:
       username:
         search-for: //*[@id="mui-1"]
-        actions: enter_text $PICTORY_USER_EMAIL
+        actions: send_keys $PICTORY_USER_EMAIL
       password:
         search-for: //*[@id="outlined-adornment-password"]
-        actions: enter_text $PICTORY_USER_PASS
+        actions: send_keys $PICTORY_USER_PASS
       submit-login:
         search-from: //form
         search-for: //*[@type="submit"]
