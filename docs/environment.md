@@ -36,6 +36,10 @@ CONFIG_DIR=resources/config
 
 OUTPUT_DIR=resources/output
 
+# Space separated args to run each agent, usually presented as options to be provided by the user.
+# See aideas.app.config.RunArg for possible values.
+RUN_ARGS=[OPTIONAL]
+
 # video output
 VIDEO_FILE_EXTENSION=mp4
 

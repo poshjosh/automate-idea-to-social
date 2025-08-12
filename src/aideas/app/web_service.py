@@ -41,7 +41,7 @@ class WebService:
 
     def select_automation_agents(self, tag) -> dict[str, any]:
         agents = {}
-        for agent_name in self._get_agent_names(tag):
+        for agent_name in self.__config_loader.get_agent_names(tag):
             agents[agent_name] = HtmlFormat.display(agent_name)
         return self._with_default_page_variables({'tag': tag, 'agents': agents})
 
@@ -53,7 +53,7 @@ class WebService:
         all_form_fields = []
         for agent_name in agent_names:
             agents[agent_name] = HtmlFormat.display(agent_name)
-            variables: [str] = self.__config_loader.get_agent_variable_names(agent_name)
+            variables: list[str] = self.__config_loader.get_agent_variable_names(agent_name)
             form_fields = [HtmlFormat.form_field_name(e)
                            for e in variables if has_env_value(e) is False]
             logger.debug(f"Agent {agent_name} form fields: {form_fields}")
@@ -108,15 +108,3 @@ class WebService:
             if key not in variables.keys():
                 variables[key] = value
         return variables
-
-    def _get_agent_names(self, tag: str) -> list[str]:
-        def config_filter(config: dict[str, any]) -> bool:
-            agent_tags = AgentConfig(config).get_agent_tags()
-            if is_production() is True and 'test' in agent_tags:
-                return False
-            return tag in agent_tags
-
-        def config_sort(config: dict[str, any]) -> int:
-            return AgentConfig(config).get_sort_order()
-
-        return self.__config_loader.get_sorted_agent_names(config_filter, config_sort)

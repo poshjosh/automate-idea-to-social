@@ -123,7 +123,7 @@ class ElementActionHandler(BrowserActionHandler):
             try:
                 success = False if element is None else element.is_displayed()
             except StaleElementReferenceException as ex:
-                if reloaded is True:
+                if reloaded:
                     success = False
                 else:
                     raise ex

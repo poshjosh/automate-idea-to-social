@@ -101,7 +101,7 @@ class ElementSelector:
         queries = search_config.get_queries()
         if len(queries) == 0:
             raise ValueError(f'No queries found in: {search_config}')
-        exception: Exception | None = None
+        exception: Exception or None = None
         index: int = -1
         start_time = datetime.now()
         for query in queries:

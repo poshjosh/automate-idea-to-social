@@ -10,6 +10,7 @@ from typing import Union, TypeVar, Callable
 from pyu.io.file import read_content
 
 from .paths import Paths
+from .text import split_preserving_quotes
 
 logger = logging.getLogger(__name__)
 
@@ -280,7 +281,7 @@ class SearchConfig:
     def transform_queries(self, transform: Callable[[str], str]) -> 'SearchConfig':
         return SearchConfig(self.__search_by, [transform(query) for query in self.__queries])
 
-    def get_queries(self) -> [str]:
+    def get_queries(self) -> list[str]:
         return self.__queries
 
     def get_search_by(self) -> SearchBy:
@@ -567,44 +568,6 @@ class AgentConfig:
         return None if name is None else Name.of(name).value
 
 
-def tokenize(value: str, separator: str = ' ') -> list[str]:
-    quote = '"'
-    parts = value.split(separator)
-    result = []
-    sub = []
-    for i in range(len(parts)):
-        part = parts[i]
-        if len(sub) == 0 and part.startswith(quote):
-            if i == 0:
-                raise ValueError(f'Initial token cannot have quotes: {part}')
-            if part.endswith(quote) and part != quote:
-                sub.append(part[1:-1])
-                result.append(separator.join(sub))
-                sub = []
-            else:
-                sub.append(part[1:])
-            continue
-        if part.endswith(quote):
-            if len(sub) == 0:
-                raise ValueError(f'Wrongly placed quote in: {part}')
-            if part != quote:
-                sub.append(part[:-1])
-                result.append(separator.join(sub))
-            else:
-                result.append(separator)
-            sub = []
-            continue
-        if len(sub) > 0:
-            sub.append(part)
-            continue
-        result.append(part)
-
-    if len(sub) > 0:
-        raise ValueError(f'Unmatched quote: {quote}{sub[0]}')
-
-    return result
-
-
 def __list_to_dict(result: list) -> dict:
     k = None
     pairs = {}
@@ -627,7 +590,16 @@ def parse_query(value: str, separator=' ') -> dict[str, str]:
     :return: The dictionary of attributes.
     """
     value = value.replace('=', separator)
-    result: list[str] = tokenize(value, separator)
+    result: list[str] = split_preserving_quotes(value, separator)
+    for e in result:
+        if e.startswith("'") and not e.endswith("'"):
+            raise ValueError(f'Invalid value, missing closing quote for: "{e}"')
+        if e.endswith("'") and not e.startswith("'"):
+            raise ValueError(f'Invalid value, missing opening quote for: "{e}"')
+        if e.startswith('"') and not e.endswith('"'):
+            raise ValueError(f"Invalid value, missing closing quote for: '{e}'")
+        if e.endswith('"') and not e.startswith('"'):
+            raise ValueError(f"Invalid value, missing opening quote for: '{e}'")
     return __list_to_dict(result)
 
 
@@ -699,15 +671,31 @@ class RunArg(str, Enum):
         return RunArg._update_defaults(target)
 
     @staticmethod
-    def of_sys_argv(add_to: dict[str, any] = None) -> dict[str, any]:
+    def of_defaults(add_to: dict[str, any] = None) -> dict[str, any]:
         if add_to is None:
             add_to = {}
+        run_args_from_env = os.environ.get("RUN_ARGS", None)
+        if run_args_from_env:
+            run_args_from_env = run_args_from_env.split(' ')
+            run_arg_names = run_args_from_env[::2]
+            for arg in run_arg_names:
+                if arg.startswith('--'):
+                    arg = arg[2:]
+                elif  arg.startswith('-'):
+                    arg = arg[1:]
+                else:
+                    raise ValueError(f'Invalid run argument: {arg}')
+                run_arg = RunArg(arg)
+                sval = RunArg._get_arg_value(run_arg, run_args_from_env)
+                if not sval:
+                    raise ValueError(f'Invalid run argument: {run_arg}="{sval}"')
+                add_to[str(run_arg.value)] = RunArg._parse(run_arg, sval)
         for e in RunArg:
             run_arg = RunArg(e)
-            sval = RunArg.get_sys_argv_value(run_arg)
+            sval = RunArg._get_sys_argv_value(run_arg)
             if not sval:
                 continue
-            add_to[run_arg.value] = RunArg._parse(run_arg, sval)
+            add_to[str(run_arg.value)] = RunArg._parse(run_arg, sval)
         return RunArg._update_defaults(add_to)
 
     @staticmethod
@@ -732,20 +720,33 @@ class RunArg(str, Enum):
         return result
 
     @staticmethod
-    def get_sys_argv_value(run_arg: 'RunArg', result_if_none: Union[any, None] = None) -> any:
+    def _get_sys_argv_value(run_arg: 'RunArg', result_if_none: Union[any, None] = None) -> any:
         """
-        Get the value of the argument with the given name.
+        Get the value of the argument with the given name from the system arguments (sys.argv).
         Arguments have aliases that can be used to refer to them.
         --agents twitter could be written as -a twitter
         :param run_arg: The run argument.
         :param result_if_none: The result to return if none
         :return: The value of the argument with the given name.
         """
-        sys_args: [str] = [e.lower() for e in sys.argv]
-        candidates: [str] = [f'--{run_arg.value}', f'-{run_arg.alias}']
+        return RunArg._get_arg_value(run_arg, sys.argv, result_if_none)
+
+    @staticmethod
+    def _get_arg_value(run_arg: 'RunArg', args: list[str], result_if_none: Union[any, None] = None) -> any:
+        """
+        Get the value of the argument with the given name.
+        Arguments have aliases that can be used to refer to them.
+        --agents twitter could be written as -a twitter
+        :param run_arg: The run argument.
+        :param args: The list of arguments to search in.
+        :param result_if_none: The result to return if none
+        :return: The value of the argument with the given name.
+        """
+        args: list[str] = [e.lower() for e in args]
+        candidates: list[str] = [f'--{run_arg.value}', f'-{run_arg.alias}']
         for candidate in candidates:
-            if candidate in sys_args:
-                return sys_args[sys_args.index(candidate) + 1]
+            if candidate in args:
+                return args[args.index(candidate) + 1]
         return result_if_none
 
     @staticmethod

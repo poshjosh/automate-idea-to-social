@@ -9,7 +9,6 @@ STR_OR_LIST = TypeVar("STR_OR_LIST", bound=Union[str, list[str]])
 DEFAULT_ACTIONS: list[str] = ['click']
 
 
-# TODO - Move this function to config.py
 def element_action_signatures(config: dict[str, any], element_name: str) -> list[str]:
     if AgentConfig.is_default_actions_key(element_name):
         raise ValueError(f'The provided key (i.e {element_name}) is a reserved word.')
@@ -22,24 +21,6 @@ def element_action_signatures(config: dict[str, any], element_name: str) -> list
         return __element_action_signatures(element_config, ACTIONS_KEY, default_actions)
     else:
         raise ValueError(f'Unexpected element config type: {type(element_config)}')
-
-
-def __element_action_signatures(config: dict[str, any],
-                                name: str,
-                                result_if_none: list[str]) -> list[str]:
-    check_for_typo(config, name)
-    default_actions: STR_OR_LIST = result_if_none if not config \
-        else config.get(name, result_if_none)
-    return __to_list(default_actions)
-
-
-def __to_list(source: Union[str, list]) -> list[str]:
-    if isinstance(source, str):
-        return [source]
-    elif isinstance(source, list):
-        return source
-    else:
-        raise ValueError(f'Invalid type for: {source}, expected list | str')
 
 
 def parse_agent_to_stages(action_signature: [str],
@@ -61,3 +42,21 @@ def parse_agent_to_stages(action_signature: [str],
         stages.append(stage)
         agent_to_stages[agent_name] = stages
     return action_name, agent_to_stages
+
+
+def __element_action_signatures(config: dict[str, any],
+                                name: str,
+                                result_if_none: list[str]) -> list[str]:
+    check_for_typo(config, name)
+    default_actions: STR_OR_LIST = result_if_none if not config \
+        else config.get(name, result_if_none)
+    return __to_list(default_actions)
+
+
+def __to_list(source: Union[str, list]) -> list[str]:
+    if isinstance(source, str):
+        return [source]
+    elif isinstance(source, list):
+        return source
+    else:
+        raise ValueError(f'Invalid type for: {source}, expected list | str')

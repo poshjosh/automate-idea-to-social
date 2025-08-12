@@ -14,7 +14,7 @@ class SearchConfigTest(unittest.TestCase):
         k = "name"
         v = "value with spaces"
         attr: dict[str, str] = parse_query(f'{k}="{v}"')
-        self.assertEqual(v, attr[k])
+        self.assertEqual(f'"{v}"', attr[k])
 
     def test_parse_attributes_should_succeed_given_multiple_pairs(self):
         k0 = "name0"
@@ -31,8 +31,8 @@ class SearchConfigTest(unittest.TestCase):
         k1 = "name1"
         v1 = "value1 with spaces"
         attr: dict[str, str] = parse_query(f'{k0}="{v0}" {k1}="{v1}"')
-        self.assertEqual(v0, attr[k0])
-        self.assertEqual(v1, attr[k1])
+        self.assertEqual(f'"{v0}"', attr[k0])
+        self.assertEqual(f'"{v1}"', attr[k1])
 
     def test_parse_attributes_should_fail_given_multiple_pairs_with_misplaced_quotes(self):
         k0 = "name0"

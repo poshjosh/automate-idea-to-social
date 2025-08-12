@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Run args/options may now be passed via ENV variables, e.g. `RUN_ARGS="--browser-visible"`.
+- Improve parsing of config action signatures and others.
 - Make config extension applicable to all config types.
 - Separate browser config from app config.
 

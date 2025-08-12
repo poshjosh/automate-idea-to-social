@@ -4,7 +4,7 @@ import uuid
 from typing import Union
 
 from .variable_parser import get_run_arg_replacement
-from ..config import tokenize
+from ..config import split_preserving_quotes
 from ..env import get_agent_results_dir, get_content_dir
 
 logger = logging.getLogger(__name__)
@@ -34,7 +34,7 @@ class Action:
            run_context: 'RunContext' = None) -> 'Action':
         if action_signature == 'none':
             return Action.none()
-        parts: list[str] = tokenize(action_signature)
+        parts: list[str] = split_preserving_quotes(action_signature)
         if len(parts) == 0:
             raise ValueError(f'Unsupported action: {stage_item_id}.{action_signature}')
 

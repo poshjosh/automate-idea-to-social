@@ -13,22 +13,12 @@ from aideas.app.web.webdriver_creator import WebDriverCreator
 __TEST_SRC_DIR = f'{os.getcwd()}/test/app'
 
 
-class TestConfigLoader(ConfigLoader):
-    def __init__(self, config_path: str, variable_source: dict[str, any] or None = None):
-        super().__init__(config_path, variable_source)
-        super()._add_variable_source(self.load_run_config())  # Properties file
-
-
 def get_main_config_loader(variable_source: dict[str, any] or None = None) -> ConfigLoader:
-    return TestConfigLoader(os.path.join("resources", "config"), variable_source)
+    return ConfigLoader(os.path.join("resources", "config"), variable_source)
 
 
 def get_test_config_loader(variable_source: dict[str, any] or None = None) -> ConfigLoader:
-    return TestConfigLoader(os.path.join("test", "resources", "config"), variable_source)
-
-
-def load_agent_names(check_replaced: bool = True) -> [str]:
-    return get_main_config_loader().load_agent_configs(check_replaced).keys()
+    return ConfigLoader(os.path.join("test", "resources", "config"), variable_source)
 
 
 def load_app_config() -> dict[str, any]:
@@ -39,15 +29,11 @@ def load_agent_config(agent_name: str, check_replaced: bool = True) -> dict[str,
     return get_main_config_loader().load_agent_config(agent_name, check_replaced)
 
 
-def load_run_config(agent_names: [str] = None) -> dict[str, any]:
+def get_run_context(agent_names: [str] = None) -> RunContext:
     run_config = get_test_config_loader().load_run_config()
     if agent_names:
         run_config[RunArg.AGENTS] = agent_names
-    return run_config
-
-
-def get_run_context(agent_names: [str] = None) -> RunContext:
-    return RunContext.of_config(load_app_config(), load_run_config(agent_names))
+    return RunContext.of_config(load_app_config(), run_config)
 
 
 def init_logging(config):

@@ -12,6 +12,6 @@ if __name__ == '__main__':
 
     run_config = config_loader.load_run_config()
 
-    run_config.update(RunArg.of_sys_argv())
+    run_config.update(RunArg.of_defaults())
 
     AgentTask.of_defaults(config_loader, run_config).start()

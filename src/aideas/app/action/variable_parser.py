@@ -85,7 +85,7 @@ def get_run_arg_replacement(curr_path: [str], arg: str, run_context: 'RunContext
     return replacement
 
 
-def get_variables(config: dict[str, any], include_scoped_variables: bool = True) -> [str]:
+def get_variables(config: dict[str, any], include_scoped_variables: bool = True) -> list[str]:
 
     variables = []
 
@@ -105,6 +105,8 @@ def get_variables(config: dict[str, any], include_scoped_variables: bool = True)
         return text
 
     __visit_all_variables(config, visit)
+    #
+    # logger.info(f"\nFound variables: {variables}\nIn config:\n{config}")
 
     return variables
 

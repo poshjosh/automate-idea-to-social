@@ -1,7 +1,7 @@
 import copy
 import unittest
 
-from aideas.app.config import tokenize, merge_configs, update_config
+from aideas.app.config import merge_configs, update_config
 
 
 class ConfigTest(unittest.TestCase):
@@ -71,16 +71,6 @@ class ConfigTest(unittest.TestCase):
         self.assertFalse(b.get('bool'))
         self.assertListEqual([0, 1], b.get('list'))
         self.assertDictEqual({'k0': 'v0', 'k1': 'v1'}, b.get('dict'))
-
-    def test_of_given_multiple_quotes_should_return_valid_action(self):
-        action_signature = 'first " " $TEXT_TITLE "#shorts"'
-        result = tokenize(action_signature)
-        self.assertEqual(['first', ' ', '$TEXT_TITLE', '#shorts'], result)
-
-    def test_tokenize_given_multiple_quote_mixed_with_spaces_should_return_valid_action(self):
-        action_signature = 'test-action " a boy shorts" tinkerer'
-        result = tokenize(action_signature)
-        self.assertEqual(['test-action', ' a boy shorts', 'tinkerer'], result)
 
 
 if __name__ == '__main__':

@@ -72,7 +72,9 @@ class AgentTask(Task):
         config_loader = config_loader.with_added_variable_source(run_config)
         app_config = config_loader.load_app_config()
         agent_factory = AgentFactory(config_loader, app_config)
-        return AgentTask(agent_factory, RunContext.of_config(app_config, run_config))
+        config = config_loader.load_run_config()
+        config.update(run_config)
+        return AgentTask(agent_factory, RunContext.of_config(app_config, config))
 
     def __init__(self, agent_factory: AgentFactory, run_context: RunContext):
         super().__init__()

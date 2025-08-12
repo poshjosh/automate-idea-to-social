@@ -17,7 +17,7 @@ class ValidationError(Exception):
 
 class RequestData:
     @staticmethod
-    def get_list(request, key: str, result_if_none: [str]) -> [str]:
+    def get_list(request, key: str, result_if_none: [str]) -> list[str]:
         values = request.args.to_dict(flat=False).get(key)
         if not values:
             values = request.form.getlist(key)
