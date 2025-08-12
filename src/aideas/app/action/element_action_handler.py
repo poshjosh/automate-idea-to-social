@@ -141,7 +141,7 @@ class ElementActionHandler(BrowserActionHandler):
                 time.sleep(0.5)
             result = action.get_arg_str()
         else:
-            return super()._execute(run_context, action, key)  # Success state has already been printed
+            return super()._execute_by_key(run_context, action, key)  # Success state has already been printed
         result = result if isinstance(result, ActionResult) else ActionResult.success(action, result)
         logger.debug(f'{result}')
         return result

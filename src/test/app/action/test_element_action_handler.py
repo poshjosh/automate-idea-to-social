@@ -18,7 +18,7 @@ class TestElementActionHandler(ElementActionHandler):
             result = result.flip()
         return result
 
-    def _execute(self, run_context: RunContext, action: Action, key: str) -> ActionResult:
+    def _execute_by_key(self, run_context: RunContext, action: Action, key: str) -> ActionResult:
         if action == Action.none():
             return ActionResult.none()
         action_id: BaseActionId = ElementActionHandler.to_action_id(
@@ -34,7 +34,7 @@ class TestElementActionHandler(ElementActionHandler):
                 or key == ActionId.EVAL.value
                 or key == ActionId.EXEC.value
                 or key == ActionId.SET_CONTEXT_VALUES.value):
-            return super()._execute(run_context, action, key)
+            return super()._execute_by_key(run_context, action, key)
 
         if (key == BrowserActionId.BROWSE_TO.value
                 or key == BrowserActionId.DELETE_COOKIES.value
@@ -43,7 +43,7 @@ class TestElementActionHandler(ElementActionHandler):
                 or key == BrowserActionId.EXECUTE_SCRIPT.value
                 or key == BrowserActionId.MOVE_BY_OFFSET.value
                 or key == BrowserActionId.REFRESH.value):
-            return super()._execute(run_context, action, key)
+            return super()._execute_by_key(run_context, action, key)
 
         return ActionResult(action, True,
                             'test-result' if result_producing else None)

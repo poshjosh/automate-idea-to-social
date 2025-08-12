@@ -82,14 +82,14 @@ class ActionHandler:
     def execute(self, run_context: RunContext, action: Action) -> ActionResult:
         try:
             key = action.get_name_without_negation() if action.is_negation() else action.get_name()
-            result = self._execute(run_context, action, key)
+            result = self._execute_by_key(run_context, action, key)
             if action.is_negation():
                 result = result.flip()
             return result
         except Exception as ex:
             self.throw_error(ex, action)
 
-    def _execute(self, run_context: RunContext, action: Action, key: str) -> ActionResult:
+    def _execute_by_key(self, run_context: RunContext, action: Action, key: str) -> ActionResult:
         if action == Action.none():
             result = ActionResult.none()
         elif key == ActionId.EVAL.value:

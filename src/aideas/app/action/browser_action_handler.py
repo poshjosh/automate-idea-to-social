@@ -59,7 +59,7 @@ class BrowserActionHandler(ActionHandler):
             return self
         return self.__class__(self.__element_selector, timeout)
 
-    def _execute(self, run_context: RunContext, action: Action, key: str) -> ActionResult:
+    def _execute_by_key(self, run_context: RunContext, action: Action, key: str) -> ActionResult:
         if key.endswith('alert'):  # accept_alert|dismiss_alert
             result = self.__handle_alert(action)
         elif key == BrowserActionId.BROWSE_TO.value:
@@ -81,7 +81,7 @@ class BrowserActionHandler(ActionHandler):
         elif key == BrowserActionId.SAVE_WEBPAGE.value:
             result = self.__save_webpage(action)
         else:
-            return super()._execute(run_context, action, key)
+            return super()._execute_by_key(run_context, action, key)
         logger.debug(f'{result}')
         return result
 
