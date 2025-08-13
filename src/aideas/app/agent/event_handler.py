@@ -70,7 +70,7 @@ class EventHandler:
                      config_path: ConfigPath,
                      event_name: str,
                      run_context: RunContext,
-                     run_stages: Callable[[RunContext, OrderedDict[str, [Name]]], None]) \
+                     run_stages: Callable[[RunContext, OrderedDict[str, list[Name]]], None]) \
             -> ElementResultSet:
         return self.__handle_event(
             agent_name, config, config_path, event_name, run_context, run_stages, trials=1)
@@ -80,7 +80,7 @@ class EventHandler:
                             config: AgentConfig,
                             config_path: ConfigPath,
                             run_context: RunContext,
-                            run_stages: Callable[[RunContext, OrderedDict[str, [Name]]], None],
+                            run_stages: Callable[[RunContext, OrderedDict[str, list[Name]]], None],
                             retry: Callable[[int], ElementResultSet] = None,
                             exception: Exception = None,
                             result: ElementResultSet = None,
@@ -98,7 +98,7 @@ class EventHandler:
                        config_path: ConfigPath,
                        event_name: str,
                        run_context: RunContext,
-                       run_stages: Callable[[RunContext, OrderedDict[str, [Name]]], None],
+                       run_stages: Callable[[RunContext, OrderedDict[str, list[Name]]], None],
                        retry: Callable[[int], ElementResultSet] = None,
                        exception: Exception = None,
                        result: ElementResultSet = None,
@@ -211,7 +211,7 @@ class NoopEventHandler(EventHandler):
                      config_path: ConfigPath,
                      event_name: str,
                      run_context: RunContext,
-                     run_stages: Callable[[RunContext, OrderedDict[str, [Name]]], None]) \
+                     run_stages: Callable[[RunContext, OrderedDict[str, list[Name]]], None]) \
             -> ElementResultSet:
         return ElementResultSet.none()
 
@@ -220,7 +220,7 @@ class NoopEventHandler(EventHandler):
                             config: AgentConfig,
                             config_path: ConfigPath,
                             run_context: RunContext,
-                            run_stages: Callable[[RunContext, OrderedDict[str, [Name]]], None],
+                            run_stages: Callable[[RunContext, OrderedDict[str, list[Name]]], None],
                             retry: Callable[[int], ElementResultSet] = None,
                             exception: Exception = None,
                             result: ElementResultSet = None,

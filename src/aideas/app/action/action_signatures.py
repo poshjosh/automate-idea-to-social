@@ -23,14 +23,14 @@ def element_action_signatures(config: dict[str, any], element_name: str) -> list
         raise ValueError(f'Unexpected element config type: {type(element_config)}')
 
 
-def parse_agent_to_stages(action_signature: [str],
+def parse_agent_to_stages(action_signature: str,
                           calling_agent: str,
                           calling_stage: Union[str, Name]) \
         -> tuple[str, OrderedDict[str, list[Name]]]:
     calling_stage = Name.of(calling_stage)
     parts = action_signature.split(' ')
     action_name: str = parts[0]
-    agent_stages: [str] = parts[1:]
+    agent_stages: list[str] = parts[1:]
     agent_to_stages: OrderedDict[str, list[Name]] = OrderedDict()
     # target format = `agent_name.stage_name` or simply `stage_name`  (agent_name is optional)
     for target in agent_stages:
