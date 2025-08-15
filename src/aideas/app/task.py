@@ -10,7 +10,7 @@ from pyu.io.logging import SecretsMaskingFilter
 from .action.action import Action
 from .action.action_result import ActionResult
 from .agent.agent_factory import AgentFactory
-from .env import get_cached_results_file
+from .env import get_cached_results_file, is_production
 from .result.result_set import AgentResultSet, StageResultSet
 from .config_loader import ConfigLoader
 from .run_context import RunContext
@@ -112,7 +112,8 @@ class AgentTask(Task):
                       .replace("(success=True,", '(<span style="color:green">SUCCESS</span>,')
                       .replace("(success=False,", '(<span style="color:red">FAILURE</span>,'))
 
-        result_str = AgentTask.secrets_masking_filter.redact(result_str)
+        if is_production():
+            result_str = AgentTask.secrets_masking_filter.redact(result_str)
 
         # Replace new-line only after masking secrets
         return state_str + result_str.replace("\n", "<br/>")

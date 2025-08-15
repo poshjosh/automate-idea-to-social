@@ -135,7 +135,7 @@ def is_docker() -> bool:
 
 
 def is_production() -> bool:
-    return 'prod' in os.environ.get('APP_ENV', '')
+    return 'prod' in os.environ.get('APP_PROFILES', '')
 
 
 def is_web_app() -> bool:

@@ -635,6 +635,7 @@ class RunArg(str, Enum):
     IMAGE_FILE_LANDSCAPE = ('image-file-landscape', 'vci', 'str', False, True)
     IMAGE_FILE_SQUARE = ('image-file-square', 'vcis', 'str', True, True)
     LANGUAGE_CODES = ('language-codes', 'lc', 'str', True, False)
+    SAVE_SCREENS = ('save-screens', 'ss', 'str', True, False)
     SHARE_COVER_IMAGE = ('share-cover-image', 'sci', 'bool', True, False)
     SUBTITLES_FILE = ('subtitles-file', 'sf', 'str', True, True)
     TEXT_CONTENT = ('text-content', 'tc', 'str', True, False)

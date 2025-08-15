@@ -15,7 +15,7 @@ from ..action.element_action_handler import ElementActionHandler
 from ..action.variable_parser import get_run_arg_replacement
 from ..agent.automator import Automator, AutomationListener, AutomationEvent
 from ..agent.event_handler import EventHandler
-from ..config import AgentConfig, ConfigPath, Name, SearchConfigs, merge_configs, BrowserConfig
+from ..config import AgentConfig, ConfigPath, Name, SearchConfigs, BrowserConfig, RunArg
 from ..result.result_set import ElementResultSet
 from ..run_context import RunContext
 
@@ -26,6 +26,28 @@ logger = logging.getLogger(__name__)
 class BrowserAutomationEvent(AutomationEvent):
     PAGE_LOADED = ("PAGE_LOADED", False)
 
+# always|never|onerror|onfailure|onsuccess
+# always and never are exclusive. The rest may be combined with each other.
+_SAVE_SCREENS_ALWAYS = "always"
+_SAVE_SCREENS_NEVER = "never"
+_SAVE_SCREENS_ON_ERROR = "onerror"
+_SAVE_SCREENS_ON_FAILURE = "onfailure"
+_SAVE_SCREENS_ON_SUCCESS = "onsuccess"
+_SAVE_SCREENS_ON_START = "onstart"
+
+def _save_screens_arg(run_context: RunContext) -> str:
+    def err_msg(opt: str) -> str:
+        return f"Invalid {RunArg.SAVE_SCREENS.value} option. Option: `{opt}` cannot be combined with other options."
+    arg = run_context.get_arg(RunArg.SAVE_SCREENS, _SAVE_SCREENS_NEVER)
+    # We do this because, always and never are exclusive. The rest may be combined with each other.
+    if _SAVE_SCREENS_ALWAYS != arg and _SAVE_SCREENS_ALWAYS in arg:
+        raise ValueError(err_msg(_SAVE_SCREENS_ALWAYS))
+    if _SAVE_SCREENS_NEVER != arg and _SAVE_SCREENS_NEVER in arg:
+        raise ValueError(err_msg(_SAVE_SCREENS_NEVER))
+    return arg
+
+def _is_save_screens(run_context: RunContext, value: str) -> bool:
+    return _save_screens_arg(run_context) == _SAVE_SCREENS_ALWAYS or value in _save_screens_arg(run_context)
 
 class BrowserAutomationListener(AutomationListener):
     def __init__(self, agent_name: str, action_handler: BrowserActionHandler):
@@ -34,14 +56,26 @@ class BrowserAutomationListener(AutomationListener):
 
     def on_error(self, event: AutomationEvent, config_path: ConfigPath,
                  run_context: RunContext, exception: Exception):
-        self._on_event(event, config_path, run_context)
+        if _is_save_screens(run_context, _SAVE_SCREENS_ON_ERROR):
+            self._on_event(event, config_path, run_context)
 
     def on_event(self, event: AutomationEvent, config_path: ConfigPath, run_context: RunContext):
-        self._on_event(event, config_path, run_context)
+        if _save_screens_arg(run_context) == _SAVE_SCREENS_ALWAYS:
+            self._on_event(event, config_path, run_context)
 
-    def on_result(self, event: AutomationEvent, config_path: ConfigPath, run_context: RunContext,
+    def on_start(self, event: AutomationEvent, config_path: ConfigPath, run_context: RunContext):
+        if _is_save_screens(run_context, _SAVE_SCREENS_ON_START):
+            self._on_event(event, config_path, run_context)
+
+    def on_success(self, event: AutomationEvent, config_path: ConfigPath, run_context: RunContext,
                   result_set: ElementResultSet):
-        self._on_event(event, config_path, run_context)
+        if _is_save_screens(run_context, _SAVE_SCREENS_ON_SUCCESS):
+            self._on_event(event, config_path, run_context)
+
+    def on_failure(self, event: AutomationEvent, config_path: ConfigPath, run_context: RunContext,
+                   result_set: ElementResultSet):
+        if _is_save_screens(run_context, _SAVE_SCREENS_ON_FAILURE):
+            self._on_event(event, config_path, run_context)
 
     def _on_event(self, event: AutomationEvent, config_path: ConfigPath, run_context: RunContext):
         self.__save_view(config_path, run_context, BrowserActionId.SAVE_SCREENSHOT, event)
@@ -132,7 +166,7 @@ class BrowserAutomator(Automator):
         link: str = config.get_url(stage, self.__webdriver.current_url)
 
         page_loaded: bool = self.__element_selector.load_page(link)
-        if page_loaded is True:
+        if page_loaded:
             self.get_listener().on_event(
                 BrowserAutomationEvent.PAGE_LOADED, ConfigPath.of(stage), run_context)
 

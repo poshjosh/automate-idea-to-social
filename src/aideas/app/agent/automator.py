@@ -41,9 +41,10 @@ class AutomationEvent(str, Enum):
 @unique
 class BaseAutomationEvent(AutomationEvent):
     SELECT_TARGET = ("SELECT_TARGET", False)
-    STAGE_BEGIN = ("STAGE_BEGIN", False)
-    STAGE_END = ("STAGE_END", False)
+    STAGE_START = ("STAGE_START", False)
+    STAGE_SUCCESS = ("STAGE_SUCCESS", False)
     STAGE_FAIL = ("STAGE_FAIL", True)
+    STAGE_ERROR = ("STAGE_ERROR", True)
     TARGET_NOT_FOUND = ("TARGET_NOT_FOUND", True)
 
 
@@ -63,11 +64,26 @@ class AutomationListener:
         """Subclasses should override this method as needed."""
         pass
 
-    def on_result(self,
+    def on_start(self,
+                 event: AutomationEvent,
+                 config_path: ConfigPath,
+                 run_context: RunContext):
+        """Subclasses should override this method as needed."""
+        pass
+
+    def on_success(self,
                   event: AutomationEvent,
                   config_path: ConfigPath,
                   run_context: RunContext,
                   result_set: ElementResultSet):
+        """Subclasses should override this method as needed."""
+        pass
+
+    def on_failure(self,
+                   event: AutomationEvent,
+                   config_path: ConfigPath,
+                   run_context: RunContext,
+                   result_set: ElementResultSet):
         """Subclasses should override this method as needed."""
         pass
 
@@ -156,7 +172,7 @@ class Automator:
 
         config_path: ConfigPath = ConfigPath.of(stage)
 
-        self.__listener.on_event(BaseAutomationEvent.STAGE_BEGIN, config_path, run_context)
+        self.__listener.on_start(BaseAutomationEvent.STAGE_START, config_path, run_context)
 
         try:
 
@@ -164,13 +180,15 @@ class Automator:
 
             success: bool = False if result_set is None else \
                 EventHandler.is_path_successful(result_set, config, config_path)
-            event = BaseAutomationEvent.STAGE_END if success else BaseAutomationEvent.STAGE_FAIL
-            self.__listener.on_result(event, config_path, run_context, result_set)
+            if success:
+                self.__listener.on_success(BaseAutomationEvent.STAGE_SUCCESS, config_path, run_context, result_set)
+            else:
+                self.__listener.on_failure(BaseAutomationEvent.STAGE_FAIL, config_path, run_context, result_set)
 
             return result_set
 
         except Exception as ex:
-            self.__listener.on_error(BaseAutomationEvent.STAGE_FAIL, config_path, run_context, ex)
+            self.__listener.on_error(BaseAutomationEvent.STAGE_ERROR, config_path, run_context, ex)
             raise ex
 
     def _act_on_elements(self,

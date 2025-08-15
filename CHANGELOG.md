@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Run arg `--save-screens` (`-ss`), a string to specify when screenshots and web pages 
+should be saved. Possible values are: `always|never|onerror|onfailure|onsuccess|onstart`.
+The default value is `onerror`.
+
+### Changed
+
+- Mask secrets only when in production mode.
+
 ## [0.3.0] - 2025-08-15
 
 ### Added

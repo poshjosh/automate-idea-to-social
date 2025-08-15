@@ -31,7 +31,7 @@ def load_agent_config(agent_name: str, check_replaced: bool = True) -> dict[str,
     return get_main_config_loader().load_agent_config(agent_name, check_replaced)
 
 
-def get_run_context(agent_names: [str] = None) -> RunContext:
+def get_run_context(agent_names: list[str] = None) -> RunContext:
     run_config = get_test_config_loader().load_run_config()
     if agent_names:
         run_config[RunArg.AGENTS] = agent_names

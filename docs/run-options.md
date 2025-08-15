@@ -45,4 +45,8 @@ subtitles-file:
 browser-visible: false
 
 continue-on-error: false
+
+# Possible values: always|never|onerror|onfailure|onsuccess|onstart
+# always and never are exclusive. The rest may be combined with each other.
+save-screens: onerror
 ```

@@ -1,10 +1,7 @@
-import os
-
 from aideas.app.action.action import Action
 from aideas.app.action.action_result import ActionResult
 from aideas.app.action.action_handler import ActionId, BaseActionId, TARGET
 from aideas.app.action.element_action_handler import ElementActionHandler
-from aideas.app.env import Env
 from aideas.app.run_context import RunContext
 from aideas.app.action.browser_action_handler import BrowserActionId
 

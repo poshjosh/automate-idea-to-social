@@ -8,7 +8,7 @@ The complete list of environment variables that can be used to configure the beh
 # All non-absolute paths are relative to the application's working dir.
 ################################################################################################
 
-APP_ENV=[prod|dev|test]
+APP_PROFILES=[prod|dev|test|docker]
 
 # docker
 # default value is: latest
