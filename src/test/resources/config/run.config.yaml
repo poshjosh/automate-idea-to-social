@@ -33,4 +33,6 @@ video-file-square: test/resources/test-content/video-file-square.mp4
 
 video-file-portrait: test/resources/test-content/video-portrait.mp4
 
-share-cover-image: false
+share-cover-image: true
+
+browser-visible: false

@@ -2,7 +2,7 @@ import logging.config
 import unittest
 
 from test.app.agent.test_blog_agent import TestBlogAgent
-from test.app.test_functions import init_logging, load_agent_config, get_run_context
+from test.app.test_functions import init_logging, load_agent_config, get_run_context, run_agent
 from aideas.app.agent.agent_name import AgentName
 from aideas.app.run_context import RunContext
 
@@ -18,9 +18,7 @@ class BlogAgentTest(unittest.TestCase):
             run_context.get_app_config().to_dict(),
             load_agent_config(agent_name, True))
 
-        result = agent.run(run_context)
-
-        print(f'Completed. Result:\n{result.pretty_str()}')
+        result = run_agent(agent, run_context)
 
         self.assertTrue(result.is_successful())
 

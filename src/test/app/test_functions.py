@@ -6,9 +6,10 @@ from typing import Union, Callable
 from selenium import webdriver
 
 from aideas.app.action.action_result import ActionResult
+from aideas.app.agent.agent import Agent
 from aideas.app.config import RunArg, BrowserConfig, merge_configs
 from aideas.app.config_loader import ConfigLoader
-from aideas.app.result.result_set import ElementResultSet
+from aideas.app.result.result_set import ElementResultSet, StageResultSet
 from aideas.app.run_context import RunContext
 from aideas.app.web.webdriver_creator import WebDriverCreator
 
@@ -37,6 +38,14 @@ def get_run_context(agent_names: list[str] = None) -> RunContext:
         run_config[RunArg.AGENTS] = agent_names
     return RunContext.of_config(load_app_config(), run_config)
 
+def run_agent(agent: Agent, run_context: RunContext) -> StageResultSet:
+    result = StageResultSet.none()
+    try:
+        result = agent.run(run_context)
+    finally:
+        [delete_saved_files(result.get(k)) for k in result.keys()]
+    print(f'Completed {agent.get_name()}. Result:\n{result.pretty_str()}')
+    return result
 
 def init_logging(config, dict_config: dict or None = None):
     logging.basicConfig(level=logging.INFO)

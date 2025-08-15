@@ -35,12 +35,12 @@ video-file-portrait:
   
 video-file-square:  
 
-# Optional. If cover image should be shared when multiple translations of one post is being made.
-share-cover-image:
-
 input-language-code: en
 
 subtitles-file:
+
+# Optional. If cover image should be shared when multiple translations of one post is being made.
+share-cover-image:
   
 browser-visible: false
 

@@ -4,9 +4,7 @@ from unittest import mock
 
 from aideas.app.agent.translation.subtitles_translation_agent import SubtitlesTranslationAgent
 from aideas.app.agent.translation.translator import Translator
-from test.app.test_functions import delete_saved_files, init_logging, get_run_context, \
-    load_agent_config
-from aideas.app.result.result_set import StageResultSet
+from test.app.test_functions import init_logging, get_run_context, load_agent_config, run_agent
 from aideas.app.agent.agent_name import AgentName
 from aideas.app.run_context import RunContext
 
@@ -26,12 +24,7 @@ class SubtitlesTranslationAgentTest(unittest.TestCase):
             agent = SubtitlesTranslationAgent.of_config(
                 agent_name, run_context.get_app_config().to_dict(), agent_config)
 
-            result_set: StageResultSet = StageResultSet.none()
-            try:
-                result: agent.run(run_context)
-                print(f'Completed. Result:\n{result_set.pretty_str()}')
-            finally:
-                [delete_saved_files(result_set.get(k)) for k in result_set.keys()]
+            run_agent(agent, run_context)
 
 
 if __name__ == '__main__':

@@ -21,7 +21,7 @@ For example to introduce a new `bool` variable named `ignore-fools`, do the foll
 
 - Specify `ignore-fools` in the config which will be run using that variable, e.g. in `src/resources/config/agent/fake.config.yml`:
 ```yaml
-extras: $IGNORE_FOOLS 
+form-field-ignore-fools: $IGNORE_FOOLS 
 ```
 
 - Add the appropriate form input HTML `ignore-fools.html` in `src/aideas/templates/automate/form`, e.g.:

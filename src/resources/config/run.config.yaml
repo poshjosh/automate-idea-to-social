@@ -36,4 +36,6 @@ language-codes: en
 # Optional. If not set, image-file-landscape will be used
 #image-file-square:
 
-share-cover-image: false
+share-cover-image: true
+
+browser-visible: false

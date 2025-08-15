@@ -12,7 +12,7 @@ stages:
     url: https://www.google.com/
     events:
       onstart: log INFO ||| START
-      error: log INFO ||| ERROR
+      onerror: log INFO ||| ERROR
       onsuccess: log INFO ||| SUCCESS
     stage-items:
       item-1:

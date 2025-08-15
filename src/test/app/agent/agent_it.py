@@ -1,5 +1,3 @@
-import time
-
 import copy
 import logging.config
 import os
@@ -9,11 +7,11 @@ from typing import Callable
 from aideas.app.action.action_handler import ActionError
 from aideas.app.agent.agent import Agent
 from test.app.test_functions import delete_saved_files, init_logging, load_agent_config, \
-    get_run_context
+    get_run_context, run_agent
 from aideas.app.agent.agent_name import AgentName
 from aideas.app.agent.browser_agent import BrowserAgent
 from aideas.app.config import Name, STAGES_KEY, STAGE_ITEMS_KEY
-from aideas.app.result.result_set import ElementResultSet, StageResultSet
+from aideas.app.result.result_set import ElementResultSet
 from aideas.app.run_context import RunContext
 
 from pyu.io.file import load_yaml_str
@@ -51,15 +49,11 @@ class AgentIT(unittest.TestCase):
 #         agent_config = load_yaml_str(yaml)
 #         agent = Agent.of_config(
 #             agent_name, run_context.get_app_config().to_dict(), agent_config)
-#
-#         result_set = StageResultSet.none()
 #         try:
-#             result_set = agent.run(run_context)
+#             run_agent(agent, run_context)
 #             self.fail("Should raise ActionError because help was not provided in this test case, but did not.")
 #         except ActionError:
 #             logging.info("ActionError raised as expected, test passed.")
-#         finally:
-#             [delete_saved_files(result_set.get(k)) for k in result_set.keys()]
 
     def test_ask_for_help_at_stage_item(self):
         agent_name: str = "test-agent"
@@ -77,15 +71,11 @@ stages:
         agent_config = load_yaml_str(yaml)
         agent = Agent.of_config(
             agent_name, run_context.get_app_config().to_dict(), agent_config)
-
-        result_set = StageResultSet.none()
         try:
-            result_set = agent.run(run_context)
+            run_agent(agent, run_context)
             self.fail("Should raise ActionError because help was not provided in this test case, but did not.")
         except ActionError:
             logging.info("ActionError raised as expected, test passed.")
-        finally:
-            [delete_saved_files(result_set.get(k)) for k in result_set.keys()]
 
     def test_ask_for_help_browser_agent(self):
         agent_name: str = "test-agent"
@@ -103,15 +93,11 @@ stages:
         agent_config = load_yaml_str(yaml)
         agent = BrowserAgent.of_config(
             agent_name, run_context.get_app_config().to_dict(), agent_config)
-
-        result_set = StageResultSet.none()
         try:
-            result_set = agent.run(run_context)
+            run_agent(agent, run_context)
             self.fail("Should raise ActionError because help was not provided in this test case, but did not.")
         except ActionError:
             logging.info("ActionError raised as expected, test passed.")
-        finally:
-            [delete_saved_files(result_set.get(k)) for k in result_set.keys()]
 
     def test_pictory_saved_video_is_available_for_other_agents(self):
         run_context: RunContext = get_run_context([pictory_agent])
