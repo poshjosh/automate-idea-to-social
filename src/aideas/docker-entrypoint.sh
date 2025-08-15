@@ -16,7 +16,7 @@ function keepUpScreen() {
     while true; do
         sleep 1
         if [ -z "$(pidof -x Xvfb)" ]; then
-            # Window size should match that in app.config.yaml
+            # Window size should match that in browser.config.yaml and other browser-xxx.yaml files.
             Xvfb "$DISPLAY" -screen "$DISPLAY" 1920x1080x16 &
         fi
     done
@@ -35,6 +35,9 @@ fi
 
 #printf "\nRunning: %s\n" "$@"
 #exec "$@"
+
+cd aideas || exit 1
+
 if [ "$WEB_APP" = true ] || [ "$WEB_APP" = "true" ] ; then
   exec python web.py "$RUN_ARGS"
 else
