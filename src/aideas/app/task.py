@@ -6,11 +6,11 @@ from concurrent.futures import Future, ThreadPoolExecutor
 from typing import Union, TypeVar, Callable
 
 from pyu.io.file import create_file
-from pyu.io.logging import SecretsMaskingFilter
 from .action.action import Action
 from .action.action_result import ActionResult
 from .agent.agent_factory import AgentFactory
-from .env import get_cached_results_file, is_production
+from .env import get_cached_results_file
+from .io.logging import SecretsMaskingLogFilter
 from .result.result_set import AgentResultSet, StageResultSet
 from .config_loader import ConfigLoader
 from .run_context import RunContext
@@ -46,7 +46,7 @@ class Task:
         raise NotImplementedError()
 
     def stop(self) -> 'Task':
-        if self.is_started() is True:
+        if self.is_started():
             self.__stopped = True
         return self
 
@@ -64,8 +64,7 @@ class Task:
 
 
 class AgentTask(Task):
-    secrets_masking_filter = SecretsMaskingFilter(
-        ["(password|key|secret|token|jwt|hash|signature|credential|auth|certificate|connection)"])
+    secrets_masking_log_filter = SecretsMaskingLogFilter()
 
     @staticmethod
     def of_defaults(config_loader: ConfigLoader, run_config: dict[str, any]) -> 'AgentTask':
@@ -87,7 +86,7 @@ class AgentTask(Task):
 
     def stop(self) -> 'AgentTask':
         super().stop()
-        if self.is_started() is False:
+        if self.is_started():
             return self
         if self.__current_agent is not None:
             self.__add_agent_state(self.__current_agent, "STOPPED")
@@ -112,8 +111,7 @@ class AgentTask(Task):
                       .replace("(success=True,", '(<span style="color:green">SUCCESS</span>,')
                       .replace("(success=False,", '(<span style="color:red">FAILURE</span>,'))
 
-        if is_production():
-            result_str = AgentTask.secrets_masking_filter.redact(result_str)
+        result_str = AgentTask.secrets_masking_log_filter.redact(result_str)
 
         # Replace new-line only after masking secrets
         return state_str + result_str.replace("\n", "<br/>")
@@ -159,16 +157,15 @@ class AgentTask(Task):
 
                     logger.exception(ex)
 
-                    if continue_on_error is True:
+                    if continue_on_error:
                         result = self.__run_context.get_stage_results(agent_name)
                         if not result or result.is_empty():
                             action = Action.of(agent_name, "*", "*", "*", self.__run_context)
                             self.__run_context.add_action_result(
                                 ActionResult.failure(action, "Error"))
+            return self.__run_context.get_result_set()
         finally:
             self.__run_context.get_result_set().close()
-
-        return self.__run_context.get_result_set()
 
     def __add_agent_state(self, agent_name: str, state: str):
         self.__agent_states[agent_name] = self.__agent_states[agent_name] + ' >> ' + state
@@ -205,7 +202,7 @@ __executor = ThreadPoolExecutor(max_workers=10)
 
 def init_tasks_cleanup(should_stop: Callable[[], bool], interval_seconds: int):
     def cleanup():
-        if should_stop is True:
+        if should_stop():
             logger.debug("Stopping tasks cleanup")
             return
         remove_completed_tasks()
@@ -234,10 +231,10 @@ def require_task(task_id: str) -> Task:
 
 
 def get_task_ids() -> list[str]:
-    return [e for e in __tasks.keys()]
+    return list(__tasks.keys())
 
 
-def shutdown() -> dict[str, Task]:
+def shutdown():
     try:
         tasks = {**__tasks}
         logger.debug(f"Shutting down {len(tasks)} tasks")
@@ -245,7 +242,6 @@ def shutdown() -> dict[str, Task]:
             stop_task(task_id)
         __executor.shutdown(wait=False, cancel_futures=True)
         logger.debug(f"Done shutting down {len(tasks)} tasks")
-        return tasks
     except Exception as ex:
         logger.exception(ex)
 

@@ -4,7 +4,7 @@ import signal
 import sys
 
 from .config_loader import ConfigLoader
-from .env import Env, is_production
+from .env import Env, is_production, get_env_value
 from .task import shutdown as shutdown_tasks, init_tasks_cleanup
 
 logger = logging.getLogger(__name__)
@@ -16,11 +16,11 @@ class App:
 
     @staticmethod
     def init() -> ConfigLoader:
-        print("Initializing app...") # logging not yet configured, so we use print
+        print("Initializing app, profiles: ", get_env_value(Env.APP_PROFILES)) # logging not yet configured, so we use print
         signal.signal(signal.SIGINT, App.shutdown)
         signal.signal(signal.SIGTERM, App.shutdown)
         Env.set_defaults()
-        if is_production() is True:
+        if is_production():
             init_tasks_cleanup(lambda: App.__shutting_down, 600)
         return ConfigLoader(os.path.join(os.getcwd(), 'resources', 'config'))
 
@@ -28,7 +28,7 @@ class App:
     def shutdown(signum, _):
         try:
             logger.warning(f"Received signal {signum}")
-            if App.__shutting_down is True:
+            if App.__shutting_down:
                 msg = "Already shutting down..." if App.__shutdown is False else "Already shut down"
                 logger.warning(msg)
                 return

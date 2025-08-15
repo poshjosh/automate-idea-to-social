@@ -1,3 +1,5 @@
+import logging
+
 from enum import Enum
 from typing import Union
 
@@ -8,6 +10,8 @@ from .env import Env, get_app_language as env_get_app_language
 from .i18n import DEFAULT_LANGUAGE_CODE
 from .result.result_set import AgentResultSet, StageResultSet, ElementResultSet
 
+logger = logging.getLogger(__name__)
+
 CURRENT_URL = 'current_url'
 CURRENT_ELEMENT = 'current_element'
 
@@ -15,7 +19,7 @@ CURRENT_ELEMENT = 'current_element'
 class RunContext:
     @staticmethod
     def none() -> 'RunContext':
-        return NONE
+        return RunContext({}, {})
 
     @staticmethod
     def of_config(app_config: dict[str, any],
@@ -115,6 +119,3 @@ class RunContext:
 
     def get_run_config(self) -> RunConfig:
         return self.__run_config
-
-
-NONE = RunContext({}, {})

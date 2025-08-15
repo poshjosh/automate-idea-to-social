@@ -63,10 +63,12 @@ class ConfigLoader(YamlLoader):
 
     def load_run_config(self, check_replaced: bool = True) -> dict[str, any]:
         result = self.load_from_path(self.get_path("run"), check_replaced)
-        return RunArg.of_dict(result)
+        result = RunArg.of_dict(result)
+        result.update(RunArg.of_defaults())
+        return result
 
     def load_browser_config(self, check_replaced: bool = True) -> dict[str, any]:
-        browser_visible = self.__variable_source.get(RunArg.BROWSER_VISIBLE.value, False)
+        browser_visible = self.load_run_config().get(RunArg.BROWSER_VISIBLE.value, False)
         return self.load_from_path(
             self.get_path("browser-visible" if browser_visible else "browser"), check_replaced)
 

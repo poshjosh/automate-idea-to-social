@@ -38,6 +38,8 @@ stages:
           shadow-attributes: type=button
   login:
     url: https://www.tiktok.com/login/phone-or-email/email
+    events:
+      onerror: ask_for_help "Please proceed till you login." 120
     stage-items:
       enter-username:
         search-for: //*[@id="loginContainer"]//form//input[@name="username"]

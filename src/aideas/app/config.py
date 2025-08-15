@@ -9,6 +9,7 @@ from typing import Union, TypeVar, Callable
 
 from pyu.io.file import read_content
 
+from .env import Env, get_env_value
 from .paths import Paths
 from .text import split_preserving_quotes
 
@@ -103,7 +104,7 @@ class RunConfig:
     def to_dict(self) -> dict[str, any]:
         return {**self.__config}
 
-    def get_agents(self, default: [str] = None) -> [str]:
+    def get_agents(self, default: [str] = None) -> list[str]:
         return self.__config.get('agents', [] if default is None else default)
 
     def is_continue_on_error(self, default: bool = False) -> bool:
@@ -141,11 +142,11 @@ class Name:
         return Name(name, identifier)
 
     @staticmethod
-    def of_lists(names: list[str], aliases: Union[list[str], None] = None) -> ['Name']:
+    def of_lists(names: list[str], aliases: Union[list[str], None] = None) -> list['Name']:
         if aliases is not None and len(names) != len(aliases):
             raise ValueError("The number of names and aliases must be the same")
         if aliases is None:
-            aliases: [str] = [name for name in names]
+            aliases: list[str] = list(names)
         return [Name(names[i], aliases[i]) for i in range(len(names))]
 
     def __init__(self, name: str, identifier: Union[str, None] = None):
@@ -197,7 +198,7 @@ class ConfigPath(tuple[Name]):
         return path
 
     def join(self, name: Union[str, Name]) -> 'ConfigPath':
-        return ConfigPath([e for e in self] + [Name.of(name)])
+        return ConfigPath(list(self) + [Name.of(name)])
 
     def is_stage(self) -> bool:
         return len(self) == 2
@@ -384,13 +385,13 @@ class AgentConfig:
     def get_agent_type(self) -> AgentType:
         return AgentType(self.__config['agent-type'])
 
-    def get_agent_tags(self) -> [str]:
+    def get_agent_tags(self) -> list[str]:
         return self.__config.get('agent-tags', [])
 
     def stages(self, result_if_none=Union[dict[str, any], None]) -> Union[dict[str, any], None]:
         return self.__config.get(STAGES_KEY, result_if_none)
 
-    def get_stage_names(self) -> [Name]:
+    def get_stage_names(self) -> list[Name]:
         return Name.of_lists(list(self.stages().keys()))
 
     def stage(self, stage: Union[str, Name], result_if_none=None) -> any:
@@ -602,7 +603,7 @@ T = TypeVar("T", bound=any)
 
 @unique
 class RunArg(str, Enum):
-    def __new__(cls, value, alias: str = None, kind: str = 'str',
+    def __new__(cls, value: str, alias: str = None, kind: str = 'str',
                 optional: bool = False, path: bool = False):
         obj = str.__new__(cls, [value])
         obj._value_ = value
@@ -666,7 +667,7 @@ class RunArg(str, Enum):
     def of_defaults(add_to: dict[str, any] = None) -> dict[str, any]:
         if add_to is None:
             add_to = {}
-        run_args_from_env = os.environ.get("RUN_ARGS", None)
+        run_args_from_env = get_env_value(Env.RUN_ARGS)
         if run_args_from_env:
             run_args_from_env = run_args_from_env.split(' ')
             run_arg_names = run_args_from_env[::2]
@@ -688,7 +689,8 @@ class RunArg(str, Enum):
             if not sval:
                 continue
             add_to[str(run_arg.value)] = RunArg._parse(run_arg, sval)
-        return RunArg._update_defaults(add_to)
+        add_to = RunArg._update_defaults(add_to)
+        return add_to
 
     @staticmethod
     def _update_defaults(result: dict[str, any]) -> dict[str, any]:

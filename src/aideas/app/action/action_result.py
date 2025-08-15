@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 class ActionResult:
     @staticmethod
     def none() -> 'ActionResult':
-        return NONE
+        return ActionResult.success(Action.none())
 
     @staticmethod
     def success(action: Action, result: any = None) -> 'ActionResult':
@@ -41,6 +41,3 @@ class ActionResult:
 
     def __str__(self) -> str:
         return f'ActionResult(success={self.__success}, {self.__action}, result={self.__result})'
-
-
-NONE = ActionResult.success(Action.none())

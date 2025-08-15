@@ -15,7 +15,7 @@ NOT = 'not'
 class Action:
     @staticmethod
     def none() -> 'Action':
-        return NONE
+        return Action('', '', '', '', [])
 
     @staticmethod
     def of_generic(agent_name: str, stage_id: str, args: [str] = None) -> 'Action':
@@ -162,6 +162,3 @@ class Action:
 
     def __str__(self) -> str:
         return f'Action({self.__stage_item_id}.{self.__name})'
-
-
-NONE: Action = Action('', '', '', '', [])

@@ -32,6 +32,8 @@ class Env(str, Enum):
 
     APP_LANGUAGE = ('APP_LANGUAGE', True, False, 'en-GB')
 
+    APP_PROFILES = ('APP_PROFILES', True, False, 'dev')
+
     CONTENT_DIR = ('CONTENT_DIR', False, True)
     CHROME_PROFILE_DIR = ('CHROME_PROFILE_DIR', True, True)
 
@@ -43,6 +45,8 @@ class Env(str, Enum):
 
     CONFIG_DIR = ('CONFIG_DIR', True, True, 'resources/config')
     OUTPUT_DIR = ('OUTPUT_DIR', False, True, 'resources/output')
+
+    RUN_ARGS = ('RUN_ARGS', True, False)
 
     VIDEO_FILE_EXTENSION = ('VIDEO_FILE_EXTENSION', False, False, 'mp4')
 

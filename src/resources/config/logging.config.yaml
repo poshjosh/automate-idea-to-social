@@ -31,6 +31,6 @@ root:
   handlers: [console, file]
 filters:
   secrets_masking_filter:
-    (): pyu.io.logging.SecretsMaskingFilter
+    (): app.io.logging.SecretsMaskingLogFilter
     patterns:
       - "(pass|key|secret|token|jwt|hash|signature|credential|auth|certificate|connection|pat)"
