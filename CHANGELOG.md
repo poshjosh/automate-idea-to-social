@@ -7,9 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2025-08-15
+
 ### Added
 
-- Run arg `browser-visible` (`bv`) to control whether the browser will be visible.
+- Action: `ask_for_help` so agents can ask for help. ([See docs](./docs/actions.md))
+- Run arg `--browser-visible` (`-bv`), a boolean flag to control whether the browser will be visible.
 
 ### Changed
 

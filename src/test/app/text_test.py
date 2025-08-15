@@ -75,8 +75,7 @@ class TextTest(unittest.TestCase):
 
     def test_unmatched_quotes(self):
         """Test unmatched quotes"""
-        result = split_preserving_quotes('outer " unmatched end')
-        self.assertEqual(result, ['outer', '" unmatched end'])
+        self.assertRaises(ValueError, split_preserving_quotes, 'outer " unmatched end')
 
     def test_quotes_with_special_chars(self):
         """Test quotes with special characters"""

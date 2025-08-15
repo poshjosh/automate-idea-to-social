@@ -1,6 +1,9 @@
+import time
+
 import logging
 import os.path
 from enum import unique
+from selenium.webdriver.common.by import By
 from typing import TypeVar, Union
 
 from selenium import webdriver
@@ -13,8 +16,9 @@ from selenium.webdriver.support.wait import WebDriverWait
 from pyu.io.file import create_file, write_content
 
 from ..action.action import Action
-from ..action.action_handler import ActionHandler, BaseActionId
+from ..action.action_handler import ActionHandler, BaseActionId, ActionId
 from ..action.action_result import ActionResult
+from ..config import RunArg
 from ..env import get_cookies_file, get_cached_results_file
 from ..run_context import RunContext
 from ..web.element_selector import ElementSelector
@@ -28,6 +32,7 @@ ALERT_ACTION = TypeVar("ALERT_ACTION", bound=Union['accept', 'dismiss'])
 @unique
 class BrowserActionId(BaseActionId):
     ACCEPT_ALERT = ('accept_alert', False)
+    ASK_FOR_HELP = ActionId.ASK_FOR_HELP
     BROWSE_TO = ('browse_to', False)
     DELETE_COOKIES = ('delete_cookies', False)
     DISABLE_CURSOR = ('disable_cursor', False)
@@ -59,9 +64,33 @@ class BrowserActionHandler(ActionHandler):
             return self
         return self.__class__(self.__element_selector, timeout)
 
+    def ask_for_help(self, action: Action) -> ActionResult:
+        args = action.get_args_as_str_list()
+        timeout = float(args[1]) if len(args) > 1 else self.get_default_help_timeout_seconds()
+        message = f"After clicking OK, you have {timeout} seconds to help by doing the following: {args[0]}"
+
+        web_driver = self.get_web_driver()
+        BrowserActionHandler.__wait_till_page_loaded(web_driver)
+
+        web_driver.execute_script("window.alert(\"" + message +"\");")
+        WebDriverWait(web_driver, 10).until(wait_condition.alert_is_present())
+
+        # When we used the logger, the message was masked, probably due to the word password.
+        print("The following message should be displayed in the browser:\n", message)
+
+        time.sleep(timeout)
+
+        return ActionResult.success(action)
+
     def _execute_by_key(self, run_context: RunContext, action: Action, key: str) -> ActionResult:
         if key.endswith('alert'):  # accept_alert|dismiss_alert
             result = self.__handle_alert(action)
+        elif key == BrowserActionId.ASK_FOR_HELP.value:
+            if not bool(run_context.get_arg(RunArg.BROWSER_VISIBLE, False)):
+                raise ValueError(
+                    "Cannot ask for help when browser is not visible. "
+                    "Set 'browser_visible' to True as a run option.")
+            result = self.ask_for_help(action)
         elif key == BrowserActionId.BROWSE_TO.value:
             result = self.__browse_to(action)
         elif key == BrowserActionId.DELETE_COOKIES.value:
@@ -87,12 +116,12 @@ class BrowserActionHandler(ActionHandler):
 
     def __handle_alert(self, action: Action) -> ActionResult:
         how: str = action.get_name().split("_")[0]  # accept|dismiss
-        value: str = action.get_first_arg_as_str('')
-        timeout = self.__wait_timeout_seconds if (value is None or value == '') else float(value)
+        value: str = action.get_first_arg_as_str()
+        timeout = float(value) if value else self.__wait_timeout_seconds
         try:
-            WebDriverWait(self.get_web_driver(), timeout).until(
-                wait_condition.alert_is_present())
-            alert: Alert = self.get_web_driver().switch_to().alert()
+            web_driver = self.get_web_driver()
+            WebDriverWait(web_driver, timeout).until(wait_condition.alert_is_present())
+            alert: Alert = web_driver.switch_to.alert
             if how == 'accept':
                 alert.accept()
             elif how == 'dismiss':
@@ -196,6 +225,17 @@ class BrowserActionHandler(ActionHandler):
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
         return file_path
+
+    @staticmethod
+    def __wait_till_page_loaded(web_driver: WEB_DRIVER) -> None:
+        try:
+            WebDriverWait(web_driver, 10).until(
+                wait_condition.presence_of_element_located((By.TAG_NAME, "body")))
+        except TimeoutException as ex:
+            logger.warning(f"Timed out waiting till page loaded: {ex}")
+
+        time.sleep(5) # The above did not work in most cases, so we wait a bit more.
+
 
     def get_web_driver(self) -> WEB_DRIVER:
         return self.__element_selector.get_webdriver()

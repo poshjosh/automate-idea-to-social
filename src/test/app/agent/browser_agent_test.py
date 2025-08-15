@@ -17,6 +17,7 @@ init_logging(logging.config)
 
 
 class BrowserAgentTest(unittest.TestCase):
+
     def test_run_subprocess(self):
         agent_name: str = "test-agent"
         run_context: RunContext = get_run_context([agent_name])
@@ -25,7 +26,7 @@ stages:
   run_subprocess-stage-1:
     stage-items:
       run_subprocess-stage-1-item-1:
-        actions: 
+        actions:
           - run_subprocess ls -al
         """
         agent_config = load_yaml_str(yaml)

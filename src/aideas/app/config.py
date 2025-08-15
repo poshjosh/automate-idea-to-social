@@ -590,16 +590,7 @@ def parse_query(value: str, separator=' ') -> dict[str, str]:
     :return: The dictionary of attributes.
     """
     value = value.replace('=', separator)
-    result: list[str] = split_preserving_quotes(value, separator)
-    for e in result:
-        if e.startswith("'") and not e.endswith("'"):
-            raise ValueError(f'Invalid value, missing closing quote for: "{e}"')
-        if e.endswith("'") and not e.startswith("'"):
-            raise ValueError(f'Invalid value, missing opening quote for: "{e}"')
-        if e.startswith('"') and not e.endswith('"'):
-            raise ValueError(f"Invalid value, missing closing quote for: '{e}'")
-        if e.endswith('"') and not e.startswith('"'):
-            raise ValueError(f"Invalid value, missing opening quote for: '{e}'")
+    result: list[str] = split_preserving_quotes(value, separator, True)
     return __list_to_dict(result)
 
 

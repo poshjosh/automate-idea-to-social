@@ -3,7 +3,7 @@ import logging
 from typing import Callable
 
 from ..action.action import Action
-from ..action.action_handler import ActionHandler, ActionError
+from ..action.action_handler import ActionHandler, ActionError, ActionId
 from ..action.action_result import ActionResult
 from ..action.action_signatures import parse_agent_to_stages
 from ..config import AgentConfig, ConfigPath, Name, ON_ERROR, ON_SUCCESS
@@ -104,18 +104,16 @@ class EventHandler:
                        result: ElementResultSet = None,
                        trials: int = 1) -> ElementResultSet:
 
-        if event_name == ON_ERROR:
-            logger.debug(f'Handling {event_name} event for {config_path}')
-
         action_signature_list = config.get_event_actions(config_path, event_name)
+        logger.debug(f'Handling {event_name} event for {config_path}, actions: {action_signature_list}')
 
         stage_id = config_path.stage().id
         target_id = config_path.name().id
 
-        def create_action():
+        def create_action(signature):
             return self.__create_action(
                 agent_name, stage_id, target_id, index,
-                event_name, action_signature, run_context)
+                event_name, signature, run_context)
 
         index: int = -1
         for action_signature in action_signature_list:
@@ -125,9 +123,13 @@ class EventHandler:
                     logger.warning(
                         f'For {config_path}, will continue despite error: {type(exception)}!')
                     logger.exception(exception)
+            elif action_signature.startswith(ActionId.ASK_FOR_HELP.value):
+                result = self.__execute_action(run_context, create_action(action_signature))
+                if not result.is_success():
+                    raise ActionError(str(result.get_result()))
             elif action_signature == 'fail':
                 error_msg: str = f'Error {config_path}, result: {result}'
-                run_context.add_action_result(ActionResult.failure(create_action(), error_msg))
+                run_context.add_action_result(ActionResult.failure(create_action(action_signature), error_msg))
                 raise ActionError(error_msg) from exception
             elif action_signature.startswith('retry'):
                 max_trials: int = self.__max_trials(action_signature)
@@ -137,23 +139,27 @@ class EventHandler:
                     retry(trials + 1)
                 else:
                     error_msg: str = f'Max retries exceeded {config_path}, result: {result}'
-                    run_context.add_action_result(ActionResult.failure(create_action(), error_msg))
+                    run_context.add_action_result(ActionResult.failure(create_action(action_signature), error_msg))
                     raise ActionError(error_msg) from exception
             elif action_signature.startswith('run_stages'):
                 _, agent_to_stages = parse_agent_to_stages(
                     action_signature, agent_name, config_path.stage())
                 run_stages(run_context, agent_to_stages)
             else:
-                action = create_action()
-                logger.debug(f"Executing event action: {action}")
+                action = create_action(action_signature)
                 try:
-                    action_result = self.__action_handler.execute(run_context, action)
-                    run_context.add_action_result(action_result)
+                    self.__execute_action(run_context, action)
                 except ActionError as ex:
                     run_context.add_action_result(ActionResult.failure(action))
                     raise ex
 
         return run_context.get_element_results(agent_name, stage_id)
+
+    def __execute_action(self, run_context: RunContext, action: Action) -> ActionResult:
+        logger.debug(f"Executing event action: {action}")
+        action_result = self.__action_handler.execute(run_context, action)
+        run_context.add_action_result(action_result)
+        return action_result
 
     @staticmethod
     def __determine_result_event_name(config: AgentConfig,

@@ -100,7 +100,7 @@ class ElementActionHandler(BrowserActionHandler):
             element.send_keys(Keys.DELETE)
             element.clear()  # May not work under certain conditions, so we try the following
         elif key == ElementActionId.CLICK.value:
-            click_on_element: bool = action.get_arg_bool(True)
+            click_on_element: bool = action.get_first_arg_as_bool(True)
             target: WebElement = element if click_on_element is True else None
             self.__click(driver, target)
         elif key == ElementActionId.CLICK_AND_HOLD.value:
@@ -133,7 +133,7 @@ class ElementActionHandler(BrowserActionHandler):
         elif key == ElementActionId.MOVE_TO_ELEMENT_OFFSET.value:
             self.__move_to_element_offset(self.get_web_driver(), action, element)
         elif key == ElementActionId.RELEASE.value:
-            on_element: bool = action.get_arg_bool(True)
+            on_element: bool = action.get_first_arg_as_bool(True)
             ActionChains(driver).release(element if on_element is True else None).perform()
         elif key == ElementActionId.SEND_KEYS.value:
             for char in action.get_arg_str():

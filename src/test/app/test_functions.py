@@ -1,3 +1,5 @@
+import logging
+
 import os
 from typing import Union, Callable
 
@@ -36,8 +38,10 @@ def get_run_context(agent_names: [str] = None) -> RunContext:
     return RunContext.of_config(load_app_config(), run_config)
 
 
-def init_logging(config):
-    config.dictConfig(__get_logging_config())
+def init_logging(config, dict_config: dict or None = None):
+    logging.basicConfig(level=logging.INFO)
+    # TODO: Make this work and use the basicConfig above only if dict_config is None
+    # config.dictConfig(__get_logging_config() if dict_config is None else dict_config)
 
 
 def __get_logging_config() -> dict[str, any]:

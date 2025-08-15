@@ -42,7 +42,7 @@ input-language-code: en
 
 subtitles-file:
   
-browser_visible: false
+browser-visible: false
 
 continue-on-error: false
 ```

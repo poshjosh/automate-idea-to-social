@@ -6,6 +6,7 @@ Actions may be global, browser or element specific.
 
 | Action                 | Argument type(s)                            | Remarks                                                                         |
 |------------------------|---------------------------------------------|---------------------------------------------------------------------------------|
+| ask_for_help           | int (timeout seconds)                       | Prints a message to console asking for help. Waits for user to help.            |
 | eval                   | str (python code to evaluate)               | `importlib` will be automatically imported before each eval                     |
 | exec                   | str (python code to execute)                |                                                                                 |
 | get_file_content       | str (file path)                             |                                                                                 |
@@ -22,19 +23,20 @@ Actions may be global, browser or element specific.
 
 ### Browser actions
 
-| Action          | Argument type(s)  | Remarks |
-|-----------------|-------------------|---------|
-| accept_alert    | int (timeout)     |         |
-| browse_to       | str (url/link)    |         |
-| delete_cookies  | none              |         |
-| disable_cursor  | none              |         |
-| dismiss_alert   | int (timeout)     |         |
-| enable_cursor   | none              |         |
-| execute_script  | str (javascript)  |         |
-| move_by_offset  | int, int (px, px) |         |
-| refresh         | None              |         |
-| save_screenshot | None              |         |
-| save_webpage    | None              |         |
+| Action          | Argument type(s)      | Remarks                                                                                                                                          |
+|-----------------|-----------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
+| ask_for_help    | int (timeout seconds) | Shows an alert asking for user help. When the user clicks ok, continues with the task. (Applicable only when run option `--browser-visible true` | 
+| accept_alert    | int (timeout)         |                                                                                                                                                  |
+| browse_to       | str (url/link)        |                                                                                                                                                  |
+| delete_cookies  | none                  |                                                                                                                                                  |
+| disable_cursor  | none                  |                                                                                                                                                  |
+| dismiss_alert   | int (timeout)         |                                                                                                                                                  |
+| enable_cursor   | none                  |                                                                                                                                                  |
+| execute_script  | str (javascript)      |                                                                                                                                                  |
+| move_by_offset  | int, int (px, px)     |                                                                                                                                                  |
+| refresh         | None                  |                                                                                                                                                  |
+| save_screenshot | None                  |                                                                                                                                                  |
+| save_webpage    | None                  |                                                                                                                                                  |
 
 ### Element Actions
 

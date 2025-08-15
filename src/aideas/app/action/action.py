@@ -34,7 +34,7 @@ class Action:
            run_context: 'RunContext' = None) -> 'Action':
         if action_signature == 'none':
             return Action.none()
-        parts: list[str] = split_preserving_quotes(action_signature)
+        parts: list[str] = split_preserving_quotes(action_signature, remove_quotes=True)
         if len(parts) == 0:
             raise ValueError(f'Unsupported action: {stage_item_id}.{action_signature}')
 
@@ -58,7 +58,7 @@ class Action:
         self.__name = name
         self.__args = [] if args is None else list(args)
 
-    def get_output_dirs(self, sub_path=None) -> [str]:
+    def get_output_dirs(self, sub_path=None) -> list[str]:
         """
         Get the directories where the result should be saved. Create the dirs if they don't exist.
         We save the result to multiple directories:
@@ -114,18 +114,25 @@ class Action:
         arg = None if len(self.__args) == 0 else self.__args[0]
         return default if arg is None else arg
 
+    def get_first_arg_as_bool(self, default: bool = False) -> bool:
+        arg: any = self.get_first_arg('')
+        return default if not arg else bool(arg)
+
+    def get_first_arg_as_float(self, default: float) -> float:
+        arg: any = self.get_first_arg('')
+        return default if not arg else float(arg)
+
     def get_args(self) -> list:
         return self.__args
-
-    def get_arg_bool(self, default: bool = False) -> bool:
-        arg: str = self.get_arg_str('')
-        return default if arg == '' else arg == 'true'
 
     def get_arg_str(self, default: str = '') -> str:
         return default if not self.__args else ' '.join(self.get_args_as_str_list())
 
     def get_args_as_str_list(self) -> list[str]:
         return [str(e) for e in self.__args]
+
+    def key(self):
+        return f'{self.__agent_name}.{self.__stage_id}.{self.__stage_item_id}.{self.__name}'
 
     @staticmethod
     def __make_dir_if_need(dir_path) -> str:

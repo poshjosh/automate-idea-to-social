@@ -1,3 +1,4 @@
+import threading
 import logging
 import os
 import shutil
@@ -34,6 +35,7 @@ class BaseActionId(str, Enum):
 
 @unique
 class ActionId(BaseActionId):
+    ASK_FOR_HELP = 'ask_for_help'
     EVAL = 'eval'
     EXEC = 'exec'
     GET_FILE_CONTENT = 'get_file_content'
@@ -51,13 +53,16 @@ class ActionId(BaseActionId):
 
 DEFAULT_FILE_NAME = "result.txt"
 
-
 class ActionHandler:
     __ALL_FILE_TYPES = '*'
 
     @staticmethod
     def noop() -> 'ActionHandler':
         return NOOP
+
+    @staticmethod
+    def get_default_help_timeout_seconds() -> float:
+        return 300
 
     @staticmethod
     def to_action_id(action: str) -> BaseActionId:
@@ -76,7 +81,7 @@ class ActionHandler:
         return self
 
     def execute_on(
-            self, run_context: RunContext, action: Action, target: TARGET = None) -> ActionResult:
+            self, run_context: RunContext, action: Action, _: TARGET = None) -> ActionResult:
         return self.execute(run_context, action)
 
     def execute(self, run_context: RunContext, action: Action) -> ActionResult:
@@ -92,6 +97,8 @@ class ActionHandler:
     def _execute_by_key(self, run_context: RunContext, action: Action, key: str) -> ActionResult:
         if action == Action.none():
             result = ActionResult.none()
+        elif key == ActionId.ASK_FOR_HELP.value:
+            result: ActionResult = self.ask_for_help(action)
         elif key == ActionId.EVAL.value:
             result: ActionResult = self.eval(action)
         elif key == ActionId.EXEC.value:
@@ -137,7 +144,7 @@ class ActionHandler:
 
     @staticmethod
     def get_newest_file_in_dir(action: Action) -> ActionResult:
-        args: [str] = action.get_args_as_str_list()
+        args: list[str] = action.get_args_as_str_list()
         dir_path: str = action.require_first_arg_as_str()
         file_type: str = args[1]
         timeout: int = 30 if len(args) < 3 else int(args[2])
@@ -151,19 +158,19 @@ class ActionHandler:
 
     @staticmethod
     def log(action: Action) -> ActionResult:
-        arg_list: [] = action.get_args_as_str_list()
+        arg_list: list[str] = action.get_args_as_str_list()
         logger.log(logging.getLevelName(arg_list[0]), ' '.join(arg_list[1:]))
         return ActionResult(action, True)
 
     @staticmethod
     def run_subprocess(action: Action) -> ActionResult:
-        arg_list: [] = action.get_args_as_str_list()
+        arg_list: list[str] = action.get_args_as_str_list()
         result = subprocess.run(arg_list, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         return ActionResult(action, True, result.stdout)
 
     @staticmethod
     def save_file(action: Action) -> ActionResult:
-        args: [str] = action.get_args_as_str_list()
+        args: list[str] = action.get_args_as_str_list()
         src_file = args[0]
         tgt_filename = os.path.basename(src_file) if len(args) < 2 else args[1]
         tgt_dirs = action.get_output_dirs()
@@ -180,7 +187,7 @@ class ActionHandler:
 
     @staticmethod
     def save_text(action: Action) -> ActionResult:
-        args: [str] = action.get_args_as_str_list()
+        args: list[str] = action.get_args_as_str_list()
         content = args[0]
         chars = len(content)
         filename = DEFAULT_FILE_NAME if len(args) < 2 else args[1]
@@ -212,9 +219,9 @@ class ActionHandler:
 
     @staticmethod
     def __starts_with(action: Action) -> tuple[bool, str or None]:
-        args: [str] = action.get_args_as_str_list()
+        args: list[str] = action.get_args_as_str_list()
         value: str = args[0]
-        prefixes: [str] = args[1:]
+        prefixes: list[str] = args[1:]
         for prefix in prefixes:
             if value.startswith(prefix):
                 return True, prefix
@@ -228,6 +235,16 @@ class ActionHandler:
         files: list[str] = files_result.get_result()
         first_file = None if files is None or len(files) == 0 else files[0]
         return ActionResult(action, first_file is not None, first_file)
+
+    @staticmethod
+    def ask_for_help(action: Action) -> ActionResult:
+        args = action.get_args_as_str_list()
+        message = f"{args[0]}\nAfter helping, press ENTER to continue."
+        message = f"{'=' * 29} Help {'=' * 29}\n{message}\n{'=' * 64}\n"
+        timeout = float(args[1]) if len(args) > 1 else ActionHandler.get_default_help_timeout_seconds()
+        help_provided = ActionHandler.__wait_for_enter_with_timeout(message, timeout)
+        return ActionResult.success(action) if help_provided \
+            else ActionResult.failure(action, f"Help not provided within: {timeout} seconds.")
 
     @staticmethod
     def eval(action: Action) -> ActionResult:
@@ -251,10 +268,10 @@ class ActionHandler:
 
     @staticmethod
     def __get_files(action: Action) -> list[str]:
-        args: [] = action.get_args_as_str_list()
+        args: list[str] = action.get_args_as_str_list()
         dir_path: str = args[0]
         file_type: str = args[1]
-        files: [] = []
+        files: list[str] = []
         for entry in os.scandir(dir_path):
             if ActionHandler.accept_dir_entry(entry, file_type):
                 files.append(entry.path)
@@ -282,6 +299,39 @@ class ActionHandler:
         return entry.is_file() and (file_type == ActionHandler.__ALL_FILE_TYPES or
                                     entry.name.endswith(file_type))
 
+    @staticmethod
+    def __wait_for_enter_with_timeout(message: str, timeout: float) -> bool:
+        """
+        Displays a help message and waits for the user to press ENTER.
+        If the user does not press ENTER within the specified timeout, the method returns False.
+
+        :param message (str): The message to display.
+        :param timeout (float): If the user does not press ENTER within this time, the method returns False.
+        :return: True if the user pressed ENTER before timeout, False if the timeout was reached.
+        """
+        # Display the message
+        print(f"{message}")
+
+        # Variable to track if ENTER was pressed
+        enter_pressed = threading.Event()
+
+        def input_thread():
+            try:
+                input()
+                enter_pressed.set()
+            except EOFError:
+                # Handle case where input is not available (e.g., in some IDEs)
+                pass
+
+        # Start the input thread
+        thread = threading.Thread(target=input_thread, daemon=True)
+        thread.start()
+
+        # Wait for either the input thread to complete or timeout
+        enter_pressed.wait(timeout)
+
+        # Check if ENTER was pressed
+        return enter_pressed.is_set()
 
 class NoopActionHandler(ActionHandler):
     def execute(self, run_context: RunContext, action: Action) -> ActionResult:

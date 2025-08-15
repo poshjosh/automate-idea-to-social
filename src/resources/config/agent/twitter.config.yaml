@@ -45,6 +45,8 @@ stages:
   password:
     stage-items:
       enter-password:
+        events:
+          onerror: ask_for_help "Please proceed till you enter password, but do not click submit." 60
         search-for:
           - //*[@id="layers"]//input[@type="password" and @name="password"]
           - //*[@id="layers"]//input[@type="password"]
