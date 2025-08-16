@@ -16,7 +16,7 @@ class BlogAgentTest(unittest.TestCase):
         agent = TestBlogAgent.of_config(
             agent_name,
             run_context.get_app_config().to_dict(),
-            load_agent_config(agent_name, True))
+            load_agent_config(agent_name, False))
 
         result = run_agent(agent, run_context)
 

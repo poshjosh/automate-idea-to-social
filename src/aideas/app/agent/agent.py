@@ -85,7 +85,7 @@ class Agent:
             self.__config = AgentConfig(
                 run_context.replace_variables(self.__name, self.__config.to_dict()))
 
-            if self.__config.is_clear_output_dir() is True:
+            if self.__config.is_clear_output_dir():
                 self.__clear_dirs()
 
             self.__make_dirs()

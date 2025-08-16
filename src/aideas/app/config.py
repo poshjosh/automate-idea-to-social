@@ -486,7 +486,7 @@ class AgentConfig:
     def get_sort_order(self, result_if_none=sys.maxsize) -> int:
         return self.__config.get('sort-order', result_if_none)
 
-    def get_depends_on(self) -> [str]:
+    def get_depends_on(self) -> list[str]:
         return self.__config.get('depends-on', [])
 
     def is_clear_output_dir(self) -> bool:
