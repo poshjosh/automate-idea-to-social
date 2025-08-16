@@ -90,7 +90,7 @@ class AppConfig:
     def get_app_name(self) -> str:
         return self.app()['name']
 
-    def get_app_language(self, default: str or None) -> str or None:
+    def get_app_language(self, default: Union[str, None]) -> Union[str, None]:
         return self.app().get('language', default)
 
     def get_title(self, default: Union[str, None] = None) -> str:
@@ -231,9 +231,6 @@ class ConfigPath(tuple[Name]):
         return f'@{".".join(self.str_path())}'
 
 
-SEARCH_CONFIG_PARENT = TypeVar("SEARCH_CONFIG_PARENT", bound=dict[str, any])
-
-
 class SearchBy(Enum):
     XPATH = 'x-paths'
     SHADOW_ATTRIBUTE = 'shadow-attributes'
@@ -241,7 +238,7 @@ class SearchBy(Enum):
 
 class SearchConfig:
     @staticmethod
-    def of(config: SEARCH_CONFIG_PARENT, key: str) -> Union['SearchConfig', None]:
+    def of(config: dict[str, any], key: str) -> Union['SearchConfig', None]:
         """
          Example inputs:
 
@@ -309,7 +306,7 @@ class SearchConfig:
 
 class SearchConfigs:
     @staticmethod
-    def of(config: SEARCH_CONFIG_PARENT) -> 'SearchConfigs':
+    def of(config: dict[str, any]) -> 'SearchConfigs':
         return SearchConfigs(SearchConfig.of(config, 'search-for'),
                              SearchConfig.of(config, 'search-from'))
 
@@ -427,13 +424,13 @@ class AgentConfig:
         return self.stage_items(stage, {}).get(self.__value(item), result_if_none)
 
     def search(
-            self, stage: Union[str, Name], stage_item: Union[str, Name]) -> dict[str, any] or None:
-        search_config_parent: SEARCH_CONFIG_PARENT = self.__search_parent(stage, stage_item)
-        if not isinstance(search_config_parent, dict):
+            self, stage: Union[str, Name], stage_item: Union[str, Name]) -> Union[dict[str, any], None]:
+        dict[str, any]: dict[str, any] = self.__search_parent(stage, stage_item)
+        if not isinstance(dict[str, any], dict):
             return None
-        search_by_list: [str] = [e.value for e in SearchBy]
+        search_by_list: list[str] = [e.value for e in SearchBy]
         for search_by in search_by_list:
-            search_config = search_config_parent.get(search_by)
+            search_config = dict[str, any].get(search_by)
             if search_config is not None:
                 return search_config
         return None
@@ -547,7 +544,7 @@ class AgentConfig:
         return result if result else result_if_none
 
     def __search_parent(
-            self, stage: Union[str, Name], stage_item: Union[str, Name]) -> SEARCH_CONFIG_PARENT:
+            self, stage: Union[str, Name], stage_item: Union[str, Name]) -> dict[str, any]:
         stage: str = self.__value(stage)
         stage_item: str = self.__value(stage_item)
         if not stage_item:
@@ -746,7 +743,7 @@ class RunArg(str, Enum):
     @staticmethod
     def _parse(run_arg: 'RunArg', value: str) -> any:
         if run_arg.type == "bool":
-            value = value == "true" or value == True
+            value = value == "true" or value
         elif run_arg.type == "list":
             value = value if isinstance(value, list) else str(value).split(',')
         if run_arg.is_path:

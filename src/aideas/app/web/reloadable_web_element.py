@@ -1,5 +1,5 @@
 import logging
-from typing import Callable
+from typing import Callable, Union
 
 from selenium.webdriver.remote.webelement import WebElement
 
@@ -29,7 +29,7 @@ class ReloadableWebElement(WebElement):
 
     @staticmethod
     def __run_till_success(func: Callable[[int], WebElement], timeout: float = 60) \
-            -> WebElement or None:
+            -> Union[WebElement, None]:
         from datetime import datetime, timedelta
         start = datetime.now()
         max_time = timedelta(seconds=timeout)

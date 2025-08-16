@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 from time import sleep
-from typing import List, Callable
+from typing import List, Callable, Union
 
 from selenium.common import NoSuchWindowException, StaleElementReferenceException, \
     NoSuchElementException, TimeoutException, WebDriverException
@@ -101,7 +101,7 @@ class ElementSelector:
         queries = search_config.get_queries()
         if len(queries) == 0:
             raise ValueError(f'No queries found in: {search_config}')
-        exception: Exception or None = None
+        exception: Union[Exception, None] = None
         index: int = -1
         start_time = datetime.now()
         for query in queries:
@@ -185,7 +185,7 @@ class ElementSelector:
     def __select_first_element_or_shadow(webdriver,
                                          root,
                                          timeout_seconds: float,
-                                         test: Callable[[WebElement], bool]) -> WebElement or None:
+                                         test: Callable[[WebElement], bool]) -> Union[WebElement, None]:
 
         all_elements = WebDriverWait(root, timeout_seconds).until(
             wait_condition.presence_of_all_elements_located((By.CSS_SELECTOR, '*')))
@@ -195,7 +195,7 @@ class ElementSelector:
     @staticmethod
     def __find_first_element_or_shadow(webdriver,
                                        elements,
-                                       test: Callable[[WebElement], bool]) -> WebElement or None:
+                                       test: Callable[[WebElement], bool]) -> Union[WebElement, None]:
         for element in elements:
             try:
                 if test(element):

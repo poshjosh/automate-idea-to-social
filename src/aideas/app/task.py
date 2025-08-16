@@ -67,13 +67,15 @@ class AgentTask(Task):
     secrets_masking_log_filter = SecretsMaskingLogFilter()
 
     @staticmethod
-    def of_defaults(config_loader: ConfigLoader, run_config: dict[str, any]) -> 'AgentTask':
-        config_loader = config_loader.with_added_variable_source(run_config)
+    def of_defaults(config_loader: ConfigLoader, run_config: dict[str, any] = None) -> 'AgentTask':
+        if run_config:
+            config_loader = config_loader.with_added_variable_source(run_config)
         app_config = config_loader.load_app_config()
         agent_factory = AgentFactory(config_loader, app_config)
-        config = config_loader.load_run_config()
-        config.update(run_config)
-        return AgentTask(agent_factory, RunContext.of_config(app_config, config))
+        combined_run_config = config_loader.load_run_config()
+        if run_config:
+            combined_run_config.update(run_config)
+        return AgentTask(agent_factory, RunContext.of_config(app_config, combined_run_config))
 
     def __init__(self, agent_factory: AgentFactory, run_context: RunContext):
         super().__init__()

@@ -12,11 +12,11 @@ from aideas.app.web.webdriver_creator import WebDriverCreator, WEB_DRIVER
 __TEST_SRC_DIR = f'{os.getcwd()}/test/app'
 
 
-def get_main_config_loader(variable_source: dict[str, any] or None = None) -> ConfigLoader:
+def get_main_config_loader(variable_source: Union[dict[str, any], None] = None) -> ConfigLoader:
     return ConfigLoader(os.path.join("resources", "config"), variable_source)
 
 
-def get_test_config_loader(variable_source: dict[str, any] or None = None) -> ConfigLoader:
+def get_test_config_loader(variable_source: Union[dict[str, any], None] = None) -> ConfigLoader:
     return ConfigLoader(os.path.join("test", "resources", "config"), variable_source)
 
 

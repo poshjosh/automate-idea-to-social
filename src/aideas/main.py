@@ -9,6 +9,4 @@ if __name__ == '__main__':
 
     logging.config.dictConfig(config_loader.load_logging_config())
 
-    run_config = config_loader.load_run_config()
-
-    AgentTask.of_defaults(config_loader, run_config).start()
+    AgentTask.of_defaults(config_loader).start()

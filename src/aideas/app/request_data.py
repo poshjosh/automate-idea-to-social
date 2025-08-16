@@ -91,7 +91,7 @@ class RequestData:
             raise ValidationError(value_ex.args[0])
 
     @staticmethod
-    def get_language_code(request) -> str or None:
+    def get_language_code(request) -> Union[str, None]:
         supported_lang_codes = I18n.get_supported_language_codes()
         return request.accept_languages.best_match(supported_lang_codes)
 

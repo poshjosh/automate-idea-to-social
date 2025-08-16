@@ -19,7 +19,7 @@ _SUFFIX = '.config'
 class ConfigLoader(YamlLoader):
     def __init__(self,
                  config_path: str,
-                 variable_source: dict[str, any] or None = None):
+                 variable_source: Union[dict[str, any], None] = None):
         super().__init__(config_path, suffix=_SUFFIX)
         self.__config_path = config_path
         self.__variable_source = variable_source if variable_source else Env.collect()
@@ -29,13 +29,13 @@ class ConfigLoader(YamlLoader):
         self.__agent_configs_with_un_replaced_variables = self.__load_agent_config_with_variables()
 
     def with_added_variable_source(self, source: dict[str, any]) -> 'ConfigLoader':
-        return ConfigLoader(self.__config_path, self.__variable_source)._add_variable_source(source)
+        return ConfigLoader(self.__config_path, {**self.__variable_source, **source})
 
     def get_agent_variable_names(self, agent_name: str) -> list[str]:
         config = self.__agent_configs_with_un_replaced_variables[agent_name]
         return get_variables(config, False)
 
-    def get_agent_names(self, tag: str or None = None) -> list[str]:
+    def get_agent_names(self, tag: Union[str , None] = None) -> list[str]:
         def config_filter(config: dict[str, any]) -> bool:
             agent_tags = AgentConfig(config).get_agent_tags()
             if is_production() is True and 'test' in agent_tags:
@@ -98,9 +98,6 @@ class ConfigLoader(YamlLoader):
             agents.append(agent_filename[0:agent_filename.index(_SUFFIX)])
         return agents
 
-    def get_variable_source(self) -> dict[str, any]:
-        return {**self.__variable_source}
-
     def _load_browser_config_for_type(self, browser_type: str, check_replaced: bool = True) -> dict[str, any]:
         if browser_type == 'visible':
             config_name = 'browser-visible'
@@ -109,10 +106,6 @@ class ConfigLoader(YamlLoader):
         else:
             config_name = 'browser'
         return self.load_from_path(self.get_path(config_name), check_replaced)
-
-    def _add_variable_source(self, source: dict[str, any]) -> 'ConfigLoader':
-        self.__variable_source.update(source)
-        return self
 
     def __load_agent_config_with_variables(self) -> dict[str, dict[str, any]]:
         configs = {}

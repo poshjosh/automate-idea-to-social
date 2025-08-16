@@ -92,12 +92,12 @@ class RunContext:
     def get_current_url(self, result_if_none: str = None) -> str:
         return self.get(CURRENT_URL, result_if_none)
 
-    def set(self, key: str, value: any) -> Union[any or None]:
+    def set(self, key: str, value: any) -> Union[any, None]:
         result = self.get(key)
         self.__values[key] = value
         return result
 
-    def remove(self, key: str) -> Union[any or None]:
+    def remove(self, key: str) -> Union[any, None]:
         return self.__values.pop(key, None)
 
     def set_current_url(self, value: str) -> 'RunContext':
