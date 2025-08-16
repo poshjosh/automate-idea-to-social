@@ -25,7 +25,7 @@ class ConfigLoader(YamlLoader):
         self.__variable_source = variable_source if variable_source else Env.collect()
         self.__external_config_dir = Paths.get_path(self.__variable_source.get(Env.CONFIG_DIR.value))
         # Only load this when we are about to run an agent.
-        self.__variable_source.update(self.load_run_config()) # run properties
+        # self.__variable_source.update(self.load_run_config()) # run properties
         self.__variable_source.update(RunArg.of_defaults()) # sys.argv and environment variable RUN_ARGs
         self.__agent_configs_with_un_replaced_variables = self.__load_agent_config_with_variables()
 
