@@ -4,10 +4,6 @@ agent-type: browser
 agent-tags:
   - test  # Pictory changed their UI, so needs to be re-implemented
   - generate-video
-browser:
-  chrome:
-    prefs:
-      download.default_directory: ${OUTPUT_DIR}/agent/pictory
 define:
   &default_wait 'wait 3'
 interval-seconds: 1

@@ -6,7 +6,6 @@ from enum import unique
 from selenium.webdriver.common.by import By
 from typing import TypeVar, Union
 
-from selenium import webdriver
 from selenium.common import TimeoutException
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.alert import Alert
@@ -22,10 +21,10 @@ from ..config import RunArg
 from ..env import get_cookies_file, get_cached_results_file
 from ..run_context import RunContext
 from ..web.element_selector import ElementSelector
+from ..web.webdriver_creator import WEB_DRIVER
 
 logger = logging.getLogger(__name__)
 
-WEB_DRIVER = TypeVar("WEB_DRIVER", bound=Union[webdriver.Chrome, webdriver.Remote])
 ALERT_ACTION = TypeVar("ALERT_ACTION", bound=Union['accept', 'dismiss'])
 
 
@@ -86,10 +85,10 @@ class BrowserActionHandler(ActionHandler):
         if key.endswith('alert'):  # accept_alert|dismiss_alert
             result = self.__handle_alert(action)
         elif key == BrowserActionId.ASK_FOR_HELP.value:
-            if not bool(run_context.get_arg(RunArg.BROWSER_VISIBLE, False)):
+            if run_context.get_arg(RunArg.BROWSER_TYPE, None) is None:
                 raise ValueError(
-                    "Cannot ask for help when browser is not visible. "
-                    "Set 'browser_visible' to True as a run option.")
+                    "Cannot ask for help when browser is not visible. " 
+                    "Set run option 'browser-mode' to 'visible' or 'undetected'.")
             result = self.ask_for_help(action)
         elif key == BrowserActionId.BROWSE_TO.value:
             result = self.__browse_to(action)

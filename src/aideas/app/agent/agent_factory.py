@@ -7,7 +7,7 @@ from .blog_agent import BlogAgent
 from .browser_agent import BrowserAgent
 from .translation.subtitles_translation_agent import SubtitlesTranslationAgent
 from .translation.translation_agent import TranslationAgent
-from ..config import AgentConfig, AgentType, merge_configs
+from ..config import AgentConfig, AgentType
 from ..config_loader import ConfigLoader
 
 logger = logging.getLogger(__name__)
@@ -54,9 +54,7 @@ class AgentFactory:
                              agent_name: str,
                              agent_config,
                              dependencies: Union[dict[str, Agent], None] = None) -> BrowserAgent:
-        browser_config = self.__config_loader.load_browser_config()
-        agent_config['browser'] = merge_configs(
-            agent_config.get('browser', {}), browser_config, False)
+        agent_config = self.__config_loader.add_browser_config_to_agent_config(agent_config)
         return BrowserAgent.of_config(agent_name, self.__app_config, agent_config, dependencies)
 
     def create_generic_agent(

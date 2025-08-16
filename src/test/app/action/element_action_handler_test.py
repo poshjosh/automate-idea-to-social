@@ -22,7 +22,7 @@ class ElementActionHandlerTest(unittest.TestCase):
         agent_name = 'pictory'
         stage_name = 'branding'
         config = load_agent_config(agent_name, False)
-        webdriver = create_webdriver(config)
+        webdriver = create_webdriver(agent_name, config)
         webdriver.get(get_agent_resource(agent_name, 'storyboard_page.html'))
         stage_config = config[STAGES_KEY][stage_name]
         targets = stage_config[STAGE_ITEMS_KEY].keys()

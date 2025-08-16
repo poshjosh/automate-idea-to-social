@@ -11,7 +11,8 @@ import undetected_chromedriver as uc
 
 from pyu.io.shell import run_command
 from ..config import BrowserConfig
-from ..env import is_setup_display
+from ..env import is_setup_display, get_agent_output_dir
+from ..paths import Paths
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +21,7 @@ WEB_DRIVER = TypeVar("WEB_DRIVER", bound=Union[webdriver.Chrome, uc.Chrome])
 
 class WebDriverCreator:
     @staticmethod
-    def create(browser_config: BrowserConfig) -> WEB_DRIVER:
+    def create(agent_name: str, browser_config: BrowserConfig) -> WEB_DRIVER:
 
         WebDriverCreator.__create_dirs_if_need([browser_config.get_download_dir()])
 
@@ -32,7 +33,7 @@ class WebDriverCreator:
             logger.warning("DISPLAY is not set up. Webdriver may crash.")
 
         if browser_config.is_undetected():
-            logger.debug("Undetected ChromeDriver will be used")
+            logger.info("Undetected ChromeDriver will be used")
 
             chrome_version: Union[int, None] = WebDriverCreator.__get_chrome_version()
             if chrome_version is not None:
@@ -49,7 +50,7 @@ class WebDriverCreator:
             # See https://github.com/ultrafunkamsterdam/undetected-chromedriver/issues/260
             params = {
                 "behavior": "allow",
-                "downloadPath": browser_config.get_download_dir()
+                "downloadPath": Paths.get_path(browser_config.get_download_dir(get_agent_output_dir(agent_name)))
             }
             driver.execute_cdp_cmd("Page.setDownloadBehavior", params)
             return driver

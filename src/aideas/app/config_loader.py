@@ -68,9 +68,19 @@ class ConfigLoader(YamlLoader):
         return result
 
     def load_browser_config(self, check_replaced: bool = True) -> dict[str, any]:
-        browser_visible = self.load_run_config().get(RunArg.BROWSER_VISIBLE.value, False)
-        return self.load_from_path(
-            self.get_path("browser-visible" if browser_visible else "browser"), check_replaced)
+        browser_type = self.load_run_config().get(RunArg.BROWSER_TYPE.value, None)
+        return self._load_browser_config_for_type(browser_type, check_replaced)
+
+    def add_browser_config_to_agent_config(self, agent_config: dict[str, any], check_replaced: bool = True) -> dict[str, any]:
+        browser_type = self.load_run_config().get(RunArg.BROWSER_TYPE.value, None)
+        if browser_type is None:
+            browser_type = agent_config.get(RunArg.BROWSER_TYPE.value, None)
+        browser_config = self._load_browser_config_for_type(browser_type, check_replaced)
+        if browser_type is not None and agent_config.get('browser', None) is not None:
+            logger.warning(f"browser-{browser_type}.config will be overridden by agent browser config")
+        agent_config['browser'] = merge_configs(
+            agent_config.get('browser', {}), browser_config, False)
+        return agent_config
 
     def load_agent_config(self, agent_name: str, check_replaced: bool = True) -> dict[str, any]:
         return self.load_from_path(self.get_agent_config_path(agent_name), check_replaced)
@@ -90,6 +100,15 @@ class ConfigLoader(YamlLoader):
 
     def get_variable_source(self) -> dict[str, any]:
         return {**self.__variable_source}
+
+    def _load_browser_config_for_type(self, browser_type: str, check_replaced: bool = True) -> dict[str, any]:
+        if browser_type == 'visible':
+            config_name = 'browser-visible'
+        elif browser_type == 'undetected':
+            config_name = 'browser-undetected'
+        else:
+            config_name = 'browser'
+        return self.load_from_path(self.get_path(config_name), check_replaced)
 
     def _add_variable_source(self, source: dict[str, any]) -> 'ConfigLoader':
         self.__variable_source.update(source)

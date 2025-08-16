@@ -25,7 +25,7 @@ Actions may be global, browser or element specific.
 
 | Action          | Argument type(s)      | Remarks                                                                                                                                          |
 |-----------------|-----------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
-| ask_for_help    | int (timeout seconds) | Shows an alert asking for user help. When the user clicks ok, continues with the task. (Applicable only when run option `--browser-visible true` | 
+| ask_for_help    | int (timeout seconds) | Shows an alert asking for user help. When the user clicks ok, continues with the task. (Applicable only when run option `--browser-mode visible` | 
 | accept_alert    | int (timeout)         |                                                                                                                                                  |
 | browse_to       | str (url/link)        |                                                                                                                                                  |
 | delete_cookies  | none                  |                                                                                                                                                  |

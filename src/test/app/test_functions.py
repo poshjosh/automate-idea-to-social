@@ -1,17 +1,13 @@
-import logging
-
 import os
+
 from typing import Union, Callable
-
-from selenium import webdriver
-
 from aideas.app.action.action_result import ActionResult
 from aideas.app.agent.agent import Agent
-from aideas.app.config import RunArg, BrowserConfig, merge_configs
+from aideas.app.config import RunArg, BrowserConfig
 from aideas.app.config_loader import ConfigLoader
 from aideas.app.result.result_set import ElementResultSet, StageResultSet
 from aideas.app.run_context import RunContext
-from aideas.app.web.webdriver_creator import WebDriverCreator
+from aideas.app.web.webdriver_creator import WebDriverCreator, WEB_DRIVER
 
 __TEST_SRC_DIR = f'{os.getcwd()}/test/app'
 
@@ -47,10 +43,10 @@ def run_agent(agent: Agent, run_context: RunContext) -> StageResultSet:
     print(f'Completed {agent.get_name()}. Result:\n{result.pretty_str()}')
     return result
 
-def init_logging(config, dict_config: dict or None = None):
-    logging.basicConfig(level=logging.INFO)
-    # TODO: Make this work and use the basicConfig above only if dict_config is None
-    # config.dictConfig(__get_logging_config() if dict_config is None else dict_config)
+def init_logging(config, dict_config: Union[dict, None] = None):
+    # logging.basicConfig(level=logging.INFO)
+    # # TODO: Make this work and use the basicConfig above only if dict_config is None
+    config.dictConfig(__get_logging_config() if dict_config is None else dict_config)
 
 
 def __get_logging_config() -> dict[str, any]:
@@ -59,19 +55,15 @@ def __get_logging_config() -> dict[str, any]:
         'formatters': {'simple': {'format': '%(asctime)s %(name)s %(levelname)s %(message)s'}},
         'handlers': {'console': {
             'class': 'logging.StreamHandler', 'level': 'DEBUG', 'formatter': 'simple'}},
-        'loggers': {'test': {'level': 'DEBUG', 'handlers': ['console'], 'propagate': False}}
+        'loggers': {'aideas': {'level': 'DEBUG', 'handlers': ['console'], 'propagate': False}}
     }
 
 
-def create_webdriver(agent_config: Union[dict, None] = None) -> webdriver:
-
+def create_webdriver(agent_name: str = "test-agent", agent_config: Union[dict, None] = None) -> WEB_DRIVER:
     if agent_config is None:
-        browser_config = get_main_config_loader().load_browser_config()
-    else:
-        browser_config = merge_configs(
-            agent_config.get('browser', {}), get_main_config_loader().load_browser_config(), False)
-    # print(f'{__name__} Browser config: {browser_config}')
-    return WebDriverCreator.create(BrowserConfig(browser_config))
+        agent_config = {}
+    agent_config = get_main_config_loader().add_browser_config_to_agent_config(agent_config)
+    return WebDriverCreator.create(agent_name, BrowserConfig(agent_config['browser']))
 
 
 def get_agent_resource(agent_name: str, file_name: str) -> str:

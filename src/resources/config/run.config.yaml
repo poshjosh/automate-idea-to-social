@@ -38,4 +38,5 @@ language-codes: en
 
 share-cover-image: true
 
-browser-visible: false
+# Optional. Possible values: visible|undetected
+browser-mode:

@@ -106,7 +106,7 @@ class BrowserAutomator(Automator):
            agent_config: dict[str, any] = None,
            run_stages: Callable[[RunContext, OrderedDict[str, [Name]]], None] = None) \
             -> 'BrowserAutomator':
-        web_driver = WebDriverCreator.create(BrowserConfig(agent_config.get('browser', {})))
+        web_driver = WebDriverCreator.create(agent_name, BrowserConfig(agent_config.get('browser', {})))
         timeout_seconds = BrowserAutomator.get_agent_timeout(app_config, agent_config)
         element_selector = ElementSelector.of(web_driver, agent_name, timeout_seconds)
         action_handler = ElementActionHandler(element_selector, timeout_seconds)

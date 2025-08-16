@@ -22,11 +22,11 @@ The default value is `onerror`.
 ### Added
 
 - Action: `ask_for_help` so agents can ask for help. ([See docs](./docs/actions.md))
-- Run arg `--browser-visible` (`-bv`), a boolean flag to control whether the browser will be visible.
+- Run arg `--browser-mode` (`-bm`), with possible values `visible|undetected`.
 
 ### Changed
 
-- Run args/options may now be passed via ENV variables, e.g. `RUN_ARGS="--browser-visible"`.
+- Run args/options may now be passed via ENV variables, e.g. `RUN_ARGS="--browser-mode undetected"`.
 - Improve parsing of config action signatures and others.
 - Make config extension applicable to all config types.
 - Separate browser config from app config.

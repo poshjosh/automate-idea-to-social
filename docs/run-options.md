@@ -42,7 +42,8 @@ subtitles-file:
 # Optional. If cover image should be shared when multiple translations of one post is being made.
 share-cover-image:
   
-browser-visible: false
+# Optional. Possible values: visible|undetected
+browser-mode: 
 
 continue-on-error: false
 
