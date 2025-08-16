@@ -5,6 +5,7 @@ import sys
 
 from .config_loader import ConfigLoader
 from .env import Env, is_production, get_env_value
+from .paths import Paths
 from .task import shutdown as shutdown_tasks, init_tasks_cleanup
 
 logger = logging.getLogger(__name__)
@@ -16,12 +17,23 @@ class App:
 
     @staticmethod
     def init() -> ConfigLoader:
-        print("Initializing app, profiles: ", get_env_value(Env.APP_PROFILES)) # logging not yet configured, so we use print
+        print(f"Initializing app, profiles: {get_env_value(Env.APP_PROFILES)}"
+              f", working dir: {os.getcwd()}") # logging not yet configured, so we use print
         signal.signal(signal.SIGINT, App.shutdown)
         signal.signal(signal.SIGTERM, App.shutdown)
         Env.set_defaults()
         if is_production():
             init_tasks_cleanup(lambda: App.__shutting_down, 600)
+
+        output_dir = get_env_value(Env.OUTPUT_DIR)
+        if not output_dir:
+            raise FileNotFoundError("No output directory specified")
+        output_dir = Paths.get_path(get_env_value(Env.OUTPUT_DIR), "logs")
+
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+            logger.info(f"Created output directory: {output_dir}")
+
         return ConfigLoader(os.path.join(os.getcwd(), 'resources', 'config'))
 
     @staticmethod

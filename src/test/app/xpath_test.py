@@ -31,7 +31,7 @@ class XPathTest(unittest.TestCase):
     def test_xpath_from_existing_result(self):
         dir_path = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
         file_path = os.path.join(
-            dir_path, "test", "resources", "output", "results", "pictory", "2024", "06", "06",
+            dir_path, "test", "output", "results", "pictory", "2024", "06", "06",
             "2024-06-06T18-42-06-pictory.download-video.ERROR@STAGE_FAIL-webpage.html")
         # 2024-06-06T20-06-02-pictory.download-video.SUCCESS@STAGE_END-webpage.html
         webdriver = create_webdriver()

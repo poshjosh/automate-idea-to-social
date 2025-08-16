@@ -17,6 +17,7 @@ The default value is `onerror`.
 
 ### Changed
 
+- The default output directory. Also, create it if need.
 - Mask secrets only when in production mode.
 
 ## [0.3.0] - 2025-08-15

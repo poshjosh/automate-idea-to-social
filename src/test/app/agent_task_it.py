@@ -11,9 +11,7 @@ init_logging(logging.config)
 class AgentTaskIT(unittest.TestCase):
     def test_run(self):
         result = given_task().start()
-        print("-----------------------")
         print(f'{result.pretty_str()}')
-        print("-----------------------")
         self.assertTrue(result.is_successful())
 
 

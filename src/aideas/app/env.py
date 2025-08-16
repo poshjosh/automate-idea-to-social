@@ -44,7 +44,7 @@ class Env(str, Enum):
     WEB_APP = ('WEB_APP', True, False, 'true')
 
     CONFIG_DIR = ('CONFIG_DIR', True, True, 'resources/config')
-    OUTPUT_DIR = ('OUTPUT_DIR', False, True, 'resources/output')
+    OUTPUT_DIR = ('OUTPUT_DIR', False, True, 'output')
 
     RUN_ARGS = ('RUN_ARGS', True, False)
 
@@ -86,8 +86,8 @@ class Env(str, Enum):
     GIT_USER_EMAIL = 'GIT_USER_EMAIL'
     GIT_TOKEN = 'GIT_TOKEN'
 
-    BLOG_ENV_FILE = ('BLOG_ENV_FILE', False, True)
-    BLOG_APP_DIR = ('BLOG_APP_DIR', False, True)
+    BLOG_ENV_FILE = ('BLOG_ENV_FILE', True, True)
+    BLOG_APP_DIR = ('BLOG_APP_DIR', True, True)
     BLOG_APP_VERSION = ('BLOG_APP_VERSION', True, False, '0.1.6')
 
     @staticmethod

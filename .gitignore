@@ -25,7 +25,6 @@ __pycache__/
 build/
 develop-eggs/
 dist/
-src/python/test/resources/output/
 eggs/
 .eggs/
 lib/

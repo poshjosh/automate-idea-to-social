@@ -18,7 +18,7 @@ handlers:
     formatter: simple
     filters:
       - secrets_masking_filter
-    filename: resources/output/logs/aideas.log
+    filename: ${OUTPUT_DIR}/logs/aideas.log
     maxBytes: 409600
     backupCount: 9
 loggers:
