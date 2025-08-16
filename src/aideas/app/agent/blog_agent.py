@@ -319,6 +319,7 @@ class BlogAgent(Agent):
 
         commands = ['docker', 'run', '--name', self.get_app_docker_container_name(), '--rm']
 
+        # The docker compose file mounts this volume, so no need to mount it if running in Docker
         if not is_docker():
             app_base_dir = os.path.join(os.getcwd(), self.get_app_base_dir())
             commands.extend(['-v', f'"{app_base_dir}/app:/blog-app"'])
