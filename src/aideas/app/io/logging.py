@@ -1,5 +1,5 @@
 from pyu.io.logging import SecretsMaskingFilter
-from aideas.app.env import is_production
+from ..env import is_production
 
 class SecretsMaskingLogFilter(SecretsMaskingFilter):
     def __init__(self, patterns: list[str] = None):
