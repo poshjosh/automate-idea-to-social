@@ -1,5 +1,5 @@
 # [llm|browser|blog|generic]  llm is not yet supported
-agent-type: generic
+agent-type: browser
 # Optional [generate-video|generate-image|generate-text|post|test]
 agent-tags:
   - test
@@ -22,8 +22,6 @@ stages:
           - //*[@id="root"]/div/div/div/div[3]/div[2]/div/div/form/div[1]/span/textarea
         actions:
           - enter_text $TEXT_TITLE
-          - save_screenshot
-          - save_webpage
 #      submit-image-description:
 #        search-for:
 #          - //*[@id="root"]//form//button[text()="Generate"]
