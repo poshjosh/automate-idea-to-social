@@ -31,7 +31,7 @@ def load_agent_config(agent_name: str, check_replaced: bool = True) -> dict[str,
 def get_run_context(agent_names: list[str] = None) -> RunContext:
     run_config = get_test_config_loader().load_run_config()
     if agent_names:
-        run_config[RunArg.AGENTS] = agent_names
+        run_config[str(RunArg.AGENTS.value)] = agent_names
     return RunContext.of_config(load_app_config(), run_config)
 
 def run_agent(agent: Agent, run_context: RunContext) -> StageResultSet:

@@ -6,9 +6,8 @@ from enum import unique
 from selenium.webdriver.common.by import By
 from typing import TypeVar, Union
 
-from selenium.common import TimeoutException
+from selenium.common import TimeoutException, NoAlertPresentException
 from selenium.webdriver import ActionChains
-from selenium.webdriver.common.alert import Alert
 from selenium.webdriver.support import expected_conditions as wait_condition
 from selenium.webdriver.support.wait import WebDriverWait
 
@@ -79,7 +78,13 @@ class BrowserActionHandler(ActionHandler):
 
         time.sleep(timeout)
 
-        return ActionResult.success(action)
+        try:
+            web_driver.switch_to.alert.dismiss()
+            return ActionResult.failure(action)
+        except NoAlertPresentException:
+            # Alert already dismissed because, user clicked OK to
+            # signify that they have helped, as instructed above.
+            return ActionResult.success(action)
 
     def _execute_by_key(self, run_context: RunContext, action: Action, key: str) -> ActionResult:
         if key.endswith('alert'):  # accept_alert|dismiss_alert
@@ -120,11 +125,10 @@ class BrowserActionHandler(ActionHandler):
         try:
             web_driver = self.get_web_driver()
             WebDriverWait(web_driver, timeout).until(wait_condition.alert_is_present())
-            alert: Alert = web_driver.switch_to.alert
             if how == 'accept':
-                alert.accept()
+                web_driver.switch_to.alert.accept()
             elif how == 'dismiss':
-                alert.dismiss()
+                web_driver.switch_to.alert.dismiss()
             else:
                 raise ValueError(f"Unsupported: {action}")
         except TimeoutException:

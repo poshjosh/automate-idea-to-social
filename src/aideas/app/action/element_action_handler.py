@@ -64,11 +64,11 @@ class ElementActionHandler(BrowserActionHandler):
                 try:
                     result = self.__execute_on(run_context, action, key, target.reload(), True)
                 except Exception as ex:
-                    ElementActionHandler.throw_error(ex, action)
+                    raise self.error(ex, action)
             else:
-                ElementActionHandler.throw_error(ex, action)
+                raise self.error(ex, action)
         except Exception as ex:
-            ElementActionHandler.throw_error(ex, action)
+            raise self.error(ex, action)
 
         if action.is_negation():
             result = result.flip()
@@ -94,7 +94,7 @@ class ElementActionHandler(BrowserActionHandler):
                         element: Union[WebElement, None],
                         reloaded: bool = False) -> ActionResult:
         driver = self.get_web_driver()
-        result: any = None
+        result: Union[any, None] = None
         if key == ElementActionId.CLEAR_TEXT.value:
             element.send_keys(Keys.CONTROL, 'a')
             element.send_keys(Keys.DELETE)

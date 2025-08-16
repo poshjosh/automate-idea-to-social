@@ -76,6 +76,14 @@ class ActionHandler:
         logger.error(error_msg, exc_info=ex)
         raise ActionError(error_msg)
 
+    @staticmethod
+    def error(ex: Exception, action: Action) -> Exception:
+        if isinstance(ex, ActionError):
+            return ex
+        error_msg = f'Error while executing {action}'
+        logger.error(error_msg, exc_info=ex)
+        return ActionError(error_msg)
+
     def with_timeout(self, timeout: float) -> 'ActionHandler':
         # TODO Implement a timeout for this action handler
         return self
@@ -92,7 +100,7 @@ class ActionHandler:
                 result = result.flip()
             return result
         except Exception as ex:
-            self.throw_error(ex, action)
+            raise self.error(ex, action)
 
     def _execute_by_key(self, run_context: RunContext, action: Action, key: str) -> ActionResult:
         if action == Action.none():
@@ -218,7 +226,7 @@ class ActionHandler:
         return ActionResult(action, success, prefix)
 
     @staticmethod
-    def __starts_with(action: Action) -> tuple[bool, str or None]:
+    def __starts_with(action: Action) -> tuple[bool, Union[str, None]]:
         args: list[str] = action.get_args_as_str_list()
         value: str = args[0]
         prefixes: list[str] = args[1:]
@@ -309,8 +317,9 @@ class ActionHandler:
         :param timeout (float): If the user does not press ENTER within this time, the method returns False.
         :return: True if the user pressed ENTER before timeout, False if the timeout was reached.
         """
-        # Display the message
         print(f"{message}")
+
+        logger.info("Timeout: %s", timeout)
 
         # Variable to track if ENTER was pressed
         enter_pressed = threading.Event()

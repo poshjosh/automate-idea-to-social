@@ -66,7 +66,7 @@ def replace_all_variables(
                        NODES_TO_SKIP)
 
 
-def get_run_arg_replacement(curr_path: [str], arg: str, run_context: 'RunContext' = None) -> any:
+def get_run_arg_replacement(curr_path: list[str], arg: str, run_context: 'RunContext' = None) -> any:
     if len(curr_path) != 3:
         raise ValueError(f'Expected 3 elements, found: {curr_path}')
 
@@ -76,11 +76,11 @@ def get_run_arg_replacement(curr_path: [str], arg: str, run_context: 'RunContext
     replacement = replace_variables(arg, replace)
 
     if replacement is None:
-        raise ValueError(f'Unsupported argument: {arg} for {".".join(curr_path)}')
+        raise ValueError(f'Unsupported argument: {arg}, @ {".".join(curr_path)}')
 
     if contains_variable(replacement):
         raise ValueError(
-            f'Invalid replacement: {replacement} for: {arg} of {".".join(curr_path)}')
+            f'Invalid replacement: {replacement} for: {arg}, @ {".".join(curr_path)}')
 
     return replacement
 
@@ -111,7 +111,7 @@ def get_variables(config: dict[str, any], include_scoped_variables: bool = True)
     return variables
 
 
-def __get_run_arg_replacement(curr_path: [str],
+def __get_run_arg_replacement(curr_path: list[str],
                               name: str,
                               run_context: 'RunContext' = None,
                               result_if_none: Union[str, None] = None) -> Union[any, None]:

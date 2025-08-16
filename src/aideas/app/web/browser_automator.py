@@ -163,7 +163,7 @@ class BrowserAutomator(Automator):
                     config: AgentConfig,
                     stage: Name,
                     run_context: RunContext):
-        link: str = config.get_url(stage, self.__webdriver.current_url)
+        link: str = config.get_url(stage, str(self.__webdriver.current_url))
 
         page_loaded: bool = self.__element_selector.load_page(link)
         if page_loaded:
