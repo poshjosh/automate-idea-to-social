@@ -39,7 +39,7 @@ stages:
   login:
     url: https://www.tiktok.com/login/phone-or-email/email
     events:
-      onerror: ask_for_help "Please proceed till you login." 120
+      onerror: ask_for_help "Please help by proceeding till you login." 60
     stage-items:
       enter-username:
         search-for: //*[@id="loginContainer"]//form//input[@name="username"]
