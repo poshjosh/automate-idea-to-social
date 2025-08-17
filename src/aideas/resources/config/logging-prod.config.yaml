@@ -1,0 +1,8 @@
+extends: logging
+define:
+  &log_level 'INFO'
+filters:
+  secrets_masking_filter:
+    (): app.io.logging.SecretsMaskingLogFilter
+    patterns:
+      - "(pass|key|secret|token|jwt|hash|signature|credential|auth|certificate|connection|pat)"

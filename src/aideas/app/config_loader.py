@@ -65,6 +65,9 @@ class ConfigLoader(YamlLoader):
 
         return [keys[values.index(sorted_val)] for sorted_val in values_sorted]
 
+    def get_logging_config_path(self) -> str:
+        return self.get_path('logging-prod') if is_production() else self.get_path('logging')
+
     def load_run_config(self, check_replaced: bool = True) -> dict[str, any]:
         result = self.load_from_path(self.get_path("run"), check_replaced)
         result = RunArg.of_dict(result)
