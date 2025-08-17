@@ -16,6 +16,7 @@ services:
       PYTHONUNBUFFERED: ${PYTHONUNBUFFERED:-1}
       APP_PROFILES: "docker,${APP_PROFILES}"
       APP_PORT: "${APP_PORT:-5000}"
+      OUTPUT_DIR: "~/.aideas/output"
     env_file:
       - .env
     volumes:
@@ -24,15 +25,8 @@ services:
         source: /var/run/docker.sock
         target: /var/run/docker.sock
       - type: bind
-        source: ./src/resources
-        target: /aideas/resources # must be within our WORKDIR (i.e. 'aideas')
-      - type: bind
         source: ${CONTENT_DIR}
         target: ${CONTENT_DIR}
       - type: bind
         source: ${CHROME_PROFILE_DIR}
         target: ${CHROME_PROFILE_DIR}
-      - type: bind
-        # TODO - This should be dynamic. By the way it is only required by the blog agent
-        source: "./src/resources/output/blog-app/app/automate-jamstack-${BLOG_APP_VERSION:-0.1.6}/app"
-        target: /aideas/blog-app # must be within our WORKDIR (i.e. 'aideas')

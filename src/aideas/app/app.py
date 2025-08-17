@@ -1,3 +1,7 @@
+from collections.abc import Iterable
+
+from typing import Union
+
 import logging
 import os
 import signal
@@ -16,7 +20,7 @@ class App:
     __shutdown = False
 
     @staticmethod
-    def init() -> ConfigLoader:
+    def init(config_path: Union[str, Iterable, None] = None) -> ConfigLoader:
         print(f"Initializing app, profiles: {get_env_value(Env.APP_PROFILES)}"
               f", working dir: {os.getcwd()}") # logging not yet configured, so we use print
         signal.signal(signal.SIGINT, App.shutdown)
@@ -34,7 +38,7 @@ class App:
             os.makedirs(output_dir)
             logger.info(f"Created output directory: {output_dir}")
 
-        return ConfigLoader(os.path.join(os.getcwd(), 'resources', 'config'))
+        return ConfigLoader(config_path)
 
     @staticmethod
     def shutdown(signum, _):

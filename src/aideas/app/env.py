@@ -1,5 +1,4 @@
 import logging
-
 import os
 from datetime import datetime
 from enum import Enum, unique
@@ -43,7 +42,7 @@ class Env(str, Enum):
 
     WEB_APP = ('WEB_APP', True, False, 'true')
 
-    CONFIG_DIR = ('CONFIG_DIR', True, True, 'resources/config')
+    CONFIG_DIR = ('CONFIG_DIR', True, True, os.path.join('resources', 'config'))
     OUTPUT_DIR = ('OUTPUT_DIR', False, True, 'output')
 
     RUN_ARGS = ('RUN_ARGS', True, False)

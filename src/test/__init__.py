@@ -1,3 +1,6 @@
-from aideas.app.app import App
+import os
 
-App.init()
+from aideas.app.app import App
+from aideas.app.config_loader import CONFIG_DIR
+
+App.init(os.path.join(os.getcwd(), 'test', CONFIG_DIR))

@@ -15,11 +15,14 @@ logger = logging.getLogger(__name__)
 
 _SUFFIX = '.config'
 
+CONFIG_DIR = Env.CONFIG_DIR.get_default_value()
+
 
 class ConfigLoader(YamlLoader):
     def __init__(self,
-                 config_path: str,
+                 config_path: Union[str, Iterable, None] = None,
                  variable_source: Union[dict[str, any], None] = None):
+        config_path = config_path if config_path else os.path.join(os.getcwd(), CONFIG_DIR)
         super().__init__(config_path, suffix=_SUFFIX)
         self.__config_path = config_path
         self.__variable_source = variable_source if variable_source else Env.collect()

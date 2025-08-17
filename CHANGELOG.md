@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Move the resources directory to within the application directory.
+- The default output directory. Also, create it if need.
+
 ## [0.3.1] - 2025-08-16
 
 ### Added
@@ -17,7 +22,6 @@ The default value is `onerror`.
 
 ### Changed
 
-- The default output directory. Also, create it if need.
 - Mask secrets only when in production mode.
 
 ## [0.3.0] - 2025-08-15

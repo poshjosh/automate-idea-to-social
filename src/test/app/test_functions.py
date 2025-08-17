@@ -4,7 +4,7 @@ from typing import Union, Callable
 from aideas.app.action.action_result import ActionResult
 from aideas.app.agent.agent import Agent
 from aideas.app.config import RunArg, BrowserConfig
-from aideas.app.config_loader import ConfigLoader
+from aideas.app.config_loader import ConfigLoader, CONFIG_DIR
 from aideas.app.result.result_set import ElementResultSet, StageResultSet
 from aideas.app.run_context import RunContext
 from aideas.app.web.webdriver_creator import WebDriverCreator, WEB_DRIVER
@@ -13,11 +13,11 @@ __TEST_SRC_DIR = f'{os.getcwd()}/test/app'
 
 
 def get_main_config_loader(variable_source: Union[dict[str, any], None] = None) -> ConfigLoader:
-    return ConfigLoader(os.path.join("resources", "config"), variable_source)
+    return ConfigLoader(os.path.join("aideas", CONFIG_DIR), variable_source)
 
 
 def get_test_config_loader(variable_source: Union[dict[str, any], None] = None) -> ConfigLoader:
-    return ConfigLoader(os.path.join("test", "resources", "config"), variable_source)
+    return ConfigLoader(os.path.join("test", CONFIG_DIR), variable_source)
 
 
 def load_app_config() -> dict[str, any]:
