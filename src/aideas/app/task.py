@@ -20,11 +20,19 @@ logger = logging.getLogger(__name__)
 RESULT = TypeVar("RESULT", bound=Union[any, None])
 
 
+_STATUS_PENDING = "PENDING"
+_STATUS_LOADING = "LOADING"
+_STATUS_RUNNING = "RUNNING"
+_STATUS_SUCCESS = "SUCCESS"
+_STATUS_PARTIAL = "PARTIAL"
+_STATUS_FAILURE = "FAILURE"
+_STATUS_SKIPPED = "SKIPPED"
+_STATUS_STOPPED = "STOPPED"
+
+
 class Task:
     def __init__(self):
-        self.__started = False
-        self.__stopped = False
-        self.__completed = False
+        self.__status = _STATUS_PENDING
 
     def start(self) -> RESULT:
         try:
@@ -32,12 +40,13 @@ class Task:
                 logger.error(
                     "Task already running" if self.is_running() else "Task already completed")
                 return None
-            self.__started = True
-            return self._start()
+            self.__status = _STATUS_RUNNING
+            result = self._start()
+            self.__status = _STATUS_SUCCESS
+            return result
         except Exception as ex:
+            self.__status = _STATUS_FAILURE
             logger.exception("Task error", ex)
-        finally:
-            self.__completed = True
 
     def _start(self) -> RESULT:
         raise NotImplementedError()
@@ -47,20 +56,23 @@ class Task:
 
     def stop(self) -> 'Task':
         if self.is_started():
-            self.__stopped = True
+            self.__status = _STATUS_STOPPED
         return self
 
     def is_started(self) -> bool:
-        return self.__started
+        return self.__status != _STATUS_PENDING
 
     def is_running(self) -> bool:
-        return self.__started and not self.__completed
+        return self.__status == _STATUS_RUNNING
 
     def is_completed(self) -> bool:
-        return self.__started and self.__completed
+        return self.is_started() and not self.is_running()
 
     def is_stopped(self) -> bool:
-        return self.__stopped
+        return self.__status == _STATUS_STOPPED
+
+    def get_status(self) -> str:
+        return self.__status
 
 
 class AgentTask(Task):
@@ -83,7 +95,7 @@ class AgentTask(Task):
         self.__run_context = run_context
         self.__agent_states = {}
         for name in run_context.get_agent_names():
-            self.__agent_states[name] = "PENDING"
+            self.__agent_states[name] = _STATUS_PENDING
         self.__current_agent = None
 
     def stop(self) -> 'AgentTask':
@@ -91,7 +103,7 @@ class AgentTask(Task):
         if self.is_started():
             return self
         if self.__current_agent is not None:
-            self.__add_agent_state(self.__current_agent, "STOPPED")
+            self.__add_agent_state(self.__current_agent, _STATUS_STOPPED)
         logger.debug("Since stop has been requested, will close result set while task is running, "
                      "though this may lead to an error.")
         self.__run_context.get_result_set().close()
@@ -99,6 +111,9 @@ class AgentTask(Task):
 
     def get_run_context(self) -> RunContext:
         return self.__run_context
+
+    def get_progress(self):
+        return {**self.__agent_states}
 
     def to_html(self) -> str:
         state_str = "<table><thead><tr><th>Agent</th><th>State</th></tr></thead><tbody>"
@@ -129,25 +144,25 @@ class AgentTask(Task):
             for agent_name in self.__run_context.get_agent_names():
 
                 if self.is_stopped() is True or (failed is True and continue_on_error is False):
-                    self.__add_agent_state(agent_name, "SKIPPED")
+                    self.__add_agent_state(agent_name, _STATUS_SKIPPED)
                     continue
 
                 try:
 
                     self.__current_agent = agent_name
 
-                    self.__add_agent_state(agent_name, "LOADING")
+                    self.__add_agent_state(agent_name, _STATUS_LOADING)
 
                     agent = self.__agent_factory.get_agent(agent_name)
 
-                    self.__add_agent_state(agent_name, "RUNNING")
+                    self.__add_agent_state(agent_name, _STATUS_RUNNING)
 
                     stage_result_set = agent.run(self.__run_context)
 
-                    msg = "SUCCESS" if stage_result_set.is_successful() \
-                        else "SUCCESS (with some errors)"
+                    agent_state = _STATUS_SUCCESS if stage_result_set.is_successful() \
+                        else _STATUS_PARTIAL
 
-                    self.__add_agent_state(agent_name, msg)
+                    self.__add_agent_state(agent_name, agent_state)
 
                     self.__save_agent_results(agent_name, stage_result_set)
 
@@ -155,7 +170,7 @@ class AgentTask(Task):
 
                     failed = True
 
-                    self.__add_agent_state(agent_name, "FAILURE")
+                    self.__add_agent_state(agent_name, _STATUS_FAILURE)
 
                     logger.exception(ex)
 

@@ -45,6 +45,12 @@ class WebService:
             agents[agent_name] = HtmlFormat.display(agent_name)
         return self._with_default_page_variables({'tag': tag, 'agents': agents})
 
+    def api_get_automation_agent_configs(self, tag) -> dict[str, any]:
+        return {'tag': tag, 'agents': self.__config_loader.get_agent_names(tag)}
+
+    def api_get_automation_agent_config(self, agent_name: str) -> dict[str, any]:
+        return {'agent_name': agent_name, 'agent': self.__config_loader.get_agent_config_with_unreplaced_variables(agent_name)}
+
     def enter_automation_details(self, data: dict[str, any]) -> dict[str, any]:
         tag = data['tag']
         agent_names = data['agents']
@@ -90,16 +96,28 @@ class WebService:
     def tasks(self,
               get_task_links: Callable[[str], dict[str, any]],
               info: str = None) -> dict[str, any]:
-        task_ids: [str] = get_task_ids()
+        return self._with_default_page_variables(self.api_tasks(get_task_links, info))
+
+    @staticmethod
+    def api_tasks(
+              get_task_links: Callable[[str], dict[str, any]],
+              info: str = None) -> dict[str, any]:
+        task_ids: list[str] = get_task_ids()
         tasks = []
         for task_id in task_ids:
-            task: AgentTask = require_task(task_id)
-            tasks.append({
-                'id': task_id,
-                'agents': task.get_run_context().get_agent_names(),
-                'links': get_task_links(task_id)
-            })
-        return self._with_default_page_variables({'tasks': tasks, 'info': info})
+            tasks.append(WebService.api_task(get_task_links, task_id))
+        return {'tasks': tasks, 'info': info}
+
+    @staticmethod
+    def api_task(get_task_links: Callable[[str], dict[str, any]], task_id: str) -> dict[str, any]:
+        task: AgentTask = require_task(task_id)
+        return {
+            'id': task_id,
+            'agents': task.get_run_context().get_agent_names(),
+            'status': task.get_status(),
+            'progress': task.get_progress(),
+            'links': get_task_links(task_id)
+        }
 
     def _with_default_page_variables(self, variables: dict[str, any] = None):
         if variables is None:

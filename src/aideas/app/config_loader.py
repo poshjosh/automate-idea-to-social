@@ -32,6 +32,14 @@ class ConfigLoader(YamlLoader):
         self.__variable_source.update(RunArg.of_defaults()) # sys.argv and environment variable RUN_ARGs
         self.__agent_configs_with_un_replaced_variables = self.__load_agent_config_with_variables()
 
+    def get_agent_config_with_unreplaced_variables(self, agent_name: str) -> dict[str, any]:
+        """
+        Returns the agent config with variables not replaced.
+        :param agent_name: The name of the agent.
+        :return: The agent config with variables not replaced.
+        """
+        return self.__agent_configs_with_un_replaced_variables.get(agent_name, {})
+
     def with_added_variable_source(self, source: dict[str, any]) -> 'ConfigLoader':
         return ConfigLoader(self.__config_path, {**self.__variable_source, **source})
 

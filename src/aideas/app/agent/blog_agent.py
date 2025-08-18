@@ -16,8 +16,9 @@ from ..agent.agent_name import AgentName
 from ..action.action import Action
 from ..action.action_result import ActionResult
 from ..config import Name, RunArg
-from ..env import Env, is_docker
+from ..env import Env
 from ..io.net import download_file
+from ..paths import Paths
 from ..result.result_set import ElementResultSet
 from ..run_context import RunContext
 
@@ -311,7 +312,7 @@ class BlogAgent(Agent):
 
     def _get_update_blog_command_args(self, run_context: RunContext) -> list[str]:
 
-        blog_env_file = run_context.get_env(Env.BLOG_ENV_FILE)
+        blog_env_file = Paths.require_path(run_context.get_env(Env.BLOG_ENV_FILE))
 
         m = re.search(r"^APP_PORT=(\d*)", read_content(blog_env_file), re.MULTILINE)
         port_str: str = None if not m else m.group(1)

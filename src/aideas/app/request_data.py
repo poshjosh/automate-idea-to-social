@@ -3,7 +3,6 @@ import os.path
 from typing import Union
 
 from .config import RunArg
-from .env import Env, get_app_language
 from .i18n import I18n
 from .image_service import save_files
 
@@ -20,7 +19,9 @@ class RequestData:
     def get_list(request, key: str, result_if_none: [str]) -> list[str]:
         values = request.args.to_dict(flat=False).get(key)
         if not values:
-            values = request.form.getlist(key)
+            values = request.form.getlist(key) if request.form else None
+            if not values:
+                values = request.json.get(key) if request.json else None
         return values if values else result_if_none
 
     @staticmethod
@@ -34,25 +35,36 @@ class RequestData:
     def get(request, key: str, result_if_none: any = None) -> Union[str, None]:
         val = request.args.get(key)
         if not val:
-            val = request.form.get(key)
+            val = request.form.get(key) if request.form else None
+            if not val:
+                val = request.json.get(key) if request.json else None
         return result_if_none if not val else val
 
     @staticmethod
-    def require_tag(request) -> Union[str, None]:
-        tag = RequestData.get(request, 'tag')
-        if not tag:
-            raise ValidationError("Specify what you want to automate using a 'tag'.")
-        return tag
+    def require(request, key: str) -> str:
+        val = RequestData.get(request, key)
+        if not val:
+            raise ValidationError(f"Please specify a value for required property: {key}")
+        return val
 
     @staticmethod
     def automation_details(request) -> dict[str, any]:
         return {
-            'tag': RequestData.require_tag(request),
+            'tag': RequestData.require(request, 'tag'),
             RunArg.AGENTS.value: RequestData.require_agent_names(request)}
 
     @staticmethod
-    def task_config(task_id: str, request) -> dict[str, any]:
-        request_data = {**dict(request.form)}
+    def task_config_from_json_body(task_id: str, request) -> dict[str, any]:
+        request_data = {**dict(request.json), **dict(request.args)}
+        return RequestData.__task_config_from_dict(task_id, request, request_data)
+
+    @staticmethod
+    def task_config_from_form(task_id: str, request) -> dict[str, any]:
+        request_data = {**dict(request.form), **dict(request.args)}
+        return RequestData.__task_config_from_dict(task_id, request, request_data)
+
+    @staticmethod
+    def __task_config_from_dict(task_id: str, request, request_data) -> dict[str, any]:
         lang_codes = RequestData.get_list(request, RunArg.LANGUAGE_CODES.value, None)
         if lang_codes:
             request_data[RunArg.LANGUAGE_CODES.value] = ",".join(lang_codes)

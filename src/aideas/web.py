@@ -17,11 +17,14 @@ INDEX_TEMPLATE = 'index.html'
 AUTOMATION_INDEX_TEMPLATE = 'automate/index.html'
 
 
-@web_app.errorhandler(ValidationError)
-def handle_validation_error(e):
+@web_app.errorhandler(Exception)
+def handle_error(e):
+    # print(e)
+    error_data = {"error": e.message if hasattr(e, 'message') else str(e)}
+    if 'json' in request.content_type:
+        return error_data, 400
     return render_template(
-        AUTOMATION_INDEX_TEMPLATE, **web_service.automation_index({"error": e.message})), 400
-
+        AUTOMATION_INDEX_TEMPLATE, **web_service.automation_index(error_data)), 400
 
 @web_app.route('/')
 def index():
@@ -36,7 +39,7 @@ def automaton_index():
 @web_app.route('/automate/select-agents.html')
 def select_automaton_agents():
     return render_template('automate/select-agents.html',
-                           **web_service.select_automation_agents(RequestData.require_tag(request)))
+                           **web_service.select_automation_agents(RequestData.require(request, 'tag')))
 
 
 @web_app.route('/automate/enter-details.html')
@@ -53,7 +56,7 @@ TASK_INDEX_TEMPLATE = 'task/index.html'
 def start_automation():
     task_id = str(uuid.uuid4().hex)
 
-    data = RequestData.task_config(task_id, request)
+    data = RequestData.task_config_from_form(task_id, request)
 
     if data['async'] is True:
         web_service.start_automation_async(task_id, data)
@@ -65,40 +68,84 @@ def start_automation():
     return render_template(AUTOMATION_INDEX_TEMPLATE, **template_args)
 
 
+@web_app.route('/api/tasks', methods=['POST'])
+def api_tasks():
+
+    if RequestData.require(request, 'action') != 'start':
+        raise ValidationError("Only start supported for now")
+
+    task_id = str(uuid.uuid4().hex)
+
+    data = RequestData.task_config_from_json_body(task_id, request)
+
+    if data['async'] is True:
+        web_service.start_automation_async(task_id, data)
+        return { "id": task_id }
+
+    task = web_service.start_automation(task_id, data)
+    return { "task": task }
+
+
 @web_app.route('/' + TASK_INDEX_TEMPLATE)
 def view_tasks():
     return _render_task_index_template()
 
+@web_app.route('/api/tasks', methods=['GET'])
+def api_get_tasks():
+    return {**web_service.api_tasks(_api_get_task_links)}
 
 @web_app.route('/task/<task_id>')
 def task_by_id(task_id: str):
-    return _render_task_index_template(_task_by_id(task_id))
+    task = _task_by_id(task_id, request.args.get('action'))
+    if task.is_stopped():
+        info = f"<p>Task stopped: {task_id}</p>{task.to_html()}"
+    else:
+        info = f"<p>Displaying task: {task_id}</p>{task.to_html()}"
+    return _render_task_index_template(info)
+
+@web_app.route('/api/tasks/<task_id>', methods=['GET'])
+def api_task_by_id(task_id: str):
+    _task_by_id(task_id, request.args.get('action'))
+    return { "task": web_service.api_task(_api_get_task_links, task_id) }
 
 
-def _task_by_id(task_id: str):
+@web_app.route('/api/agents', methods=['GET'])
+def api_get_agents():
+    """
+    Get the names of all agents, limited to those matching a tag, if specified in the request.
+    :return: A list of agent names, limited to those matching a tag if specified in the request.
+    """
+    return {**web_service.api_get_automation_agent_configs(RequestData.get(request, 'tag'))}
+
+
+@web_app.route('/api/agents/<agent_name>', methods=['GET'])
+def api_get_agent_by_name(agent_name: str):
+    return {**web_service.api_get_automation_agent_config(agent_name)}
+
+
+def _task_by_id(task_id: str, action = None):
     task = get_task(task_id)
 
     if task is None:
-        return f"Task not found: {task_id}"
+        raise FileNotFoundError(f"Task not found: {task_id}")
 
-    if task.is_started() is False:
-        return f"Task not started: {task_id}"
+    if task.is_started():
+        raise ValidationError(f"Task not started: {task_id}")
 
-    if task.is_completed() is True:
-        return f"<p>Task already completed: {task_id}</p>{task.to_html()}"
+    if task.is_completed():
+        raise ValidationError(f"Task already completed: {task_id}")
 
-    if request.args.get('action') == 'stop':
-
+    if action == 'stop':
         stop_task(task_id)
 
-        return f"<p>Task stopped: {task_id}</p>{task.to_html()}"
-
-    return f"<p>Displaying task: {task_id}</p>{task.to_html()}"
+    return task
 
 
 def _get_task_links(task_id: str) -> dict[str, any]:
     return {'view': '/task/' + task_id, 'stop': '/task/' + task_id + '?action=stop'}
 
+def _api_get_task_links(task_id: str) -> dict[str, any]:
+    return {'view': '/api/tasks/' + task_id, 'stop': '/api/tasks/' + task_id + '?action=stop'}
 
 def _render_task_index_template(info: str = None):
     return render_template(TASK_INDEX_TEMPLATE, **web_service.tasks(_get_task_links, info))
