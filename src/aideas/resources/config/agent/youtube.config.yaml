@@ -4,7 +4,7 @@ agent-type: browser
 agent-tags: post
 sort-order: 2
 # Optional [visible|undetected]
-browser-mode: undetected
+#browser-mode: undetected
 form-field-source: $TEXT_FILE
 stages:
   login:
