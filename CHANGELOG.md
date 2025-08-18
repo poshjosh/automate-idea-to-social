@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Improved docker image build, security etc.
 - Move the resources directory to within the application directory.
 - The default output directory. Also, create it if need.
 

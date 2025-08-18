@@ -42,8 +42,8 @@ class Env(str, Enum):
 
     WEB_APP = ('WEB_APP', True, False, 'true')
 
-    CONFIG_DIR = ('CONFIG_DIR', True, True, Paths.get_path(os.path.join('resources', 'config')))
-    OUTPUT_DIR = ('OUTPUT_DIR', False, True, Paths.get_path('~', '.aideas', 'output'))
+    CONFIG_DIR = ('CONFIG_DIR', True, True, os.path.join('resources', 'config'))
+    OUTPUT_DIR = ('OUTPUT_DIR', False, True, os.path.join('~', '.aideas', 'output'))
 
     RUN_ARGS = ('RUN_ARGS', True, False)
 

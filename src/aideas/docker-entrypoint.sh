@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # print debug information
 #set -ex
 
@@ -33,13 +33,18 @@ if [ "$SETUP_DISPLAY" = true ] || [ "$SETUP_DISPLAY" = "true" ] ; then
   keepUpScreen &
 fi
 
+printf "\nGranting permission 775 to: %s\n" "${OUTPUT_DIR}" && chmod 775 "${OUTPUT_DIR}" \
+    && printf "\nGranting permission 775 to: %s\n" "${CONTENT_DIR}" && chmod 775 "${CONTENT_DIR}"
+
 #printf "\nRunning: %s\n" "$@"
 #exec "$@"
 
-cd aideas || exit 1
+#echo $(whoami) && echo "$(pwd)" && ls -aol && cd aideas && echo "$(pwd)" && ls -aol && cd ..
+
+cd aideas || exit 1 # The app expect to work from within the aideas directory.
 
 if [ "$WEB_APP" = true ] || [ "$WEB_APP" = "true" ] ; then
-  exec python web.py "$RUN_ARGS"
+  python3 web.py "$RUN_ARGS"
 else
-  exec python main.py "$RUN_ARGS"
+  python3 main.py "$RUN_ARGS"
 fi
