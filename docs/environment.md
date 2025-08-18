@@ -34,7 +34,7 @@ WEB_APP=true
 # will override values in the default location: 'resources/config'.
 CONFIG_DIR=resources/config
 
-OUTPUT_DIR=~/.aideas/output
+OUTPUT_DIR="~/.aideas/output"
 
 # Space separated args to run each agent, usually presented as options to be provided by the user.
 # See aideas.app.config.RunArg for possible values.
