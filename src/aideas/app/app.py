@@ -8,7 +8,7 @@ import signal
 import sys
 
 from .config_loader import ConfigLoader
-from .env import Env, is_production, get_env_value
+from .env import Env, is_production, get_env_value, get_output_dir
 from .paths import Paths
 from .task import shutdown as shutdown_tasks, init_tasks_cleanup
 
@@ -29,14 +29,10 @@ class App:
         if is_production():
             init_tasks_cleanup(lambda: App.__shutting_down, 600)
 
-        output_dir = get_env_value(Env.OUTPUT_DIR)
-        if not output_dir:
-            raise FileNotFoundError("No output directory specified")
-        output_dir = Paths.get_path(get_env_value(Env.OUTPUT_DIR), "logs")
-
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
-            logger.info(f"Created output directory: {output_dir}")
+        logs_output_dir = get_output_dir('logs')
+        if not os.path.exists(logs_output_dir):
+            os.makedirs(logs_output_dir)
+            logger.info(f"Created logs output directory: {logs_output_dir}")
 
         return ConfigLoader(config_path)
 

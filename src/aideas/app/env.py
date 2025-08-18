@@ -42,8 +42,8 @@ class Env(str, Enum):
 
     WEB_APP = ('WEB_APP', True, False, 'true')
 
-    CONFIG_DIR = ('CONFIG_DIR', True, True, os.path.join('resources', 'config'))
-    OUTPUT_DIR = ('OUTPUT_DIR', False, True, 'output')
+    CONFIG_DIR = ('CONFIG_DIR', True, True, Paths.get_path(os.path.join('resources', 'config')))
+    OUTPUT_DIR = ('OUTPUT_DIR', False, True, Paths.get_path('~', '.aideas', 'output'))
 
     RUN_ARGS = ('RUN_ARGS', True, False)
 
@@ -160,8 +160,7 @@ def get_cached_results_file(agent_name: str, filename: str = None) -> str:
     else:
         filename = ''
 
-    dir_path: str = os.path.join(Paths.get_path(get_env_value(Env.OUTPUT_DIR)),
-                                 'results',
+    dir_path: str = os.path.join(get_output_dir('results'),
                                  agent_name,
                                  now.strftime("%Y"),
                                  now.strftime("%m"),
@@ -186,7 +185,14 @@ def get_agent_results_dir(agent_name: str) -> str:
 def get_agent_output_dir(agent_name: str):
     if not agent_name:
         raise ValueError('agent name required')
-    return os.path.join(get_env_value(Env.OUTPUT_DIR), 'agent', agent_name)
+    return os.path.join(get_output_dir('agent'), agent_name)
+
+
+def get_output_dir(extra: str = None) -> str:
+    output_dir = get_env_value(Env.OUTPUT_DIR)
+    if not output_dir:
+        raise ValueError("No output directory specified")
+    return Paths.get_path(output_dir, extra)
 
 
 def has_env_value(name: str) -> bool:
@@ -212,7 +218,7 @@ def get_env_value(name: Union[str, Enum], default: str = None) -> Union[str, Non
 
 
 def get_cookies_file(domain: str, file_name: str = "cookies.pkl") -> str:
-    dir_path = Paths.get_path(get_env_value(Env.OUTPUT_DIR), "cookies")
+    dir_path = get_output_dir('cookies')
     return os.path.join(dir_path, domain, file_name)
 
 
