@@ -2,7 +2,7 @@
 
 source ./pre_run.sh
 
-WORKING_DIR="src/aideas"
+WORKING_DIR="src/aideas" # The app expect to work from within the aideas directory.
 
 cd "$WORKING_DIR" || (printf "\nCould not change to working dir: %s\n" "$WORKING_DIR" && exit 1)
 
