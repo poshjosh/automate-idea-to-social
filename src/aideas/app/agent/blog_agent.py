@@ -199,12 +199,11 @@ class BlogAgent(Agent):
         # if os.path.exists(self.get_blog_base_dir()):  # Already cloned
         #     shutil.rmtree(self.get_blog_base_dir())
 
-    @staticmethod
-    def __clone_git_repo_to_dir(url: str, save_to_dir: str) -> bool:
+    def __clone_git_repo_to_dir(self, url: str, save_to_dir: str) -> bool:
         if not url.endswith(".git"):
             raise ValueError("URL must end with .git")
 
-        return run_command(['git', 'clone', url, save_to_dir]).returncode == 0
+        return run_command(['git', 'clone', url, save_to_dir], self.get_blog_clone_timeout_seconds()).returncode == 0
 
     def __get_blog_src_url_with_credentials(self, run_context: RunContext) -> str:
         return self.__add_credentials_to_url(
@@ -362,6 +361,9 @@ class BlogAgent(Agent):
 
     def get_app_tgt_dir(self) -> str:
         return self.__app()['target']['dir']
+
+    def get_blog_clone_timeout_seconds(self) -> int:
+        return self.__blog().get('clone', {}).get('timeout-seconds', 120)
 
     def get_blog_src_url(self) -> str:
         return self.__blog()['source']['url']
