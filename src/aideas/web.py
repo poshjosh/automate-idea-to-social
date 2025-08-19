@@ -19,9 +19,10 @@ AUTOMATION_INDEX_TEMPLATE = 'automate/index.html'
 
 @web_app.errorhandler(Exception)
 def handle_error(e):
-    # print(e)
+    if not is_production():
+        print(e)
     error_data = {"error": e.message if hasattr(e, 'message') else str(e)}
-    if 'json' in request.content_type:
+    if request.content_type and 'json' in request.content_type:
         return error_data, 400
     return render_template(
         AUTOMATION_INDEX_TEMPLATE, **web_service.automation_index(error_data)), 400
@@ -71,19 +72,16 @@ def start_automation():
 @web_app.route('/api/tasks', methods=['POST'])
 def api_tasks():
 
-    if RequestData.require(request, 'action') != 'start':
-        raise ValidationError("Only start supported for now")
-
     task_id = str(uuid.uuid4().hex)
 
     data = RequestData.task_config_from_json_body(task_id, request)
 
     if data['async'] is True:
         web_service.start_automation_async(task_id, data)
-        return { "id": task_id }
+        return { "id": task_id }, 201
 
-    task = web_service.start_automation(task_id, data)
-    return { "task": task }
+    web_service.start_automation(task_id, data)
+    return { "task": web_service.api_task(_api_get_task_links, task_id) }, 201
 
 
 @web_app.route('/' + TASK_INDEX_TEMPLATE)
@@ -129,13 +127,12 @@ def _task_by_id(task_id: str, action = None):
     if task is None:
         raise FileNotFoundError(f"Task not found: {task_id}")
 
-    if task.is_started():
+    if not task.is_started():
         raise ValidationError(f"Task not started: {task_id}")
 
-    if task.is_completed():
-        raise ValidationError(f"Task already completed: {task_id}")
-
     if action == 'stop':
+        if task.is_completed():
+            raise ValidationError(f"Task already completed: {task_id}")
         stop_task(task_id)
 
     return task

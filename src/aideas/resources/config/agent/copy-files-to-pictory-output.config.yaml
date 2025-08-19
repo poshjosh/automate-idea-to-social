@@ -1,7 +1,7 @@
 # [llm|browser|blog|generic]  llm is not yet supported
 agent-type: generic
-# Optional [generate-video|generate-text|post|test|custom]
-agent-tags: custom
+# Optional [generate-video|generate-text|post|test|custom|unlisted]
+agent-tags: unlisted
 output-dir: ${OUTPUT_DIR}/agent/pictory
 stages:
   remove-existing-dir:

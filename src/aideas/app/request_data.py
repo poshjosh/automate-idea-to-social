@@ -16,16 +16,17 @@ class ValidationError(Exception):
 
 class RequestData:
     @staticmethod
-    def get_list(request, key: str, result_if_none: [str]) -> list[str]:
+    def get_list(request, key: str, result_if_none: list[str]) -> list[str]:
         values = request.args.to_dict(flat=False).get(key)
         if not values:
-            values = request.form.getlist(key) if request.form else None
-            if not values:
+            if request.content_type and 'json' in request.content_type:
                 values = request.json.get(key) if request.json else None
+            else:
+                values = request.form.getlist(key) if request.form else None
         return values if values else result_if_none
 
     @staticmethod
-    def require_agent_names(request) -> [str]:
+    def require_agent_names(request) -> list[str]:
         agent_names = RequestData.get_list(request, RunArg.AGENTS.value, None)
         if not agent_names:
             raise ValidationError("No agents specified.")
@@ -35,9 +36,10 @@ class RequestData:
     def get(request, key: str, result_if_none: any = None) -> Union[str, None]:
         val = request.args.get(key)
         if not val:
-            val = request.form.get(key) if request.form else None
-            if not val:
+            if request.content_type and 'json' in request.content_type:
                 val = request.json.get(key) if request.json else None
+            else:
+                val = request.form.get(key) if request.form else None
         return result_if_none if not val else val
 
     @staticmethod

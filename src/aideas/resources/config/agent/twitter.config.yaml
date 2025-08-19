@@ -2,7 +2,7 @@
 # For div, we use div[1], only for symmetry.
 # [llm|browser|blog|generic]  llm is not yet supported
 agent-type: browser
-# Optional [generate-video|generate-text|post|test|custom]
+# Optional [generate-video|generate-text|post|test|custom|unlisted]
 agent-tags: post
 sort-order: 3
 stages:

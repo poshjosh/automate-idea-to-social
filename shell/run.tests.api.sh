@@ -27,65 +27,85 @@ function log() {
 URL="http://localhost:${APP_PORT}/api/agents?tag=test"
 log ""
 log " GET ${URL}"
-output=$(curl -s -H 'Content-Type: application/json' -X GET "${URL}")
-log "Expected: {
-  \"agents\": [
-  ...
-  ],
-  \"tag\": \"test\"
-}
-"
-log "  Actual: ${output}"
+output=$(curl -s -H 'Content-Type: application/json' -X GET -w "%{http_code}" "${URL}")
+if [[ "$output" == *200 ]]; then
+  log "SUCCESS"
+else
+  log "FAILURE"
+  log "Expected: {
+    \"agents\": [
+    ...
+    ],
+    \"tag\": \"test\"
+  }
+  "
+  log "  Actual: ${output}"
+fi
 
 # GET /api/agents/test-agent
 URL="http://localhost:${APP_PORT}/api/agents/test-agent"
 log ""
 log " GET ${URL}"
-output=$(curl -s -H 'Content-Type: application/json' -X GET "${URL}")
-log "Expected: agent configuration file"
-log "  Actual: ${output}"
+output=$(curl -s -H 'Content-Type: application/json' -X GET -w "%{http_code}" "${URL}")
+if [[ "$output" == *200 ]]; then
+  log "SUCCESS"
+else
+  log "FAILURE"
+  log "Expected: agent configuration file"
+  log "  Actual: ${output}"
+fi
 
-# POST /api/tasks?action=start
-URL="http://localhost:${APP_PORT}/api/tasks?action=start"
+# POST /api/tasks
+URL="http://localhost:${APP_PORT}/api/tasks"
 data="{\"tag\":\"test\", \"agents\":[\"test-agent\", \"test-log\"] }"
 log ""
 log "POST ${URL} ${data}"
-output=$(curl -s -H 'Content-Type: application/json' -X POST -d "$data" "${URL}")
-log "Expected: {
-  \"id\": \"********************************\"
-}
-"
-log "  Actual: ${output}"
+output=$(curl -s -H 'Content-Type: application/json' -X POST -d "$data" -w "%{http_code}" "${URL}")
+if [[ "$output" == *201 ]]; then
+  log "SUCCESS"
+else
+  log "FAILURE"
+  log "Expected: {
+    \"id\": \"********************************\"
+  }
+  "
+  log "  Actual: ${output}"
+fi
 
 # GET /api/tasks
 URL="http://localhost:${APP_PORT}/api/tasks"
 log ""
 log " GET ${URL}"
-output=$(curl -s -H 'Content-Type: application/json' -X GET "${URL}")
-log "Expected: {
- \"info\": null,
- \"tasks\": [
-   {
-     \"agents\": [
-       \"test-agent\",
-       \"test-log\"
-     ],
-     \"id\": \"********************************\",
-     \"links\": {
-       \"stop\": \"/api/tasks/********************************?action=stop\",
-       \"view\": \"/api/tasks/********************************2\"
-     },
-     \"progress\": {
-       \"test-agent\": \"PENDING >> LOADING >> RUNNING >> SUCCESS\",
-       \"test-log\": \"PENDING >> LOADING >> RUNNING >> SUCCESS\"
-     },
-     \"status\": \"SUCCESS\"
-   }
- ]
-}"
-log "  Actual: ${output}"
+output=$(curl -s -H 'Content-Type: application/json' -X GET -w "%{http_code}" "${URL}")
+if [[ "$output" == *200 ]]; then
+  log "SUCCESS"
+else
+  log "FAILURE"
+  log "Expected: {
+   \"info\": null,
+   \"tasks\": [
+     {
+       \"agents\": [
+         \"test-agent\",
+         \"test-log\"
+       ],
+       \"id\": \"********************************\",
+       \"links\": {
+         \"stop\": \"/api/tasks/********************************?action=stop\",
+         \"view\": \"/api/tasks/********************************2\"
+       },
+       \"progress\": {
+         \"test-agent\": \"PENDING >> LOADING >> RUNNING >> SUCCESS\",
+         \"test-log\": \"PENDING >> LOADING >> RUNNING >> SUCCESS\"
+       },
+       \"status\": \"SUCCESS\"
+     }
+   ]
+  }"
+  log "  Actual: ${output}"
+fi
 
-# /api/tasks/<task_id>
+# GET /api/tasks/<task_id>
 
 
 

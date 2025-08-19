@@ -4,7 +4,7 @@
 # See: https://stackoverflow.com/questions/77636171/i-cant-click-log-in-button-in-reddit-login-screen-with-selenium
 # [llm|browser|blog|generic]  llm is not yet supported
 agent-type: browser
-# Optional [generate-video|generate-text|post|test|custom]
+# Optional [generate-video|generate-text|post|test|custom|unlisted]
 agent-tags: post
 form-field-source: $TEXT_FILE
 stages:

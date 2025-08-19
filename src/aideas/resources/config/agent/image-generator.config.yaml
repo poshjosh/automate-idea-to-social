@@ -2,7 +2,7 @@
 agent-type: browser
 # Optional [generate-video|generate-image|generate-text|post|test]
 agent-tags:
-  - test
+  - unlisted
   - generate-image
 stages:
   generate-image:

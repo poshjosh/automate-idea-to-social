@@ -4,7 +4,7 @@
 #############################################################
 # [llm|browser|blog|generic]  llm is not yet supported
 agent-type: browser
-# Optional [generate-video|generate-text|post|test|custom]
+# Optional [generate-video|generate-text|post|test|custom|unlisted]
 agent-tags: post
 post-dialog: //*[starts-with(@id, "mount_0_0_")]//*[@role="dialog"]
 form-field-source: $TEXT_FILE

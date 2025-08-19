@@ -50,7 +50,9 @@ class ConfigLoader(YamlLoader):
     def get_agent_names(self, tag: Union[str , None] = None) -> list[str]:
         def config_filter(config: dict[str, any]) -> bool:
             agent_tags = AgentConfig(config).get_agent_tags()
-            if is_production() is True and 'test' in agent_tags:
+            if 'unlisted' in agent_tags:
+                return False
+            if is_production() and 'test' in agent_tags:
                 return False
             return not tag or tag in agent_tags
 
@@ -106,13 +108,6 @@ class ConfigLoader(YamlLoader):
     def get_agent_config_path(self, agent_name: str) -> str:
         return self.get_path(os.path.join('agent', agent_name))
 
-    def get_all_agent_names(self) -> list[str]:
-        agents = []
-        agent_dir = os.path.join(os.path.dirname(self.get_path("app")), 'agent')
-        for agent_filename in os.listdir(agent_dir):
-            agents.append(agent_filename[0:agent_filename.index(_SUFFIX)])
-        return agents
-
     def _load_browser_config_for_type(self, browser_type: str, check_replaced: bool = True) -> dict[str, any]:
         if browser_type == 'visible':
             config_name = 'browser-visible'
@@ -124,10 +119,17 @@ class ConfigLoader(YamlLoader):
 
     def __load_agent_config_with_variables(self) -> dict[str, dict[str, any]]:
         configs = {}
-        for name in self.get_all_agent_names():
+        for name in self.__get_all_agent_names():
             configs[name] = self.__load_from_path(self.get_agent_config_path(name), {}, False)
         logger.debug(f"Config names: {configs.keys()}")
         return configs
+
+    def __get_all_agent_names(self) -> list[str]:
+        agents = []
+        agent_dir = os.path.join(os.path.dirname(self.get_path("app")), 'agent')
+        for agent_filename in os.listdir(agent_dir):
+            agents.append(agent_filename[0:agent_filename.index(_SUFFIX)])
+        return agents
 
     def __load_from_path(self,
                          path: str,

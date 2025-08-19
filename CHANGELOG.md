@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Agent tag `unlisted` for agents which will not be listed by default.
 - API endpoints
 - API tests
 

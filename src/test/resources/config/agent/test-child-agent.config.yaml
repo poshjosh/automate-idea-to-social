@@ -1,7 +1,7 @@
 extends: test-parent-agent
 # [llm|browser|blog|generic]  llm is not yet supported
 agent-type: generic
-# Optional [generate-video|generate-text|post|test|custom]
+# Optional [generate-video|generate-text|post|test|custom|unlisted]
 agent-tags: test
 stages:
   two: overridden

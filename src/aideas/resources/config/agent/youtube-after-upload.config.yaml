@@ -1,7 +1,7 @@
 # [llm|browser|blog|generic]  llm is not yet supported
 agent-type: browser
-# Optional [generate-video|generate-text|post|test|custom]
-agent-tags: test
+# Optional [generate-video|generate-text|post|test|custom|unlisted]
+agent-tags: unlisted
 # Optional [visible|undetected]
 #browser-mode: undetected
 depends-on:
