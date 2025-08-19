@@ -32,9 +32,10 @@ WEB_APP=true
 
 # If you specify a different location, values from that location
 # will override values in the default location: 'resources/config'.
-CONFIG_DIR=resources/config
+CONFIG_DIR="[OPTIONAL default is 'resources/config']"
 
-OUTPUT_DIR="~/.aideas/output"
+# This is required when running in docker
+OUTPUT_DIR="[OPTIONAL default is '~/.aideas/output']"
 
 # Space separated args to run each agent, usually presented as options to be provided by the user.
 # See aideas.app.config.RunArg for possible values.
