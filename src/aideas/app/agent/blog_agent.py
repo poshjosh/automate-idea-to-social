@@ -298,8 +298,8 @@ class BlogAgent(Agent):
 
     def _get_update_blog_content_commands(self, run_context: RunContext) -> list[list[str]]:
         return [
-            ['git', 'config', 'user.email', f'"{run_context.get_env(Env.GIT_USER_EMAIL)}"'],
-            ['git', 'config', 'user.name', f'"{run_context.get_env(Env.GIT_USER_NAME)}"'],
+            ['git', 'config', '--global', 'user.email', f'"{run_context.get_env(Env.GIT_USER_EMAIL)}"'],
+            ['git', 'config', '--global', 'user.name', f'"{run_context.get_env(Env.GIT_USER_NAME)}"'],
             ['git', 'remote', 'set-url', 'origin',
              self.__get_blog_src_url_with_credentials(run_context)],
             ['git', 'add', '.'],
