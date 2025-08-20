@@ -21,7 +21,7 @@ blog:
   name: liveabove3d.com
   language-codes: $LANGUAGE_CODES
   clone:
-    timeout-seconds: 120
+    timeout-seconds: 360
   source:
     url: https://github.com/poshjosh/${self.blog.name}.git
   target:
