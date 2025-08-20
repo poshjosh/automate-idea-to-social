@@ -32,13 +32,13 @@ if [[ "$output" == *200 ]]; then
   log "SUCCESS"
 else
   log "FAILURE"
-  log "Expected: {
-    \"agents\": [
+  log 'Expected: {
+    "agents": [
     ...
     ],
-    \"tag\": \"test\"
+    "tag": "test"
   }
-  "
+  '
   log "  Actual: ${output}"
 fi
 
@@ -57,7 +57,7 @@ fi
 
 # POST /api/tasks
 URL="http://localhost:${APP_PORT}/api/tasks"
-data="{\"tag\":\"test\", \"agents\":[\"test-agent\", \"test-log\"] }"
+data='{"tag":"test", "agents":["test-agent", "test-log"] }'
 log ""
 log "POST ${URL} ${data}"
 output=$(curl -s -H 'Content-Type: application/json' -X POST -d "$data" -w "%{http_code}" "${URL}")
@@ -65,10 +65,10 @@ if [[ "$output" == *201 ]]; then
   log "SUCCESS"
 else
   log "FAILURE"
-  log "Expected: {
-    \"id\": \"********************************\"
+  log 'Expected: {
+    "id": "********************************"
   }
-  "
+  '
   log "  Actual: ${output}"
 fi
 
@@ -81,27 +81,27 @@ if [[ "$output" == *200 ]]; then
   log "SUCCESS"
 else
   log "FAILURE"
-  log "Expected: {
-   \"info\": null,
-   \"tasks\": [
+  log 'Expected: {
+   "info": null,
+   "tasks": [
      {
-       \"agents\": [
-         \"test-agent\",
-         \"test-log\"
+       "agents": [
+         "test-agent",
+         "test-log"
        ],
-       \"id\": \"********************************\",
-       \"links\": {
-         \"stop\": \"/api/tasks/********************************?action=stop\",
-         \"view\": \"/api/tasks/********************************2\"
+       "id": "********************************",
+       "links": {
+         "stop": "/api/tasks/********************************?action=stop",
+         "view": "/api/tasks/********************************2"
        },
-       \"progress\": {
-         \"test-agent\": \"PENDING >> LOADING >> RUNNING >> SUCCESS\",
-         \"test-log\": \"PENDING >> LOADING >> RUNNING >> SUCCESS\"
+       "progress": {
+         "test-agent": "PENDING >> LOADING >> RUNNING >> SUCCESS",
+         "test-log": "PENDING >> LOADING >> RUNNING >> SUCCESS"
        },
-       \"status\": \"SUCCESS\"
+       "status": "SUCCESS"
      }
    ]
-  }"
+  }'
   log "  Actual: ${output}"
 fi
 
