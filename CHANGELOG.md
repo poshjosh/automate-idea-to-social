@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.2] - 2025-08-20
+
+### Fixed
+
+- Bug in blog agent.
+
 ### Added
 
 - Agent tag `unlisted` for agents which will not be listed by default.
@@ -15,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Improved docker image build, security etc.
+- Improved docker image build.
 - Move the resources directory to within the application directory.
 - The default output directory. Also, create it if need.
 

@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 if __name__ == "__main__":
     setup(name="automate-idea-to-social",
-          version="0.3.1",
+          version="0.3.2",
           description="Automate generating and publishing content from ideas to social media.",
           author="PoshJosh",
           author_email="posh.bc@gmail.com",
