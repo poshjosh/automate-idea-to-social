@@ -138,7 +138,11 @@ class Translator:
     def call_translation_service(self, params: dict, headers: dict) -> list[str]:
         logger.debug(f"Requesting translation from: {self.__service_url}")
         r = requests.get(self.__service_url, params=params, headers=headers)
-        return r.json()
+        try:
+            return r.json()
+        except Exception as ex:
+            logger.warning(f"Parsing response json failed, headers:\n{headers}\nparams:\n{params}\nresponse:\n{r}")
+            raise ex
 
     def get_separator(self) -> str:
         return self.__separator
