@@ -24,6 +24,9 @@ function keepUpScreen() {
 
 grantExecutePermissionToShellScriptsInDir "${OUTPUT_DIR}"
 
+printf "\nGranting permission 775 to: %s\n" "${OUTPUT_DIR}" && chmod -R 775 "${OUTPUT_DIR}" \
+    && printf "\nGranting permission 775 to: %s\n" "${CONTENT_DIR}" && chmod -R 775 "${CONTENT_DIR}"
+
 # Our python image uses a minimal debian, so we need to do
 # the following for undetected chrome browser to work well.
 # See https://github.com/ultrafunkamsterdam/undetected-chromedriver/issues/743
@@ -33,15 +36,14 @@ if [ "$SETUP_DISPLAY" = true ] || [ "$SETUP_DISPLAY" = "true" ] ; then
   keepUpScreen &
 fi
 
-printf "\nGranting permission 775 to: %s\n" "${OUTPUT_DIR}" && chmod 775 "${OUTPUT_DIR}" \
-    && printf "\nGranting permission 775 to: %s\n" "${CONTENT_DIR}" && chmod 775 "${CONTENT_DIR}"
-
 #printf "\nRunning: %s\n" "$@"
 #exec "$@"
 
 #echo $(whoami) && echo "$(pwd)" && ls -aol && cd aideas && echo "$(pwd)" && ls -aol && cd ..
 
 cd aideas || exit 1 # The app expect to work from within the aideas directory.
+
+echo "Starting application as user: $(whoami)"
 
 if [ "$WEB_APP" = true ] || [ "$WEB_APP" = "true" ] ; then
   python3 web.py "$RUN_ARGS"

@@ -37,12 +37,4 @@ COPY --from=builder . .
 
 #RUN echo $(whoami) && echo $(pwd) && ls -aol && cd aideas && echo $(pwd) && ls -aol && cd ..
 
-ARG APP_USER=aideas
-
-# Create a custom user with UID 4997 and GID 4997
-RUN groupadd -g 4997 "$APP_USER" \
-    && useradd -m -u 4997 -g "$APP_USER" "$APP_USER"
-
-USER "$APP_USER"
-
 ENTRYPOINT ["sh", "-c", "./aideas/docker-entrypoint.sh"]

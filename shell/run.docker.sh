@@ -15,12 +15,7 @@ chmod +x src/aideas/docker-entrypoint.sh
 
 docker system prune -f
 
-#APP_USER="$(id -u):$(id -g)" # Using the host user led to permission error.
-APP_USER="4997:4997"
-
-printf "\nRunning app with user: %s\n" "$APP_USER"
-
 # To log output of the build process.
 export BUILDKIT_PROGRESS=plain
 
-APP_USER="$APP_USER" docker-compose -p automate-idea-to-social up -d
+docker-compose -p automate-idea-to-social up -d
