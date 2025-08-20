@@ -43,7 +43,7 @@ class Env(str, Enum):
     WEB_APP = ('WEB_APP', True, False, 'true')
 
     CONFIG_DIR = ('CONFIG_DIR', True, True, os.path.join('resources', 'config'))
-    OUTPUT_DIR = ('OUTPUT_DIR', False, True, os.path.join('~', '.aideas', 'output'))
+    OUTPUT_DIR = ('OUTPUT_DIR', True, True, os.path.join('~', '.aideas', 'output'))
 
     RUN_ARGS = ('RUN_ARGS', True, False)
 
@@ -116,7 +116,8 @@ class Env(str, Enum):
             # print(f"'{name}' = '{value}' or '{env.get_default_value()}'")
             if env.is_path():
                 try:
-                    value = Paths.get_path(value) if env.is_optional() else Paths.require_path(value)
+                    value = Paths.get_path(value) if env.is_optional() else (
+                        Paths.require_path(value, f"Environment variable '{name}' is required."))
                 except FileNotFoundError as ex:
                     logger.warning(f"The following error occurred while processing path for environment variable '{name}' = '{value}'")
                     raise ex
@@ -223,7 +224,7 @@ def get_cookies_file(domain: str, file_name: str = "cookies.pkl") -> str:
 
 
 def get_content_dir(sub_path=None):
-    main = Paths.require_path(get_env_value(Env.CONTENT_DIR))
+    main = Paths.require_path(get_env_value(Env.CONTENT_DIR), "CONTENT_DIR is required")
     return main if not sub_path else os.path.join(main, sub_path)
 
 

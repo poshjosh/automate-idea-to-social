@@ -113,11 +113,11 @@ def api_get_agents():
     Get the names of all agents, limited to those matching a tag, if specified in the request.
     :return: A list of agent names, limited to those matching a tag if specified in the request.
     """
-    return {**web_service.api_get_automation_agent_configs(RequestData.get(request, 'tag'))}
+    return {**web_service.api_get_automation_agent_names(RequestData.get(request, 'tag'))}
 
 
 @web_app.route('/api/agents/<agent_name>', methods=['GET'])
-def api_get_agent_by_name(agent_name: str):
+def api_get_agent_config_by_name(agent_name: str):
     return {**web_service.api_get_automation_agent_config(agent_name)}
 
 

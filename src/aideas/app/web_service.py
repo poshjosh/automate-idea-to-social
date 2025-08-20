@@ -45,7 +45,7 @@ class WebService:
             agents[agent_name] = HtmlFormat.display(agent_name)
         return self._with_default_page_variables({'tag': tag, 'agents': agents})
 
-    def api_get_automation_agent_configs(self, tag) -> dict[str, any]:
+    def api_get_automation_agent_names(self, tag) -> dict[str, any]:
         return {'tag': tag, 'agents': self.__config_loader.get_agent_names(tag)}
 
     def api_get_automation_agent_config(self, agent_name: str) -> dict[str, any]:

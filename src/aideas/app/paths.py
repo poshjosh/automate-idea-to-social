@@ -1,3 +1,5 @@
+from typing import Union
+
 import os
 
 
@@ -10,7 +12,9 @@ class Paths:
         return path if not extra else os.path.join(path, extra)
 
     @staticmethod
-    def require_path(value: any):
+    def require_path(value: any, error_message: Union[str, None] = "A required path was not provided") -> str:
+        if not value:
+            raise ValueError(error_message)
         path = Paths.__resolve(value)
         if not os.path.exists(path):
             raise FileNotFoundError(f'File not found: {path}')

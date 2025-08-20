@@ -747,5 +747,6 @@ class RunArg(str, Enum):
         elif run_arg.type == "list":
             value = value if isinstance(value, list) else str(value).split(',')
         if run_arg.is_path:
-            value = Paths.get_path(value) if run_arg.is_optional else Paths.require_path(value)
+            value = Paths.get_path(value) if run_arg.is_optional else (
+                Paths.require_path(value, f"Run option: '{run_arg.value}' is required."))
         return value

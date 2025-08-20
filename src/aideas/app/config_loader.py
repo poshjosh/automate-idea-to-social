@@ -18,13 +18,16 @@ _SUFFIX = '.config'
 CONFIG_DIR = Env.CONFIG_DIR.get_default_value()
 
 
+def resolve_config_path(config_path: Union[str, Iterable, None]) -> str:
+    return config_path if config_path else os.path.join(os.getcwd(), CONFIG_DIR)
+
+
 class ConfigLoader(YamlLoader):
     def __init__(self,
                  config_path: Union[str, Iterable, None] = None,
                  variable_source: Union[dict[str, any], None] = None):
-        config_path = config_path if config_path else os.path.join(os.getcwd(), CONFIG_DIR)
-        super().__init__(config_path, suffix=_SUFFIX)
-        self.__config_path = config_path
+        super().__init__(resolve_config_path(config_path), suffix=_SUFFIX)
+        self.__config_path = resolve_config_path(config_path)
         self.__variable_source = variable_source if variable_source else Env.collect()
         self.__external_config_dir = Paths.get_path(self.__variable_source.get(Env.CONFIG_DIR.value))
         # Only load this when we are about to run an agent.
@@ -50,7 +53,7 @@ class ConfigLoader(YamlLoader):
     def get_agent_names(self, tag: Union[str , None] = None) -> list[str]:
         def config_filter(config: dict[str, any]) -> bool:
             agent_tags = AgentConfig(config).get_agent_tags()
-            if 'unlisted' in agent_tags:
+            if 'unlisted' in agent_tags and tag != 'unlisted':
                 return False
             if is_production() and 'test' in agent_tags:
                 return False

@@ -312,7 +312,8 @@ class BlogAgent(Agent):
 
     def _get_update_blog_command_args(self, run_context: RunContext) -> list[str]:
 
-        blog_env_file = Paths.require_path(run_context.get_env(Env.BLOG_ENV_FILE))
+        blog_env_file = Paths.require_path(run_context.get_env(Env.BLOG_ENV_FILE),
+                                           "BLOG_ENV_FILE is required.")
 
         m = re.search(r"^APP_PORT=(\d*)", read_content(blog_env_file), re.MULTILINE)
         port_str: str = None if not m else m.group(1)
