@@ -19,9 +19,10 @@ class RequestData:
     def get_list(request, key: str, result_if_none: list[str]) -> list[str]:
         values = request.args.to_dict(flat=False).get(key)
         if not values:
-            if request.content_type and 'json' in request.content_type:
-                values = request.json.get(key) if request.json else None
-            else:
+            try :
+                values = request.json.get(key, None)
+            except Exception as _:
+                # logger.debug(f"Error parsing json from request: {request}", exc_info=ex)
                 values = request.form.getlist(key) if request.form else None
         return values if values else result_if_none
 
@@ -36,9 +37,10 @@ class RequestData:
     def get(request, key: str, result_if_none: any = None) -> Union[str, None]:
         val = request.args.get(key)
         if not val:
-            if request.content_type and 'json' in request.content_type:
-                val = request.json.get(key) if request.json else None
-            else:
+            try :
+                val = request.json.get(key, None)
+            except Exception as _:
+                # logger.debug(f"Error parsing json from request: {request}", exc_info=ex)
                 val = request.form.get(key) if request.form else None
         return result_if_none if not val else val
 

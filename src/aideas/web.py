@@ -32,6 +32,14 @@ def index():
     return render_template(INDEX_TEMPLATE, **web_service.index())
 
 
+@web_app.route('/info/health/status')
+def health_status():
+    """
+    Health check endpoint to verify that the web service is running.
+    :return: A simple message indicating the service is running.
+    """
+    return "Up", 200
+
 @web_app.route('/' + AUTOMATION_INDEX_TEMPLATE)
 def automaton_index():
     return render_template(AUTOMATION_INDEX_TEMPLATE, **web_service.automation_index())
