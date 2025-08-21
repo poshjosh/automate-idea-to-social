@@ -14,6 +14,7 @@ source .env
 set +a
 
 APP_PORT="${APP_PORT:-5000}"
+ENDPOINT="http://localhost:${APP_PORT}/api"
 
 # On macos, we need to install coreutils to get gnu date
 # This next line is done to use gnu date as default.
@@ -24,7 +25,26 @@ function log() {
 }
 
 # GET /api/agents
-URL="http://localhost:${APP_PORT}/api/agents?tag=test"
+URL="${ENDPOINT}/agents"
+log ""
+log " GET ${URL}"
+output=$(curl -s -H 'Content-Type: application/json' -X GET -w "%{http_code}" "${URL}")
+if [[ "$output" == *200 ]]; then
+  log "SUCCESS"
+else
+  log "FAILURE"
+  log 'Expected: {
+    "agents": [
+    ...
+    ],
+    "tag": null
+  }
+  '
+  log "  Actual: ${output}"
+fi
+
+# GET /api/agents?tag=test
+URL="${ENDPOINT}/agents?tag=test"
 log ""
 log " GET ${URL}"
 output=$(curl -s -H 'Content-Type: application/json' -X GET -w "%{http_code}" "${URL}")
@@ -43,7 +63,7 @@ else
 fi
 
 # GET /api/agents/test-agent
-URL="http://localhost:${APP_PORT}/api/agents/test-agent"
+URL="${ENDPOINT}/agents/test-agent"
 log ""
 log " GET ${URL}"
 output=$(curl -s -H 'Content-Type: application/json' -X GET -w "%{http_code}" "${URL}")
@@ -56,8 +76,8 @@ else
 fi
 
 # POST /api/tasks
-URL="http://localhost:${APP_PORT}/api/tasks"
-data='{"tag":"test", "agents":["test-agent", "test-log"] }'
+URL="${ENDPOINT}/tasks"
+data='{"agents":["test-agent", "test-log"] }'
 log ""
 log "POST ${URL} ${data}"
 output=$(curl -s -H 'Content-Type: application/json' -X POST -d "$data" -w "%{http_code}" "${URL}")
@@ -73,7 +93,7 @@ else
 fi
 
 # GET /api/tasks
-URL="http://localhost:${APP_PORT}/api/tasks"
+URL="${ENDPOINT}/tasks"
 log ""
 log " GET ${URL}"
 output=$(curl -s -H 'Content-Type: application/json' -X GET -w "%{http_code}" "${URL}")
