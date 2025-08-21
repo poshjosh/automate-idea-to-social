@@ -33,7 +33,7 @@ class Env(str, Enum):
 
     APP_PROFILES = ('APP_PROFILES', True, False, 'dev')
 
-    CONTENT_DIR = ('CONTENT_DIR', False, True)
+    CONTENT_DIR = ('CONTENT_DIR', False, True, os.path.join('~', '.aideas', 'content'))
     CHROME_PROFILE_DIR = ('CHROME_PROFILE_DIR', True, True)
 
     SETUP_DISPLAY = ('SETUP_DISPLAY', True, False)
@@ -43,7 +43,7 @@ class Env(str, Enum):
     WEB_APP = ('WEB_APP', True, False, 'true')
 
     CONFIG_DIR = ('CONFIG_DIR', True, True, os.path.join('resources', 'config'))
-    OUTPUT_DIR = ('OUTPUT_DIR', True, True, os.path.join('~', '.aideas', 'output'))
+    OUTPUT_DIR = ('OUTPUT_DIR', False, True, os.path.join('~', '.aideas', 'output'))
 
     RUN_ARGS = ('RUN_ARGS', True, False)
 
