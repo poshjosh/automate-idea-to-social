@@ -29,7 +29,7 @@ COPY . .
 RUN python3 -m pip install --no-cache-dir -r "requirements.txt" \
     && rm -rf ~/.cache/pip
 
-FROM python:3.12-slim-bookworm
+FROM python:3.9-slim-bookworm
 
 WORKDIR /
 
