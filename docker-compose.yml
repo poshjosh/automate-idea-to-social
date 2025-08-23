@@ -15,7 +15,7 @@ services:
     environment:
       PYTHONUNBUFFERED: ${PYTHONUNBUFFERED:-1}
       APP_PORT: "${APP_PORT:-5000}"
-      APP_PROFILES: "docker,${APP_PROFILES}"
+      APP_PROFILES: "docker,${APP_PROFILES:-default}"
     env_file:
       - .env
     volumes:
