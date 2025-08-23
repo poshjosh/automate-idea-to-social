@@ -14,7 +14,7 @@ APP_PROFILES=[prod|dev|test|docker]
 # default value is: latest
 APP_VERSION=[OPTIONAL]
 APP_LANGUAGE=en-GB
-CONTENT_DIR=
+CONTENT_DIR="[OPTIONAL default is '~/.aideas/content']"
 #########################################################################
 # If you use a dir on the host machine, make sure the version of chrome 
 # on the host machine is compatible with the one in the docker container.
