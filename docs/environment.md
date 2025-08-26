@@ -22,13 +22,13 @@ SETUP_DISPLAY=true
 # Used when WEB_APP=true
 APP_PORT=5001
 
-WEB_APP=true
+WEB_APP="[OPTIONAL, default = true]
 
 # Path to a directory containing additional configuation 
 EXTERNAL_CONFIG_DIR="[OPTIONAL]"
-CONTENT_DIR="[default is '~/.aideas/content']"
+CONTENT_DIR="[default = '~/.aideas/content']"
 # This is required when running in docker
-OUTPUT_DIR="[default is '~/.aideas/output']"
+OUTPUT_DIR="[default = '~/.aideas/output']"
 #########################################################################
 # If you use a dir on the host machine, make sure the version of chrome 
 # on the host machine is compatible with the one in the docker container.
