@@ -8,8 +8,7 @@ import signal
 import sys
 
 from .config_loader import ConfigLoader
-from .env import Env, is_production, get_env_value, get_output_dir
-from .paths import Paths
+from .env import Env, is_production, get_env_value, get_output_dir, get_content_dir
 from .task import shutdown as shutdown_tasks, init_tasks_cleanup
 
 logger = logging.getLogger(__name__)
@@ -33,6 +32,11 @@ class App:
         if not os.path.exists(logs_output_dir):
             os.makedirs(logs_output_dir)
             logger.info(f"Created logs output directory: {logs_output_dir}")
+
+        content_dir = get_content_dir()
+        if not os.path.exists(content_dir):
+            os.makedirs(content_dir)
+            logger.info(f"Created content directory: {content_dir}")
 
         return ConfigLoader(config_path)
 

@@ -2,15 +2,6 @@
 # print debug information
 #set -ex
 
-function grantExecutePermissionToShellScriptsInDir() {
-    IFS=$'\n'; set -f
-    for f in $(find "$1" -name "*.sh"); do
-      printf "\nGranting execute permission to: %s\n" "$f"
-      chmod +x "$f"
-    done
-    unset IFS; set +f
-}
-
 function keepUpScreen() {
     printf "\nKeeping up screen\n"
     while true; do
@@ -21,11 +12,6 @@ function keepUpScreen() {
         fi
     done
 }
-
-grantExecutePermissionToShellScriptsInDir "${OUTPUT_DIR}"
-
-printf "\nGranting permission 775 to: %s\n" "${OUTPUT_DIR}" && chmod -R 775 "${OUTPUT_DIR}" \
-    && printf "\nGranting permission 775 to: %s\n" "${CONTENT_DIR}" && chmod -R 775 "${CONTENT_DIR}"
 
 # Our python image uses a minimal debian, so we need to do
 # the following for undetected chrome browser to work well.
@@ -45,7 +31,7 @@ cd aideas || exit 1 # The app expect to work from within the aideas directory.
 
 echo "Starting application as user: $(whoami)"
 
-if [ "$WEB_APP" = true ] || [ "$WEB_APP" = "true" ] ; then
+if [ -z "$WEB_APP" ] || [ "$WEB_APP" = true ] || [ "$WEB_APP" = "true" ] ; then
   python3 web.py "$RUN_ARGS"
 else
   python3 main.py "$RUN_ARGS"

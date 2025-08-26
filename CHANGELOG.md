@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Some failing tests
+- Bug in variable parsing by add run config as a variable source when `AgentTask` is created.
+
+### Added
+
+- Run context tests
+- Form field `input-language-code`
+
+### Removed
+
+- Environment BLOG_ENV_FILE, in favour of a fixed default.
+- Environment BLOG_APP_DIR, in favour of a fixed default.
+
+### Changed
+
+- Docker run to now require mounting of only one directory: `${HOME}/.aideas`
+
 ## [0.3.3] - 2025-08-21
 
 ### Fixed

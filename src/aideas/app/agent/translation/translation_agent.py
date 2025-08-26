@@ -55,8 +55,7 @@ class TranslationAgent(Agent):
         logger.debug(f'Source file: {src_file}')
 
         from_lang: str = run_context.get_app_language()
-        to_langs_str: str = run_context.get_arg(RunArg.LANGUAGE_CODES,
-                                                        run_context.get_env(Env.TRANSLATION_OUTPUT_LANGUAGE_CODES))
+        to_langs_str = run_context.get_language_codes_str()
         logger.debug(f'Translate from: {from_lang}, to: {to_langs_str}')
 
         action = Action.of(
@@ -118,22 +117,22 @@ class TranslationAgent(Agent):
             logger.exception(ex)
             return ActionResult(action, False)
 
-    def __do_translate(self, filepath_in: str, filepaths_out: [str], input_language_code: str, output_language_code: str):
+    def __do_translate(self, filepath_in: str, filepaths_out: list[str], input_language_code: str, output_language_code: str):
 
         input_text:str = read_content(filepath_in).strip()
 
-        self.__print_if_verbose(input_text)
+        self.__print_if_verbose(" Input", input_text)
 
         result_text = self.__translator.translate(input_text, input_language_code, output_language_code)
 
-        self.__print_if_verbose(result_text)
+        self.__print_if_verbose(" Result", result_text)
 
         for filepath_out in filepaths_out:
             write_content(result_text, filepath_out)
             logger.debug(f'{output_language_code} translations saved to: '
                          f'{filepath_out}, from: {filepath_in}')
 
-    def __print_if_verbose(self, text: str):
-        if self.__verbose is not True:
+    def __print_if_verbose(self, key: str, text: str):
+        if not self.__verbose:
             return
-        logger.debug(text)
+        logger.debug(f"{key}\n{text}")

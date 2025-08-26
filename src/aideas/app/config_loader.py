@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 _SUFFIX = '.config'
 
-CONFIG_DIR = Env.CONFIG_DIR.get_default_value()
+CONFIG_DIR = os.path.join('resources', 'config')
 
 
 def resolve_config_path(config_path: Union[str, Iterable, None]) -> str:
@@ -28,8 +28,12 @@ class ConfigLoader(YamlLoader):
                  variable_source: Union[dict[str, any], None] = None):
         super().__init__(resolve_config_path(config_path), suffix=_SUFFIX)
         self.__config_path = resolve_config_path(config_path)
-        self.__variable_source = variable_source if variable_source else Env.collect()
-        self.__external_config_dir = Paths.get_path(self.__variable_source.get(Env.CONFIG_DIR.value))
+        if variable_source:
+            self.__variable_source = variable_source
+        else:
+            self.__variable_source = dict(os.environ)
+            self.__variable_source.update(Env.collect())
+        self.__external_config_dir = Paths.get_path(self.__variable_source.get(Env.EXTERNAL_CONFIG_DIR.value))
         # Only load this when we are about to run an agent.
         # self.__variable_source.update(self.load_run_config()) # run properties
         self.__variable_source.update(RunArg.of_defaults()) # sys.argv and environment variable RUN_ARGs
@@ -111,6 +115,9 @@ class ConfigLoader(YamlLoader):
     def get_agent_config_path(self, agent_name: str) -> str:
         return self.get_path(os.path.join('agent', agent_name))
 
+    def get_variable_source(self):
+        return {**self.__variable_source}
+
     def _load_browser_config_for_type(self, browser_type: str, check_replaced: bool = True) -> dict[str, any]:
         if browser_type == 'visible':
             config_name = 'browser-visible'
@@ -141,12 +148,20 @@ class ConfigLoader(YamlLoader):
         loaded: dict[str, any] = self.__load_from_path_with_variables_replaced(
             path, variables, check_replaced)
         if self.__external_config_dir:
-            external_path = os.path.join(self.__external_config_dir, os.path.split(path)[1])
-            external_config = self.__load_from_path_with_variables_replaced(
-                external_path, variables, check_replaced, False)
+            external_config = self._load_from_external_path(path, variables, check_replaced)
             if external_config:
                 loaded.update(external_config)
         return loaded
+
+    def _load_from_external_path(self,
+                                  path: str,
+                                  variables: Union[dict[str, any], None] = None,
+                                  check_replaced: bool = True) -> dict[str, any]:
+        if not self.__external_config_dir:
+            return {}
+        external_path = os.path.join(self.__external_config_dir, os.path.split(path)[1])
+        return self.__load_from_path_with_variables_replaced(
+            external_path, variables, check_replaced, False)
 
     def __load_from_path_with_variables_replaced(
             self,

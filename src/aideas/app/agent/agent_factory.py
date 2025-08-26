@@ -18,6 +18,9 @@ class AgentFactory:
         self.__config_loader = config_loader
         self.__app_config = config_loader.load_app_config() if app_config is None else app_config
 
+    def with_added_variable_source(self, variable_source: dict[str, any]) -> 'AgentFactory':
+        return AgentFactory(self.__config_loader.with_added_variable_source(variable_source), self.__app_config)
+
     def get_agent(self, agent_name: str) -> Agent:
         agent_config: dict[str, any] = self.__load_agent_config(agent_name)
         return self.__create_agent(agent_name, agent_config)

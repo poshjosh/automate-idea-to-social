@@ -38,4 +38,6 @@ share-cover-image: true
 # Optional. Possible values: visible|undetected
 browser-mode:
 
-language-codes: en
+#input-language-code:
+
+#language-codes:

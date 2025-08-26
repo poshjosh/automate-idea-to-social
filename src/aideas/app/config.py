@@ -10,6 +10,7 @@ from typing import Union, TypeVar, Callable
 from pyu.io.file import read_content
 
 from .env import Env, get_env_value
+from .i18n import I18n, DEFAULT_LANGUAGE_CODE
 from .paths import Paths
 from .text import split_preserving_quotes
 
@@ -601,13 +602,14 @@ T = TypeVar("T", bound=any)
 @unique
 class RunArg(str, Enum):
     def __new__(cls, value: str, alias: str = None, kind: str = 'str',
-                optional: bool = False, path: bool = False):
+                optional: bool = False, path: bool = False, default_value: any = None):
         obj = str.__new__(cls, [value])
         obj._value_ = value
         obj.__alias = alias
         obj.__type = kind
         obj.__optional = optional
         obj.__path = path
+        obj.__default_value = default_value
         return obj
 
     @property
@@ -626,13 +628,17 @@ class RunArg(str, Enum):
     def is_path(self) -> bool:
         return self.__path
 
+    @property
+    def default_value(self) -> any:
+        return self.__default_value
+
     AGENTS = ('agents', 'a', 'list')
     BROWSER_TYPE = ('browser-mode', 'bm', 'str', True, False)
     CONTINUE_ON_ERROR = ('continue-on-error', 'coe', 'bool', True, False)
-    INPUT_LANGUAGE_CODE = ('input-language-code', 'ilc', 'str', False, False)
+    INPUT_LANGUAGE_CODE = ('input-language-code', 'ilc', 'str', False, False, DEFAULT_LANGUAGE_CODE)
     IMAGE_FILE_LANDSCAPE = ('image-file-landscape', 'vci', 'str', False, True)
     IMAGE_FILE_SQUARE = ('image-file-square', 'vcis', 'str', True, True)
-    LANGUAGE_CODES = ('language-codes', 'lc', 'str', True, False)
+    LANGUAGE_CODES = ('language-codes', 'lc', 'str', True, False, I18n.get_supported_language_codes())
     SAVE_SCREENS = ('save-screens', 'ss', 'str', True, False)
     SHARE_COVER_IMAGE = ('share-cover-image', 'sci', 'bool', True, False)
     SUBTITLES_FILE = ('subtitles-file', 'sf', 'str', True, True)
@@ -677,15 +683,17 @@ class RunArg(str, Enum):
                     raise ValueError(f'Invalid run argument: {arg}')
                 run_arg = RunArg(arg)
                 sval = RunArg._get_arg_value(run_arg, run_args_from_env)
-                if not sval:
+                value = RunArg._parse(run_arg, sval)
+                if not value:
                     raise ValueError(f'Invalid run argument: {run_arg}="{sval}"')
-                add_to[str(run_arg.value)] = RunArg._parse(run_arg, sval)
+                add_to[str(run_arg.value)] = value
         for e in RunArg:
             run_arg = RunArg(e)
             sval = RunArg._get_sys_argv_value(run_arg)
-            if not sval:
+            value = RunArg._parse(run_arg, sval)
+            if not value:
                 continue
-            add_to[str(run_arg.value)] = RunArg._parse(run_arg, sval)
+            add_to[str(run_arg.value)] = value
         add_to = RunArg._update_defaults(add_to)
         return add_to
 
@@ -742,6 +750,8 @@ class RunArg(str, Enum):
 
     @staticmethod
     def _parse(run_arg: 'RunArg', value: str) -> any:
+        if not value:
+            return run_arg.default_value
         if run_arg.type == "bool":
             value = value == "true" or value
         elif run_arg.type == "list":

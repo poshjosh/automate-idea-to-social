@@ -14,12 +14,6 @@ APP_PROFILES=[prod|dev|test|docker]
 # default value is: latest
 APP_VERSION=[OPTIONAL]
 APP_LANGUAGE=en-GB
-CONTENT_DIR="[OPTIONAL default is '~/.aideas/content']"
-#########################################################################
-# If you use a dir on the host machine, make sure the version of chrome 
-# on the host machine is compatible with the one in the docker container.
-#########################################################################
-CHROME_PROFILE_DIR=
 # This is needed if we want to user undetected chromedriver with display.
 # If we don't set this, we get error: cannot connect to chrome at 127.0.0.1:
 # https://github.com/ultrafunkamsterdam/undetected-chromedriver/issues/743#issuecomment-1420119272
@@ -30,12 +24,16 @@ APP_PORT=5001
 
 WEB_APP=true
 
-# If you specify a different location, values from that location
-# will override values in the default location: 'resources/config'.
-CONFIG_DIR="[OPTIONAL default is 'resources/config']"
-
+# Path to a directory containing additional configuation 
+EXTERNAL_CONFIG_DIR="[OPTIONAL]"
+CONTENT_DIR="[default is '~/.aideas/content']"
 # This is required when running in docker
-OUTPUT_DIR="[OPTIONAL default is '~/.aideas/output']"
+OUTPUT_DIR="[default is '~/.aideas/output']"
+#########################################################################
+# If you use a dir on the host machine, make sure the version of chrome 
+# on the host machine is compatible with the one in the docker container.
+#########################################################################
+CHROME_PROFILE_DIR=[OPTIONAL]
 
 # Space separated args to run each agent, usually presented as options to be provided by the user.
 # See aideas.app.config.RunArg for possible values.
@@ -87,9 +85,4 @@ INSTAGRAM_USER_PASS=
 GIT_USER_NAME=
 GIT_USER_EMAIL=
 GIT_TOKEN=
-
-# blog
-# The environment file to use for blog updater app
-BLOG_ENV_FILE=
-BLOG_APP_DIR=
 ```

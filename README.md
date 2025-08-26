@@ -37,7 +37,7 @@ See [Actions](./docs/actions.md)
 
 3. Set the required run options: For a full list of run options, see [Run Options](docs/run-options.md). 
 Run options may be provided in various ways and are resolved in the following order, from least to highest precedence:
-   * Yaml file `run.config.yaml` in directory determined by the `CONFIG_DIR` environment variable (default `resources/config`).
+   * Yaml file `src/aideas/resources/config/run.config.yaml`
    * Environment variables e.g: `RUN_ARGS="--agents twitter --browser-mode undetected"`
    * Passed as command line arguments e.g: `python3 aideas/web.py --agents twitter --browser-mode visible`
 

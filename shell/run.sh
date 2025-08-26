@@ -8,7 +8,7 @@ cd "$WORKING_DIR" || (printf "\nCould not change to working dir: %s\n" "$WORKING
 
 printf "\nWorking from: %s\n" "$(pwd)"
 
-if [ "$WEB_APP" = true ] || [ "$WEB_APP" = "true" ] ; then
+if [ -z "$WEB_APP" ] || [ "$WEB_APP" = true ] || [ "$WEB_APP" = "true" ] ; then
   printf "\nStarting web app\n\n"
   python3 web.py "$RUN_ARGS"
 else

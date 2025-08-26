@@ -4,10 +4,9 @@ from datetime import datetime
 from enum import Enum, unique
 from typing import Union
 
-from .paths import Paths
+from .paths import Paths, CONTENT_DIR, OUTPUT_DIR
 
 logger = logging.getLogger(__name__)
-
 
 @unique
 class Env(str, Enum):
@@ -33,17 +32,17 @@ class Env(str, Enum):
 
     APP_PROFILES = ('APP_PROFILES', True, False, 'dev')
 
-    CONTENT_DIR = ('CONTENT_DIR', False, True, os.path.join('~', '.aideas', 'content'))
-    CHROME_PROFILE_DIR = ('CHROME_PROFILE_DIR', True, True)
-
     SETUP_DISPLAY = ('SETUP_DISPLAY', True, False)
 
     APP_PORT = ('APP_PORT', True, False, '5001')
 
     WEB_APP = ('WEB_APP', True, False, 'true')
 
-    CONFIG_DIR = ('CONFIG_DIR', True, True, os.path.join('resources', 'config'))
-    OUTPUT_DIR = ('OUTPUT_DIR', False, True, os.path.join('~', '.aideas', 'output'))
+    # This is optional
+    EXTERNAL_CONFIG_DIR = ('EXTERNAL_CONFIG_DIR', True, True, os.path.join('resources', 'config'))
+    CONTENT_DIR = ('CONTENT_DIR', True, True, CONTENT_DIR)
+    OUTPUT_DIR = ('OUTPUT_DIR', False, True, OUTPUT_DIR)
+    CHROME_PROFILE_DIR = ('CHROME_PROFILE_DIR', True, True)
 
     RUN_ARGS = ('RUN_ARGS', True, False)
 
@@ -85,8 +84,6 @@ class Env(str, Enum):
     GIT_USER_EMAIL = 'GIT_USER_EMAIL'
     GIT_TOKEN = 'GIT_TOKEN'
 
-    BLOG_ENV_FILE = ('BLOG_ENV_FILE', True, True)
-    BLOG_APP_DIR = ('BLOG_APP_DIR', True, True)
     BLOG_APP_VERSION = ('BLOG_APP_VERSION', True, False, '0.1.6')
 
     @staticmethod

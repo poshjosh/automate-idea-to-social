@@ -1,7 +1,7 @@
-{% if items|length > 1 %}
-    <input type="checkbox" id="all" class="control"
+{% if all and items|length > 1 %}
+    <input type="checkbox" id="{{ all }}" class="control"
            onclick="aideas.toggle_checked('.control.{{ name }}-check');"/>
-    <label for="all">All</label>
+    <label for="{{ all }}">All</label>
 {% endif %}
 <br/>
 {% for value, label in items %}

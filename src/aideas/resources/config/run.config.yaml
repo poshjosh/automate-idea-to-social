@@ -3,7 +3,8 @@ agents:
 #  - image-generator
 #  - pictory
 #  - copy-files-to-pictory-output
-  - subtitles-translation
+#  - subtitles-translation
+  - translation
 #  - youtube
 #  - blog
 #  - twitter
@@ -13,17 +14,9 @@ agents:
 #  - reddit
 
 # input
-#############################################################################
-# If running in docker (usually the case)
-# These can be full paths, because we are mounting their directory in docker
-# They must however be contained within our CONTENT_DIR
-# See environment variables for CONTENT_DIR
-#############################################################################
-
-language-codes: en
 
 # Optional. Used for title and description. Either set this, or provide a text-title and text-content
-#text-file:
+text-file: ${HOME}/.aideas/content/for-translation.txt
 
 # Optional. If not set, the name (without extension) of text-file will be used
 #text-title:
@@ -40,3 +33,7 @@ share-cover-image: true
 
 # Optional. Possible values: visible|undetected
 browser-mode:
+
+#input-language-code:
+
+#language-codes:

@@ -1,11 +1,11 @@
 ### Directory Structure
 
-Run the app with the working directory set to `${PROJECT_DIR}/src`
+Run the app with the working directory set to `${PROJECT_DIR}/src/aideas`
 
 Run tests with the working directory set to `${PROJECT_DIR}/src`
 - Tests need to be able to access both test and main sources.
 
-Agents use yaml configurations in `${PROJECT_DIR}/src/aideas/config/agent`
+Agents use yaml configurations in `${PROJECT_DIR}/src/aideas/resources/config/agent`
 
 ### Run args
 
@@ -37,8 +37,6 @@ form-field-ignore-fools: $IGNORE_FOOLS
 
 ### Tips & Tricks
 
-- Videos with less than 150 words are less than one minute long. 
-
 - Disable 2-factor authentication on your accounts.
 
 - Use chrome Profile
@@ -46,18 +44,15 @@ form-field-ignore-fools: $IGNORE_FOOLS
 - Use `send_keys` (which sends the chars one by one) rather than `enter_text`
 Do this for websites which go the extra mile to detect bots and automated software
 
-- Use undetected Chrome browser by adding `browser.chrome.undetected: true` 
+- Use undetected Chrome browser by adding `browser-mode: undetected` 
 to your agent's configuration.
 
 
 ### Requirements
 
-- Add `.env` file to your path.
-- No need to add `blog.env` file to your path
-
 #### python requirements:
 
-See `src/python/main/requirements.txt`
+See `src/aideas/requirements.txt`
 
 #### other requirements:
 

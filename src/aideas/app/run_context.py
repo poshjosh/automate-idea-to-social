@@ -47,6 +47,13 @@ class RunContext:
         self.__result_set: AgentResultSet = AgentResultSet()
         self.__values = {}
 
+    def get_language_codes_str(self) -> str:
+        str_or_array = self.get_arg(RunArg.LANGUAGE_CODES, None)
+        if str_or_array:
+            return str_or_array if isinstance(str_or_array, str) else ','.join(str_or_array)
+        else:
+            return self.get_env(Env.TRANSLATION_OUTPUT_LANGUAGE_CODES, "")
+
     def replace_variables(self, agent_name: str, config: dict[str, any]) -> dict[str, any]:
         config = replace_all_variables(config, self.__args)
         self.__values[agent_name] = config
@@ -70,7 +77,7 @@ class RunContext:
         return self.__result_set.get_stage_results(agent_name, result_if_none)
 
     def get_agent_names(self) -> list[str]:
-        return [e for e in self.__agent_names]
+        return list(self.__agent_names)
 
     def get_app_language(self) -> str:
         return self.get_arg(RunArg.INPUT_LANGUAGE_CODE, env_get_app_language(True, self.__app_config.get_app_language(DEFAULT_LANGUAGE_CODE)))

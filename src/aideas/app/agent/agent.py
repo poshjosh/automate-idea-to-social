@@ -90,7 +90,7 @@ class Agent:
 
             self.__make_dirs()
 
-            stages: [Name] = self.__config.get_stage_names()
+            stages: list[Name] = self.__config.get_stage_names()
 
             # We only close the result for the agent after all stages have been run.
             return self._run_stages(run_context, stages).close()
@@ -107,12 +107,12 @@ class Agent:
                           agent_to_stages: OrderedDict[str, [Name]]):
         for agent_name in agent_to_stages.keys():
             agent: Agent = self if agent_name == self.__name else self.get_dependency(agent_name)
-            stage_names: [Name] = agent_to_stages[agent_name]
+            stage_names: list[Name] = agent_to_stages[agent_name]
             logger.debug(f"For {self.__name}, will run stages: {[str(e) for e in stage_names]}")
 
             agent._run_stages(run_context, stage_names)
 
-    def _run_stages(self, run_context: RunContext, stages: [Name]) -> StageResultSet:
+    def _run_stages(self, run_context: RunContext, stages: list[Name]) -> StageResultSet:
         """Run specified stages of the agent and return True if successful, False otherwise."""
 
         config: AgentConfig = self.get_config()
@@ -183,7 +183,7 @@ class Agent:
 
             to_proceed = self.__automator.stage_may_proceed(config, stage, run_context)
 
-            if to_proceed is False:
+            if not to_proceed:
                 return result
 
             self.__event_handler.handle_event(

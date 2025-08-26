@@ -1,7 +1,11 @@
+from pathlib import Path
+
 from typing import Union
 
 import os
 
+CONTENT_DIR = str(os.path.join(Path.home(), '.aideas', 'content'))
+OUTPUT_DIR = str(os.path.join(Path.home(), '.aideas', 'output'))
 
 class Paths:
     @staticmethod

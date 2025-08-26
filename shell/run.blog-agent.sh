@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+IMAGE_FILE=${IMAGE_FILE:-"/root/.aideas/content/cover.jpg"}
+TEXT_FILE=${TEXT_FILE:-"/root/.aideas/content/content.txt"}
+
 cd .. || exit 1
 
 set -a
@@ -15,10 +18,9 @@ function log() {
 }
 
 URL="http://localhost:${APP_PORT}/api/tasks"
-data='{"tag":"post", "agents":["blog"], "share-cover-image": true,
-"language-codes": ["ar","bn","de","en","es","fr","hi","it","ja","ko","ru","tr","uk","zh","zh-TW"],
-"image-file-landscape": "/Users/chinomso/Desktop/live-above-3D/aideas-docker-mount/input/cover.jpg",
-"text-file": "/Users/chinomso/Desktop/live-above-3D/aideas-docker-mount/input/If Jesus is God, who did He pray to.txt"}'
+data="{\"agents\":[\"blog\"], \"share-cover-image\": true,
+\"image-file-landscape\": \"$IMAGE_FILE\",
+\"text-file\": \"$TEXT_FILE\"}"
 log ""
 log "POST ${URL} ${data}"
 output=$(curl -s -H 'Content-Type: application/json' -X POST -d "$data" -w "%{http_code}" "${URL}")

@@ -48,12 +48,6 @@ def __contains_variable_with_prefix(value: str, prefix: str) -> bool:
     return False
 
 
-def _check_replaced(text: str) -> str:
-    if contains_variable(text) and not contains_action_variable(text):
-        raise ValueError(f'Failed to replace variables in: {text}')
-    return text
-
-
 def replace_all_variables(
         target: dict[str, any],
         source: Union[dict[str, any], None] = None,
@@ -61,9 +55,14 @@ def replace_all_variables(
     if not source:
         source = dict(os.environ)
 
-    return replace_all(target, source,
-                       _check_replaced if check_replaced is True else lambda x: x,
-                       NODES_TO_SKIP)
+    def check_variables_replaced(text: str) -> str:
+        if not check_replaced:
+            return text
+        if contains_variable(text) and not contains_action_variable(text):
+            raise ValueError(f'Failed to replace variables in: {text}')
+        return text
+
+    return replace_all(target, source, check_variables_replaced, NODES_TO_SKIP)
 
 
 def get_run_arg_replacement(curr_path: list[str], arg: str, run_context: 'RunContext' = None) -> any:

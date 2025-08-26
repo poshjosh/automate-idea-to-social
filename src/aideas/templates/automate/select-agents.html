@@ -12,8 +12,8 @@
         <input type="hidden" name="tag" value="{{ tag }}"/>
         <div>
             <label for="agents">Select agent(s) to run</label>
-            <div id="agents">
-                {% with name='agents', items=agents.items() %}
+            <div id="agents" class="v-scroll">
+                {% with name='agents', items=agents.items(), all='all' %}
                     {% include "automate/form/common/checkbox-group.html" %}
                 {% endwith %}
             </div>

@@ -91,7 +91,7 @@ class AgentTask(Task):
 
     def __init__(self, agent_factory: AgentFactory, run_context: RunContext):
         super().__init__()
-        self.__agent_factory = agent_factory
+        self.__agent_factory = agent_factory.with_added_variable_source(run_context.get_run_config().to_dict())
         self.__run_context = run_context
         self.__agent_states = {}
         for name in run_context.get_agent_names():

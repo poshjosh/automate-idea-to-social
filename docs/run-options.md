@@ -6,14 +6,6 @@
 agents:
 
 # input
-#############################################################################
-# If running in docker (usually the case)
-# These can be full paths, because we are mounting their directory in docker
-# They must however be contained within our CONTENT_DIR
-# See environment variables for CONTENT_DIR
-#############################################################################
-# Comma separated list of language codes e.g. en,de,fr
-language-codes: en
 
 # Optional. Used for title and description. Either set this, or provide a text-title and text-content
 text-file: 
@@ -35,8 +27,6 @@ video-file-portrait:
   
 video-file-square:  
 
-input-language-code: en
-
 subtitles-file:
 
 # Optional. If cover image should be shared when multiple translations of one post is being made.
@@ -50,4 +40,23 @@ continue-on-error: false
 # Possible values: always|never|onerror|onfailure|onsuccess|onstart
 # always and never are exclusive. The rest may be combined with each other.
 save-screens: onerror
+
+input-language-code: en
+
+language-codes:
+  - ar
+  - bn
+  - de
+  - en
+  - es
+  - fr
+  - hi
+  - it
+  - ja
+  - ko
+  - ru
+  - tr
+  - uk
+  - zh
+  - zh-TW
 ```

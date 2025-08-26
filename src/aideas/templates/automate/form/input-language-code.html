@@ -1,0 +1,9 @@
+<label for="input-language-code">
+    Select input language.
+</label>
+&nbsp
+<div id="input-language-code" class="v-scroll">
+    {% with name='input-language-code', items=supported_languages.items() %}
+        {% include "automate/form/common/checkbox-group.html" %}
+    {% endwith %}
+</div>

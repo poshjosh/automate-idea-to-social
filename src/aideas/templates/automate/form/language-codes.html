@@ -2,8 +2,8 @@
     <span id="red-asterix">*</span>&nbsp;Select language(s).
 </label>
 &nbsp
-<span id="language-codes">
-    {% with name='language-codes', items=supported_languages.items() %}
+<div id="language-codes" class="v-scroll">
+    {% with name='language-codes', items=supported_languages.items(), all='all' %}
         {% include "automate/form/common/checkbox-group.html" %}
     {% endwith %}
-</span>
+</div>

@@ -16,14 +16,12 @@ from ..agent.agent_name import AgentName
 from ..action.action import Action
 from ..action.action_result import ActionResult
 from ..config import Name, RunArg
-from ..env import Env
+from ..env import Env, get_content_dir
 from ..io.net import download_file
-from ..paths import Paths
 from ..result.result_set import ElementResultSet
 from ..run_context import RunContext
 
 logger = logging.getLogger(__name__)
-
 
 class BlogAgent(Agent):
     def __init__(self,
@@ -88,16 +86,15 @@ class BlogAgent(Agent):
         cover_image_path = run_context.get_arg(RunArg.IMAGE_FILE_LANDSCAPE)
         share_cover_image_str = run_context.get_arg(RunArg.SHARE_COVER_IMAGE)
         share_cover_image = False if not share_cover_image_str else bool(share_cover_image_str)
-        language_codes_str: str = run_context.get_arg(RunArg.LANGUAGE_CODES, '')
-        language_codes = [] if not language_codes_str else [e.strip() for e in language_codes_str.split(',') if e]
 
         from_lang_code = run_context.get_app_language()
+        to_lang_codes = run_context.get_language_codes_str().split(',')
+        logger.debug(f'Translate from: {from_lang_code}, to: {to_lang_codes}')
 
-        result = []
+        result = [self._convert_to_markdown(
+            input_file, from_lang_code, cover_image_path, share_cover_image)]
 
-        result.append(self._convert_to_markdown(input_file, from_lang_code, cover_image_path, share_cover_image))
-
-        for to_lang_code in language_codes:
+        for to_lang_code in to_lang_codes:
             if to_lang_code == from_lang_code:
                 continue
             path_translated = self.__translator.translate_file_path(input_file, from_lang_code, to_lang_code)
@@ -312,8 +309,13 @@ class BlogAgent(Agent):
 
     def _get_update_blog_command_args(self, run_context: RunContext) -> list[str]:
 
-        blog_env_file = Paths.require_path(run_context.get_env(Env.BLOG_ENV_FILE),
-                                           "BLOG_ENV_FILE is required.")
+        # TODO Make this configuraable, as it is currently hard coded
+        #  with values for a specific user.
+        #  Divide blog.env into those that apply to all users, e.g.: PROFILE=prod
+        #  and those that should be provided by each specific user e.g.: AWS_ACCESS_KEY=
+        #  Those that should be provided by a specific user should be in run.config.yaml
+        #  as a map named: blog-properties or something like that.
+        blog_env_file = get_content_dir("blog.env")
 
         m = re.search(r"^APP_PORT=(\d*)", read_content(blog_env_file), re.MULTILINE)
         port_str: str = None if not m else m.group(1)
@@ -321,8 +323,8 @@ class BlogAgent(Agent):
 
         commands = ['docker', 'run', '--name', self.get_app_docker_container_name(), '--rm']
 
-        app_base_dir = os.path.join(os.getcwd(), self.get_app_base_dir())
-        commands.extend(['-v', f'"{app_base_dir}/app:/blog-app"'])
+        # app_base_dir = os.path.join(os.getcwd(), self.get_app_base_dir())
+        # commands.extend(['-v', f'"{app_base_dir}/app:/blog-app"'])
 
         commands.extend(['--env-file', f'"{blog_env_file}"',
                          '-u', '0',

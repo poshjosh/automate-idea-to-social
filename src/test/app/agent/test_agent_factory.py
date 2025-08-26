@@ -9,6 +9,11 @@ from aideas.app.agent.agent_factory import AgentFactory
 
 
 class TestAgentFactory(AgentFactory):
+    def with_added_variable_source(self, variable_source: dict[str, any]) -> 'AgentFactory':
+        return TestAgentFactory(
+            self.get_config_loader().with_added_variable_source(variable_source),
+            self.get_app_config())
+
     def create_blog_agent(self,
                           agent_name: str,
                           agent_config,
