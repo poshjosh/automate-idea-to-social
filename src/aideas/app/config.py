@@ -654,48 +654,78 @@ class RunArg(str, Enum):
         return [str(RunArg(e).value) for e in RunArg]
 
     @staticmethod
-    def of_dict(source: dict[str, any], target: dict[str, any] = None) -> dict[str, any]:
-        if target is None:
-            target = {}
-        values = RunArg.values()
+    def of_dict(source: dict[str, any], add_to: dict[str, any] = None) -> dict[str, any]:
+        if add_to is None:
+            add_to = {}
         for k, v in source.items():
-            if v is None:
+            if v is None or v == '':
                 continue
-            if k in values:
-                v = RunArg._parse(RunArg(k), v)
-            target[k] = v
-        return RunArg._update_defaults(target)
+            add_to[k] = RunArg.value_of(k, v)
+        return RunArg._update_defaults(add_to)
 
     @staticmethod
     def of_defaults(add_to: dict[str, any] = None) -> dict[str, any]:
-        if add_to is None:
-            add_to = {}
-        run_args_from_env = get_env_value(Env.RUN_ARGS)
-        if run_args_from_env:
-            run_args_from_env = run_args_from_env.split(' ')
-            run_arg_names = run_args_from_env[::2]
-            for arg in run_arg_names:
-                if arg.startswith('--'):
-                    arg = arg[2:]
-                elif  arg.startswith('-'):
-                    arg = arg[1:]
-                else:
-                    raise ValueError(f'Invalid run argument: {arg}')
-                run_arg = RunArg(arg)
-                sval = RunArg._get_arg_value(run_arg, run_args_from_env)
-                value = RunArg._parse(run_arg, sval)
-                if not value:
-                    raise ValueError(f'Invalid run argument: {run_arg}="{sval}"')
-                add_to[str(run_arg.value)] = value
+        add_to = RunArg.of_env(add_to)
+
+        add_to = RunArg.of_sys_argv(add_to)
+
+        # For run args not passed as sys.argv, but which have default values
         for e in RunArg:
             run_arg = RunArg(e)
-            sval = RunArg._get_sys_argv_value(run_arg)
-            value = RunArg._parse(run_arg, sval)
-            if not value:
-                continue
-            add_to[str(run_arg.value)] = value
+            key = str(run_arg.value)
+            if key not in add_to.keys() and run_arg.default_value is not None:
+                add_to[key] = run_arg.default_value
+
         add_to = RunArg._update_defaults(add_to)
+
         return add_to
+
+
+    @staticmethod
+    def of_env(add_to: dict[str, any] = None) -> dict[str, any]:
+        if add_to is None:
+            add_to = {}
+
+        run_args_from_env = get_env_value(Env.RUN_ARGS)
+
+        if not run_args_from_env:
+            return add_to
+
+        add_to = RunArg._of_list(run_args_from_env.split(" "), add_to)
+
+        return RunArg._update_defaults(add_to)
+
+    @staticmethod
+    def of_sys_argv(add_to: dict[str, any] = None) -> dict[str, any]:
+        return RunArg._of_list(sys.argv, add_to)
+
+    @staticmethod
+    def _of_list(source: list[str], add_to: dict[str, any] = None) -> dict[str, any]:
+        if add_to is None:
+            add_to = {}
+
+        # All run args from sys.argv
+        for idx, arg in enumerate(source):
+            if arg.startswith('--'):
+                key = arg[2:]
+            elif arg.startswith('-'):
+                key = arg[1:]
+            else:
+                continue
+
+            next_idx = idx + 1
+
+            if len(source) <= next_idx:
+                continue
+
+            val = source[next_idx]
+
+            if val is None or val == '':
+                continue
+
+            add_to[key] = RunArg.value_of(key, val)
+
+        return RunArg._update_defaults(add_to)
 
     @staticmethod
     def _update_defaults(result: dict[str, any]) -> dict[str, any]:
@@ -718,35 +748,42 @@ class RunArg(str, Enum):
                     = result[RunArg.IMAGE_FILE_LANDSCAPE._value_]
         return result
 
-    @staticmethod
-    def _get_sys_argv_value(run_arg: 'RunArg', result_if_none: Union[any, None] = None) -> any:
+    def get_sys_argv_value(self, result_if_none: Union[any, None] = None) -> any:
         """
         Get the value of the argument with the given name from the system arguments (sys.argv).
         Arguments have aliases that can be used to refer to them.
         --agents twitter could be written as -a twitter
-        :param run_arg: The run argument.
         :param result_if_none: The result to return if none
         :return: The value of the argument with the given name.
         """
-        return RunArg._get_arg_value(run_arg, sys.argv, result_if_none)
+        return self._get_arg_value(sys.argv, result_if_none)
 
-    @staticmethod
-    def _get_arg_value(run_arg: 'RunArg', args: list[str], result_if_none: Union[any, None] = None) -> any:
+    def _get_arg_value(self, args: list[str], result_if_none: Union[any, None] = None) -> any:
         """
         Get the value of the argument with the given name.
         Arguments have aliases that can be used to refer to them.
         --agents twitter could be written as -a twitter
-        :param run_arg: The run argument.
         :param args: The list of arguments to search in.
         :param result_if_none: The result to return if none
         :return: The value of the argument with the given name.
         """
         args: list[str] = [e.lower() for e in args]
-        candidates: list[str] = [f'--{run_arg.value}', f'-{run_arg.alias}']
+        candidates: list[str] = [f'--{self.value}', f'-{self.alias}'] \
+            if self.alias else [f'--{self.value}']
         for candidate in candidates:
             if candidate in args:
                 return args[args.index(candidate) + 1]
         return result_if_none
+
+    @staticmethod
+    def value_of(key: str, value: any) -> any:
+        try:
+            for run_arg in RunArg:
+                if run_arg.value == key or run_arg.alias == key:
+                    return RunArg._parse(run_arg, value)
+            return value
+        except Exception:
+            return value
 
     @staticmethod
     def _parse(run_arg: 'RunArg', value: str) -> any:

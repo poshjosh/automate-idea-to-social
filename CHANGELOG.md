@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Allow passing as run args, some hitherto environment only variables.
 - Run context tests
 - Form field `input-language-code`
 
