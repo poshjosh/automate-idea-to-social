@@ -1,3 +1,5 @@
+from unittest import skip
+
 import os
 import unittest
 from selenium.webdriver.common.by import By
@@ -47,26 +49,28 @@ class XPathTest(unittest.TestCase):
         self.assertIsNotNone(elements[0])
         print(f"Found element outerHTML:\n{elements[0].get_attribute('outerHTML')}")
 
-    # def test_pictory_login_xpath(self):
-    #     webdriver = create_webdriver()
-    #     webdriver.get('https://app.pictory.ai/login')
-    #     username_input = WebDriverWait(webdriver, timeout).until(
-    #         wait_condition.presence_of_element_located(
-    #             (By.XPATH, "//*[@id=\"mui-1\"]")))
-    #     print("Found username_input id: ", username_input.get_attribute("id"))
-    #     password_input = WebDriverWait(webdriver, timeout).until(
-    #         wait_condition.presence_of_element_located(
-    #             (By.XPATH, "//*[@id=\"outlined-adornment-password\"]")))
-    #     print("Found password_input id: ", password_input.get_attribute("id"))
+    @skip
+    def test_pictory_login_xpath(self):
+        webdriver = create_webdriver()
+        webdriver.get('https://app.pictory.ai/login')
+        username_input = WebDriverWait(webdriver, timeout).until(
+            wait_condition.presence_of_element_located(
+                (By.XPATH, "//*[@id=\"mui-1\"]")))
+        print("Found username_input id: ", username_input.get_attribute("id"))
+        password_input = WebDriverWait(webdriver, timeout).until(
+            wait_condition.presence_of_element_located(
+                (By.XPATH, "//*[@id=\"outlined-adornment-password\"]")))
+        print("Found password_input id: ", password_input.get_attribute("id"))
 
-    # def test_pictory_textinput_xpath(self):
-    #     webdriver = create_webdriver()
-    #     webdriver.get('https://app.pictory.ai/textinput')
-    #     button = WebDriverWait(webdriver, timeout).until(
-    #         wait_condition.presence_of_element_located(
-    #             (By.XPATH,
-    #              "//*[@id=\"root\"]/div[1]/div[4]/div[1]/div[3]/div[1]/div[1]/div[3]/button")))
-    #     print("Found button: ", False if button is None else True)
+    @skip
+    def test_pictory_textinput_xpath(self):
+        webdriver = create_webdriver()
+        webdriver.get('https://app.pictory.ai/textinput')
+        button = WebDriverWait(webdriver, timeout).until(
+            wait_condition.presence_of_element_located(
+                (By.XPATH,
+                 "//*[@id=\"root\"]/div[1]/div[4]/div[1]/div[3]/div[1]/div[1]/div[3]/button")))
+        print("Found button: ", False if button is None else True)
 
     def test_chinomsoikwuagwu_xpath(self):
         webdriver = create_webdriver()
