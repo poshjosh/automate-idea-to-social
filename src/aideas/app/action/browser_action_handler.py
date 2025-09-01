@@ -90,11 +90,10 @@ class BrowserActionHandler(ActionHandler):
         if key.endswith('alert'):  # accept_alert|dismiss_alert
             result = self.__handle_alert(action)
         elif key == BrowserActionId.ASK_FOR_HELP.value:
-            if run_context.get_arg(RunArg.BROWSER_TYPE, None) is None:
-                raise ValueError(
-                    "Cannot ask for help when browser is not visible. " 
-                    "Set run option 'browser-mode' to 'visible' or 'undetected'.")
-            result = self.ask_for_help(action)
+            if run_context.get_arg(RunArg.BROWSER_MODE, None) is None:
+                result = super().ask_for_help(action)
+            else:    
+                result = self.ask_for_help(action)
         elif key == BrowserActionId.BROWSE_TO.value:
             result = self.__browse_to(action)
         elif key == BrowserActionId.DELETE_COOKIES.value:

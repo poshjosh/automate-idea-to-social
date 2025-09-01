@@ -633,7 +633,7 @@ class RunArg(str, Enum):
         return self.__default_value
 
     AGENTS = ('agents', 'a', 'list')
-    BROWSER_TYPE = ('browser-mode', 'bm', 'str', True, False)
+    BROWSER_MODE = ('browser-mode', 'bm', 'str', True, False)
     CONTINUE_ON_ERROR = ('continue-on-error', 'coe', 'bool', True, False)
     INPUT_LANGUAGE_CODE = ('input-language-code', 'ilc', 'str', False, False, DEFAULT_LANGUAGE_CODE)
     IMAGE_FILE_LANDSCAPE = ('image-file-landscape', 'vci', 'str', False, True)
