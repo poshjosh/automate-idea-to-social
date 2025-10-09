@@ -1,7 +1,7 @@
 import logging.config
 import unittest
 
-from test.app.agent.test_browser_agent import TestBrowserAgent
+from test.app.agent.test_browser_automator_agent import TestBrowserAutomatorAgent
 from test.app.test_functions import init_logging, get_run_context, load_agent_config, run_agent
 from aideas.app.action.action_handler import ActionId
 from aideas.app.agent.agent_name import AgentName
@@ -36,7 +36,7 @@ class BrowserAgentIT(unittest.TestCase):
 
         agent_config = load_agent_config(agent_name, False)
 
-        agent = TestBrowserAgent.of_config(
+        agent = TestBrowserAutomatorAgent.of_config(
             agent_name, run_context.get_app_config().to_dict(), agent_config)
 
         result = run_agent(agent, run_context)

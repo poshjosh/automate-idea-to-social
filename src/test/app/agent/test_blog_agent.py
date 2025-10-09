@@ -3,13 +3,13 @@ import shutil
 
 from aideas.app.action.action import Action
 from aideas.app.action.action_result import ActionResult
-from aideas.app.agent.blog_agent import BlogAgent
+from aideas.app.agent.blog_automator_agent import BlogAutomatorAgent
 from aideas.app.env import Env
 from aideas.app.result.result_set import StageResultSet
 from aideas.app.run_context import RunContext
 
 
-class TestBlogAgent(BlogAgent):
+class TestBlogAgent(BlogAutomatorAgent):
     def run(self, run_context: RunContext) -> StageResultSet:
         try:
             return super().run(run_context)

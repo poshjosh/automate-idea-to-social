@@ -3,11 +3,10 @@ import os.path
 import shutil
 
 from .translator import Translator
-from ..agent import Agent, Automator
+from ..automator_agent import AutomatorAgent, Automator
 from ...action.action import Action
 from ...action.action_result import ActionResult
 from ...config import Name, RunArg
-from ...env import Env
 from ...result.result_set import ElementResultSet
 from ...run_context import RunContext
 
@@ -21,7 +20,7 @@ DEFAULT_STAGE_ITEM = DEFAULT_STAGE
 DEFAULT_ACTION = "translate"
 
 
-class TranslationAgent(Agent):
+class TranslationAutomatorAgent(AutomatorAgent):
     __verbose = False
 
     @staticmethod
@@ -31,7 +30,7 @@ class TranslationAgent(Agent):
     def __init__(self,
                  name: str,
                  agent_config: dict[str, any],
-                 dependencies: dict[str, 'Agent'] = None,
+                 dependencies: dict[str, 'AutomatorAgent'] = None,
                  automator: Automator = None,
                  interval_seconds: int = 0):
         super().__init__(name, agent_config, dependencies, automator, interval_seconds)

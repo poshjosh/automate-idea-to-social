@@ -1,7 +1,7 @@
 import logging.config
 import unittest
 
-from test.app.agent.test_browser_agent import TestBrowserAgent
+from test.app.agent.test_browser_automator_agent import TestBrowserAutomatorAgent
 from test.app.test_functions import init_logging, load_agent_config, get_run_context, run_agent
 from aideas.app.agent.agent_name import AgentName
 from aideas.app.action.element_action_handler import ElementActionHandler
@@ -27,7 +27,7 @@ stages:
           - run_subprocess ls -al
         """
         agent_config = load_yaml_str(yaml)
-        agent = TestBrowserAgent.of_config(
+        agent = TestBrowserAutomatorAgent.of_config(
             agent_name, run_context.get_app_config().to_dict(), agent_config)
 
         result: StageResultSet = run_agent(agent, run_context)
@@ -52,7 +52,7 @@ stages:
         actions: log DEBUG This should not be logged; as the condition above should not pass
         """
         agent_config = load_yaml_str(yaml)
-        agent = TestBrowserAgent.of_config(
+        agent = TestBrowserAutomatorAgent.of_config(
             agent_name, run_context.get_app_config().to_dict(), agent_config)
 
         # We use a ElementActionHandler, rather than TestElementActionHandler
@@ -80,7 +80,7 @@ stages:
 
         agent_config = load_agent_config(agent_name, False)
 
-        agent = TestBrowserAgent.of_config(
+        agent = TestBrowserAutomatorAgent.of_config(
             agent_name, run_context.get_app_config().to_dict(), agent_config)
 
         result = run_agent(agent, run_context)

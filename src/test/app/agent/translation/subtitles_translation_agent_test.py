@@ -2,7 +2,7 @@ import logging.config
 import unittest
 from unittest import mock
 
-from aideas.app.agent.translation.subtitles_translation_agent import SubtitlesTranslationAgent
+from aideas.app.agent.translation.subtitles_translation_agent import SubtitlesTranslationAutomatorAgent
 from aideas.app.agent.translation.translator import Translator
 from test.app.test_functions import init_logging, get_run_context, load_agent_config, run_agent
 from aideas.app.agent.agent_name import AgentName
@@ -21,7 +21,7 @@ class SubtitlesTranslationAgentTest(unittest.TestCase):
         with mock.patch.object(Translator, "translate") as translate:
             translate.return_value = ["Fake translation result"]
 
-            agent = SubtitlesTranslationAgent.of_config(
+            agent = SubtitlesTranslationAutomatorAgent.of_config(
                 agent_name, run_context.get_app_config().to_dict(), agent_config)
 
             run_agent(agent, run_context)

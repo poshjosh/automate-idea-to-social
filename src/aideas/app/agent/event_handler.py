@@ -18,7 +18,7 @@ class EventHandler:
     def noop() -> 'EventHandler':
         return NOOP
 
-    def __init__(self, action_handler: ActionHandler):
+    def __init__(self, action_handler: ActionHandler = ActionHandler()):
         self.__action_handler: ActionHandler = action_handler
 
     @staticmethod

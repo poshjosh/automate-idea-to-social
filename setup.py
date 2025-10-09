@@ -11,7 +11,7 @@ if __name__ == "__main__":
           install_requires=["flask", "flask-cors",
                             "ruamel.yaml", "selenium", "requests",
                             "webvtt-py", "undetected-chromedriver",
-                            "pyu"],
+                            "pyu", "content-publisher"],
           license="MIT",
           classifiers=[
               "Programming Language :: Python :: 3",

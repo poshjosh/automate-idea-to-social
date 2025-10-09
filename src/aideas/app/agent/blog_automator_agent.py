@@ -9,7 +9,7 @@ from typing import Union
 
 from pyu.io.file import extract_zip_file, prepend_line, read_content, visit_dirs, write_content
 from pyu.io.shell import execute_command, run_command, run_commands_from_dir, run_script
-from .agent import Agent
+from .automator_agent import AutomatorAgent
 from .automator import Automator
 from .translation.translator import Translator
 from ..agent.agent_name import AgentName
@@ -23,11 +23,11 @@ from ..run_context import RunContext
 
 logger = logging.getLogger(__name__)
 
-class BlogAgent(Agent):
+class BlogAutomatorAgent(AutomatorAgent):
     def __init__(self,
                  name: str,
                  agent_config: dict[str, any],
-                 dependencies: dict[str, 'Agent'] = None,
+                 dependencies: dict[str, 'AutomatorAgent'] = None,
                  automator: Automator = None,
                  interval_seconds: int = 0):
         super().__init__(name, agent_config, dependencies, automator, interval_seconds)
@@ -138,9 +138,9 @@ class BlogAgent(Agent):
 
     @staticmethod
     def get_blog_input_dir(run_context: RunContext) -> str:
-        video_input_file = BlogAgent.__get_video_source(run_context)
+        video_input_file = BlogAutomatorAgent.__get_video_source(run_context)
         # 'blog' is the name of the dir where the markdown content is saved
-        # @see function BlogAgent.__convert_to_markdown
+        # @see function BlogAutomatorAgent.__convert_to_markdown
         return os.path.join(os.path.dirname(video_input_file), 'blog')
 
     @staticmethod
@@ -256,7 +256,7 @@ class BlogAgent(Agent):
         if not src_file.endswith(".txt"):
             raise ValueError(f"Input file must end with .txt, file: {src_file}")
 
-        args = BlogAgent._get_convert_to_markdown_args(src_file, language_code)
+        args = BlogAutomatorAgent._get_convert_to_markdown_args(src_file, language_code)
 
         found_text: str = ''
         completed_process = run_script(script_path, args, timeout=30, stdout=subprocess.PIPE)

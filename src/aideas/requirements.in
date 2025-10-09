@@ -6,3 +6,4 @@ requests
 webvtt-py
 undetected-chromedriver
 git+https://github.com/poshjosh/pyu.git@v0.1.9#egg=pyu
+git+https://github.com/poshjosh/content-publisher.git@v0.0.1#egg=content-publisher

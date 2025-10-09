@@ -2,9 +2,9 @@ import logging.config
 import unittest
 
 from aideas.app.action.action_handler import ActionError
-from aideas.app.agent.agent import Agent
+from aideas.app.agent.automator_agent import AutomatorAgent
 from test.app.test_functions import init_logging, get_run_context, run_agent
-from aideas.app.agent.browser_agent import BrowserAgent
+from aideas.app.agent.browser_automator_agent import BrowserAutomatorAgent
 from aideas.app.run_context import RunContext
 
 from pyu.io.file import load_yaml_str
@@ -27,7 +27,7 @@ stages:
           - log INFO This is a test log message
         """
         agent_config = load_yaml_str(yaml)
-        agent = Agent.of_config(
+        agent = AutomatorAgent.of_config(
             agent_name, run_context.get_app_config().to_dict(), agent_config)
         try:
             run_agent(agent, run_context)
@@ -50,7 +50,7 @@ stages:
         """
         agent_config = load_yaml_str(yaml)
         print("Agent name: %s", agent_name)
-        agent = BrowserAgent.of_config(
+        agent = BrowserAutomatorAgent.of_config(
             agent_name, run_context.get_app_config().to_dict(), agent_config)
         try:
             run_agent(agent, run_context)

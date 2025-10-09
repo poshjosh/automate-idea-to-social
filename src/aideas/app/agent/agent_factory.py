@@ -1,12 +1,12 @@
 import logging
 from typing import Union
 
-from .agent import Agent
+from .automator_agent import AutomatorAgent
 from .agent_name import AgentName
-from .blog_agent import BlogAgent
-from .browser_agent import BrowserAgent
-from .translation.subtitles_translation_agent import SubtitlesTranslationAgent
-from .translation.translation_agent import TranslationAgent
+from .blog_automator_agent import BlogAutomatorAgent
+from .browser_automator_agent import BrowserAutomatorAgent
+from .translation.subtitles_translation_agent import SubtitlesTranslationAutomatorAgent
+from .translation.translation_agent import TranslationAutomatorAgent
 from ..config import AgentConfig, AgentType
 from ..config_loader import ConfigLoader
 
@@ -21,13 +21,13 @@ class AgentFactory:
     def with_added_variable_source(self, variable_source: dict[str, any]) -> 'AgentFactory':
         return AgentFactory(self.__config_loader.with_added_variable_source(variable_source), self.__app_config)
 
-    def get_agent(self, agent_name: str) -> Agent:
+    def get_agent(self, agent_name: str) -> AutomatorAgent:
         agent_config: dict[str, any] = self.__load_agent_config(agent_name)
         return self.__create_agent(agent_name, agent_config)
 
     def __create_agent(self,
                        agent_name: str,
-                       agent_config: dict[str, any]) -> Agent:
+                       agent_config: dict[str, any]) -> AutomatorAgent:
         agent_type = AgentConfig(agent_config).get_agent_type()
         if agent_name == AgentName.TRANSLATION:
             agent = self.create_translation_agent(agent_name, agent_config)
@@ -50,38 +50,38 @@ class AgentFactory:
     def create_blog_agent(self,
                           agent_name: str,
                           agent_config,
-                          dependencies: Union[dict[str, Agent], None] = None) -> BlogAgent:
-        return BlogAgent.of_config(agent_name, self.__app_config, agent_config, dependencies)
+                          dependencies: Union[dict[str, AutomatorAgent], None] = None) -> BlogAutomatorAgent:
+        return BlogAutomatorAgent.of_config(agent_name, self.__app_config, agent_config, dependencies)
 
     def create_browser_agent(self,
                              agent_name: str,
                              agent_config,
-                             dependencies: Union[dict[str, Agent], None] = None) -> BrowserAgent:
+                             dependencies: Union[dict[str, AutomatorAgent], None] = None) -> BrowserAutomatorAgent:
         agent_config = self.__config_loader.add_browser_config_to_agent_config(agent_config)
-        return BrowserAgent.of_config(agent_name, self.__app_config, agent_config, dependencies)
+        return BrowserAutomatorAgent.of_config(agent_name, self.__app_config, agent_config, dependencies)
 
     def create_generic_agent(
             self,
             agent_name: str,
             agent_config,
-            dependencies: Union[dict[str, Agent], None] = None) -> Agent:
-        return Agent.of_config(agent_name, self.__app_config, agent_config, dependencies)
+            dependencies: Union[dict[str, AutomatorAgent], None] = None) -> AutomatorAgent:
+        return AutomatorAgent.of_config(agent_name, self.__app_config, agent_config, dependencies)
 
     def create_translation_agent(
             self,
             agent_name: str,
             agent_config,
-            dependencies: Union[dict[str, Agent], None] = None) -> TranslationAgent:
-        return TranslationAgent.of_config(agent_name, self.__app_config, agent_config, dependencies)
+            dependencies: Union[dict[str, AutomatorAgent], None] = None) -> TranslationAutomatorAgent:
+        return TranslationAutomatorAgent.of_config(agent_name, self.__app_config, agent_config, dependencies)
 
     def create_subtitles_translation_agent(
             self,
             agent_name: str,
             agent_config,
-            dependencies: Union[dict[str, Agent], None] = None) -> SubtitlesTranslationAgent:
-        return SubtitlesTranslationAgent.of_config(agent_name, self.__app_config, agent_config, dependencies)
+            dependencies: Union[dict[str, AutomatorAgent], None] = None) -> SubtitlesTranslationAutomatorAgent:
+        return SubtitlesTranslationAutomatorAgent.of_config(agent_name, self.__app_config, agent_config, dependencies)
 
-    def __add_dependencies(self, author: Union[Agent, None]):
+    def __add_dependencies(self, author: Union[AutomatorAgent, None]):
         author_name = author.get_name()
         author_config: AgentConfig = author.get_config()
         dependencies: [str] = author_config.get_depends_on()
@@ -110,7 +110,7 @@ class AgentFactory:
             author.add_dependency(dep_name, dep)
 
     @staticmethod
-    def __create_dependency(author: Agent, dep_config: dict[str, any]) -> Agent:
+    def __create_dependency(author: AutomatorAgent, dep_config: dict[str, any]) -> AutomatorAgent:
         # We create the agent's dependency using the author's agent.
         # We do this so that agents and their dependencies share the same resources.
         # For example, browser agents and their dependencies share the same webdriver.

@@ -2,7 +2,7 @@ import os
 
 from typing import Union, Callable
 from aideas.app.action.action_result import ActionResult
-from aideas.app.agent.agent import Agent
+from aideas.app.agent.automator_agent import AutomatorAgent
 from aideas.app.config import RunArg, BrowserConfig
 from aideas.app.config_loader import ConfigLoader, CONFIG_DIR
 from aideas.app.result.result_set import ElementResultSet, StageResultSet
@@ -34,7 +34,7 @@ def get_run_context(agent_names: list[str] = None) -> RunContext:
         run_config[str(RunArg.AGENTS.value)] = agent_names
     return RunContext.of_config(load_app_config(), run_config)
 
-def run_agent(agent: Agent, run_context: RunContext) -> StageResultSet:
+def run_agent(agent: AutomatorAgent, run_context: RunContext) -> StageResultSet:
     result = StageResultSet.none()
     try:
         result = agent.run(run_context)
