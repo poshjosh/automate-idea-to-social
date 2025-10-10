@@ -7,6 +7,7 @@ from .blog_automator_agent import BlogAutomatorAgent
 from .browser_automator_agent import BrowserAutomatorAgent
 from .translation.subtitles_translation_agent import SubtitlesTranslationAutomatorAgent
 from .translation.translation_agent import TranslationAutomatorAgent
+from ..action.content_publisher_action_handler import ContentPublisherActionHandler
 from ..config import AgentConfig, AgentType
 from ..config_loader import ConfigLoader
 
@@ -37,6 +38,9 @@ class AgentFactory:
             agent = self.create_blog_agent(agent_name, agent_config)
         elif agent_type == AgentType.GENERIC:
             agent = self.create_generic_agent(agent_name, agent_config)
+            if agent_name == AgentName.CONTENT_PUBLISHER:
+                action_handler = ContentPublisherActionHandler()
+                agent = agent.with_automator(agent.get_automator().with_action_handler(action_handler))
         elif agent_type == AgentType.LLM:
             raise NotImplementedError(f'{agent_type} is not yet implemented')
         elif agent_type == AgentType.BROWSER:

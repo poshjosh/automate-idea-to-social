@@ -10,6 +10,7 @@ class AgentName:
     FACEBOOK: str = "facebook"
     INSTAGRAM: str = "instagram"
     TIKTOK: str = "tiktok"
+    CONTENT_PUBLISHER: str = "content-publisher"
 
     class PictoryStage:
         VIDEO_LANDSCAPE: str = "video-landscape"

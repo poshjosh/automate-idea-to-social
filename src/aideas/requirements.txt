@@ -20,7 +20,7 @@ charset-normalizer==3.4.3
     # via requests
 click==8.1.8
     # via flask
-content-publisher @ git+https://github.com/poshjosh/content-publisher.git@v0.0.1
+content-publisher @ git+https://github.com/poshjosh/content-publisher.git@v0.0.4
     # via -r requirements.in
 exceptiongroup==1.3.0
     # via

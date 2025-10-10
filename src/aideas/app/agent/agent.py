@@ -56,7 +56,7 @@ class Agent(ABC):
         Execute the agent logic for the given stage.
         raise ExecutionError in case of failure.
         """
-        pass
+        raise NotImplementedError
 
     def close(self):
         """Close any resources held by the agent."""

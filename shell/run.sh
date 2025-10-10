@@ -10,8 +10,8 @@ printf "\nWorking from: %s\n" "$(pwd)"
 
 if [ -z "$WEB_APP" ] || [ "$WEB_APP" = true ] || [ "$WEB_APP" = "true" ] ; then
   printf "\nStarting web app\n\n"
-  python3 web.py "$RUN_ARGS"
+  python3 web.py
 else
   printf "\nStarting app\n\n"
-  python3 main.py "$RUN_ARGS"
+  python3 main.py
 fi

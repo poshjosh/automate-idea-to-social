@@ -1,0 +1,19 @@
+# [llm|browser|blog|generic]  llm is not yet supported
+agent-type: generic
+# Optional [generate-video|generate-text|post|test|custom|unlisted]
+agent-tags: post
+form-field-image-file-landscape: $IMAGE_FILE_LANDSCAPE
+form-field-image-file-square: $IMAGE_FILE_SQUARE
+form-field-subtitles-file: $SUBTITLES_FILE
+form-field-text-content: $TEXT_CONTENT
+form-field-text-file: $TEXT_FILE
+form-field-text-title: $TEXT_TITLE
+form-field-video-file-landscape: $VIDEO_FILE_LANDSCAPE
+form-field-video-file-portrait: $VIDEO_FILE_PORTRAIT
+form-field-video-file-square: $VIDEO_FILE_SQUARE
+
+stages:
+  main:
+    stage-items:
+      publish-content-social-media:
+        actions: publish -p youtube -o portrait -t "Who let the dogs out" -d /Users/chinomso/Desktop/live-above-3D/aideas-docker-mount/input

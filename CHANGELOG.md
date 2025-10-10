@@ -7,8 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Integrate [content-publisher](https://github.com/poshjosh/content-publisher.git) as an agent.
+
 ### Changed
 
+- Use `pyproject.toml`
 - No longer fail if action `ask_for_help` is invoked in a headless browser mode. 
 
 ## [0.3.4] - 2025-08-21

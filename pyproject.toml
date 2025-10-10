@@ -1,0 +1,68 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "automate-idea-to-social"
+version = "0.3.4"
+description = "Automate generating and publishing content from ideas to social media."
+authors = [
+    {name = "Chinomso Ikwuagwu"}
+]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+keywords = ["publish content", "automation", "ai", "artificial intelligence"]
+dependencies = [
+    "content-publisher @ git+https://github.com/poshjosh/content-publisher.git@v0.0.4#egg=content-publisher",
+    "flask",
+    "flask-cors",
+    "pyu @ git+https://github.com/poshjosh/pyu.git@v0.1.9#egg=pyu",
+    "requests",
+    "ruamel-yaml",
+    "selenium",
+    "undetected-chromedriver",
+    "webvtt-py",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/poshjosh/automate-idea-to-social"
+Repository = "https://github.com/poshjosh/automate-idea-to-social"
+Documentation = "https://github.com/poshjosh/automate-idea-to-social"
+
+#[project.scripts]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["aideas", "aideas*"]  # package names should match these glob patterns (["*"] by default)
+exclude = ["test", "test*"]  # exclude packages matching these glob patterns (empty by default)
+
+[tool.black]
+line-length = 88
+target-version = ['py39']
+
+[tool.isort]
+profile = "black"
+line_length = 88
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true

@@ -354,6 +354,7 @@ class AgentType(str, Enum):
     BROWSER = 'browser'
     GENERIC = 'generic'
     LLM = 'llm'
+    API = "api"
 
 
 def check_for_typo(config: dict[str, any], valid_key: str) -> dict[str, any]:
@@ -691,16 +692,24 @@ class RunArg(str, Enum):
         if not run_args_from_env:
             return add_to
 
-        add_to = RunArg._of_list(run_args_from_env.split(" "), add_to)
+        return RunArg.__of_list(run_args_from_env.split(" "), add_to)
+
+    @staticmethod
+    def of_sys_argv(add_to: dict[str, any] = None) -> dict[str, any]:
+        return RunArg.__of_list(sys.argv, add_to)
+
+    @staticmethod
+    def __of_list(source: list[str], add_to: dict[str, any] = None) -> dict[str, any]:
+
+        RunArg.of_list(source, add_to)
+
+        for key, val in add_to.items():
+            add_to[key] = RunArg.value_of(key, val)
 
         return RunArg._update_defaults(add_to)
 
     @staticmethod
-    def of_sys_argv(add_to: dict[str, any] = None) -> dict[str, any]:
-        return RunArg._of_list(sys.argv, add_to)
-
-    @staticmethod
-    def _of_list(source: list[str], add_to: dict[str, any] = None) -> dict[str, any]:
+    def of_list(source: list[str], add_to: dict[str, any] = None) -> dict[str, any]:
         if add_to is None:
             add_to = {}
 
@@ -723,9 +732,9 @@ class RunArg(str, Enum):
             if val is None or val == '':
                 continue
 
-            add_to[key] = RunArg.value_of(key, val)
+            add_to[key] = val
 
-        return RunArg._update_defaults(add_to)
+        return add_to
 
     @staticmethod
     def _update_defaults(result: dict[str, any]) -> dict[str, any]:
