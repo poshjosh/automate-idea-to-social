@@ -62,7 +62,7 @@ class ContentPublisherActionHandler(ActionHandler):
             def media_file_arg(media_type: str) -> RunArg:
                 return RunArg(f"{media_type}-file-{media_orientation}")
 
-            description: str = args.get(PublisherArg.DESCRIPTION, run_context.get_arg(RunArg.TEXT_CONTENT))
+            description: str = run_context.get_arg(RunArg.TEXT_CONTENT)
             video_file: Union[str, None] = run_context.get_arg(media_file_arg("video"))
             image_file: Union[str, None] = run_context.get_arg(media_file_arg("image"))
             subtitle_files: Union[dict[str, str], None] = run_context.get_arg(RunArg.SUBTITLES_FILE)
