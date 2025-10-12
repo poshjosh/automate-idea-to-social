@@ -36,6 +36,7 @@ def _save_file(task_id, files, input_name,
     if not uploaded_file.filename:
         return None
     if input_name == RunArg.IMAGE_FILE_LANDSCAPE.value or \
+            input_name == RunArg.IMAGE_FILE_PORTRAIT.value or \
             input_name == RunArg.IMAGE_FILE_SQUARE.value:
         _validate_image_ext(uploaded_file)
     filepath = get_upload_file(task_id, get_file_name(input_name, uploaded_file.filename))

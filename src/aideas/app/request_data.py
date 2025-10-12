@@ -69,9 +69,14 @@ class RequestData:
 
     @staticmethod
     def __task_config_from_dict(task_id: str, request, request_data) -> dict[str, any]:
+        # Handle list values
         lang_codes = RequestData.get_list(request, RunArg.LANGUAGE_CODES.value, None)
         if lang_codes:
             request_data[RunArg.LANGUAGE_CODES.value] = ",".join(lang_codes)
+
+        platforms = RequestData.get_list(request, "platforms", None)
+        if platforms:
+            request_data["platforms"] = ",".join(platforms)
 
         def get_file_name(input_name: str, upload_file_name: str) -> str:
             text_title = request_data.get(RunArg.TEXT_TITLE.value, None)
@@ -98,7 +103,7 @@ class RequestData:
             request_data[RunArg.INPUT_LANGUAGE_CODE.value] = RequestData.get_language_code(request)
             request_data["async"] = RequestData.get(request, 'async', True)
 
-            RequestData.validate_task_config_form_data(request_data)
+            RequestData.validate_task_config_data(request_data)
 
             logger.debug(f"Request data: {request_data}")
             return request_data
@@ -119,7 +124,7 @@ class RequestData:
         return data
 
     @staticmethod
-    def validate_task_config_form_data(form_data: dict[str, any]):
-        for k, v in form_data.items():
+    def validate_task_config_data(data: dict[str, any]):
+        for k, v in data.items():
             if v == '':
                 raise ValidationError(f"'{k}' is required")

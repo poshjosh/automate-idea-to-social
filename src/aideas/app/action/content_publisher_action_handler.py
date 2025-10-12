@@ -3,7 +3,7 @@ from enum import unique
 from typing import Union
 
 from content_publisher.app.app import App
-from content_publisher.app.content_publisher import Content
+from content_publisher.app.content_publisher import Content, SocialPlatformType
 from content_publisher.app.run_arg import RunArg as PublisherArg
 
 from ..action.action import Action
@@ -22,6 +22,11 @@ class ContentPublisherActionId(BaseActionId):
 
 class ContentPublisherActionHandler(ActionHandler):
     @staticmethod
+    def get_supported_platforms() -> list[str]:
+        return [SocialPlatformType.YOUTUBE.value, SocialPlatformType.X.value,
+                SocialPlatformType.FACEBOOK.value, SocialPlatformType.REDDIT.value]
+
+    @staticmethod
     def to_action_id(action: str) -> BaseActionId:
         try:
             return ActionHandler.to_action_id(action)
@@ -38,9 +43,11 @@ class ContentPublisherActionHandler(ActionHandler):
 
     def publish(self, run_context: RunContext, action: Action) -> ActionResult:
         args: dict[PublisherArg, any] = PublisherArg.of_list({}, action.get_args())
-        platforms = args.get(PublisherArg.PLATFORMS, None)
+        platforms = run_context.get_arg("platforms", args.get(PublisherArg.PLATFORMS, None))
         if not platforms:
             return ActionResult.failure(action, "No platforms specified")
+        if isinstance(platforms, str):
+            platforms: list[str] = platforms.split(",")
 
         content: Content = self.__to_content(run_context, args)
         logger.debug(f"Publishing to platforms: {platforms}, content:\n{content}")

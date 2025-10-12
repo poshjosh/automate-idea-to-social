@@ -1,0 +1,9 @@
+<label for="platforms">
+    <span id="red-asterix">*</span>&nbsp;Select the platforms
+</label>
+&nbsp
+<div id="platforms" class="v-scroll">
+    {% with name='platforms', items=platforms.items(), all='all' %}
+        {% include "automate/form/common/checkbox-group.html" %}
+    {% endwith %}
+</div>

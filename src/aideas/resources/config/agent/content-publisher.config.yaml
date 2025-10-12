@@ -2,7 +2,9 @@
 agent-type: generic
 # Optional [generate-video|generate-text|post|test|custom|unlisted]
 agent-tags: post
+form-field-platforms: $PLATFORMS
 form-field-image-file-landscape: $IMAGE_FILE_LANDSCAPE
+form-field-image-file-portrait: $IMAGE_FILE_PORTRAIT
 form-field-image-file-square: $IMAGE_FILE_SQUARE
 form-field-subtitles-file: $SUBTITLES_FILE
 form-field-text-content: $TEXT_CONTENT

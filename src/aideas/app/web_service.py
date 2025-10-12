@@ -1,9 +1,10 @@
 import logging
 from typing import Callable
 
-from .config import AppConfig, AgentConfig
+from .action.content_publisher_action_handler import ContentPublisherActionHandler
+from .config import AppConfig
 from .config_loader import ConfigLoader
-from .env import is_production, has_env_value
+from .env import has_env_value
 from .i18n import I18n
 from .task import AgentTask, Task, add_task, get_task_ids, require_task, submit_task
 
@@ -23,14 +24,21 @@ class WebService:
     def __init__(self, config_loader: ConfigLoader):
         self.__config_loader = config_loader
         self.app_config = AppConfig(config_loader.load_app_config())
+
         supported_languages = {}
         for language in I18n.get_supported_languages():
             supported_languages[language.code] = language.display_name
+
+        platforms = {}
+        for platform in ContentPublisherActionHandler.get_supported_platforms():
+            platforms[platform] = HtmlFormat.display(platform)
+
         self.default_page_variables = {
             'app_name': self.app_config.get_app_name(),
             'title': self.app_config.get_title(),
             'heading': self.app_config.get_title(),
-            'supported_languages': supported_languages
+            'supported_languages': supported_languages,
+            'platforms': platforms
         }
 
     def index(self, page_variables: dict[str, any] = None) -> dict[str, str]:
