@@ -9,10 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Options `platforms` and `image-file-portrait`.
 - Integrate [content-publisher](https://github.com/poshjosh/content-publisher.git) as an agent.
 
 ### Changed
 
+- Bump [content-publisher](https://github.com/poshjosh/content-publisher.git) to v0.0.5.
 - Use `pyproject.toml`
 - No longer fail if action `ask_for_help` is invoked in a headless browser mode. 
 
