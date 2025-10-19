@@ -46,7 +46,14 @@ stages:
 #          - log INFO ||| Number at ${context.test-agent.variables}[${context.idx}]
 # Variable parsing will fail. We don't support nested variables at the moment,
 #          - log INFO ||| Number at ${context.test-agent.variables[${context.idx}]}
-
+  stage-4-context-values:
+    stage-items:
+      set-values:
+        actions:
+          - set_context_values name=Test-Agent type=generic
+      get-values:
+        actions:
+          - log INFO ||| Name=${context.name} Type=${context.type}
 
 
 
