@@ -59,8 +59,8 @@ class ContentPublisherActionHandler(ActionHandler):
     @staticmethod
     def __to_content(run_context: RunContext, args: dict[str, PublisherArg]) -> Content:
         dir_path = args.get(PublisherArg.DIR, None)
-        text_title: Union[str, None] = args.get(PublisherArg.TEXT_TITLE, run_context.get_arg(RunArg.TEXT_TITLE))
-        media_orientation = args.get(PublisherArg.MEDIA_ORIENTATION, "square")
+        text_title: Union[str, None] = run_context.get_arg(RunArg.TEXT_TITLE, args.get(PublisherArg.TEXT_TITLE, None))
+        media_orientation = run_context.get_arg("orientation", args.get(PublisherArg.MEDIA_ORIENTATION, "square"))
 
         if dir_path:
             return Content.of_dir(dir_path, text_title, media_orientation)
@@ -72,7 +72,7 @@ class ContentPublisherActionHandler(ActionHandler):
             description: str = run_context.get_arg(RunArg.TEXT_CONTENT)
             video_file: Union[str, None] = run_context.get_arg(media_file_arg("video"))
             image_file: Union[str, None] = run_context.get_arg(media_file_arg("image"))
-            subtitle_files: Union[dict[str, str], None] = run_context.get_arg(RunArg.SUBTITLES_FILE)
+            subtitle_files: Union[dict[str, str], None] = None # TODO
 
             return Content(description, video_file, image_file, text_title, subtitle_files)
 

@@ -3,6 +3,7 @@ agent-type: generic
 # Optional [generate-video|generate-text|post|test|custom|unlisted]
 agent-tags: post
 form-field-platforms: $PLATFORMS
+form-field-orientation: $ORIENTATION
 form-field-image-file-landscape: $IMAGE_FILE_LANDSCAPE
 form-field-image-file-portrait: $IMAGE_FILE_PORTRAIT
 form-field-image-file-square: $IMAGE_FILE_SQUARE
@@ -18,4 +19,5 @@ stages:
   main:
     stage-items:
       publish-content-social-media:
-        actions: publish -p youtube -o portrait -t "Who let the dogs out" -d /Users/chinomso/Desktop/live-above-3D/aideas-docker-mount/input
+        #publish -p youtube -o portrait -t "Who let the dogs out" -d /Users/chinomso/Desktop/live-above-3D/aideas-docker-mount/input
+        actions: publish -d /Users/chinomso/Desktop/live-above-3D/aideas-docker-mount/input

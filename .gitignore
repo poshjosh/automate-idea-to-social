@@ -1,4 +1,5 @@
-# Custom
+# Custom to this application
+google_oauth_tokens.pickle
 src/test/resources/test-content/subtitles/
 src/test/resources/test-content/translations/
 
