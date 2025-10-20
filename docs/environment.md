@@ -52,6 +52,8 @@ PICTORY_TEXT_STYLE=
 
 # translation
 SUBTITLES_FILE_EXTENSION=vtt
+# https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=uk&dt=t&q=TEXT
+TRANSLATION_SERVICE_ENDPOINT=https://translate.googleapis.com/translate_a/single
 TRANSLATION_OUTPUT_LANGUAGE_CODES=
 
 # youtube

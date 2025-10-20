@@ -3,13 +3,8 @@ agent-type: generic
 # Optional [generate-video|generate-text|post|test|custom|unlisted]
 agent-tags: custom
 sort-order: 1
-net:
-  # https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=uk&dt=t&q=TEXT
-  service-url: https://translate.googleapis.com/translate_a/single
-  user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36
-  chunk_size: 10000
-form-field-input-language-code: $INPUT_LANGUAGE_CODE
-form-field-lang-codes: $LANGUAGE_CODES
-source: $TEXT_FILE
 stages:
   translate:
+    stage-items:
+      translate:
+        actions: translate $TEXT_FILE $INPUT_LANGUAGE_CODE $LANGUAGE_CODES

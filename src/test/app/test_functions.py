@@ -1,6 +1,6 @@
 import os
 
-from typing import Union, Callable
+from typing import Union, Callable, Any
 from aideas.app.action.action_result import ActionResult
 from aideas.app.agent.automator_agent import AutomatorAgent
 from aideas.app.config import RunArg, BrowserConfig
@@ -12,19 +12,19 @@ from aideas.app.web.webdriver_creator import WebDriverCreator, WEB_DRIVER
 __TEST_SRC_DIR = f'{os.getcwd()}/test/app'
 
 
-def get_main_config_loader(variable_source: Union[dict[str, any], None] = None) -> ConfigLoader:
+def get_main_config_loader(variable_source: Union[dict[str, Any], None] = None) -> ConfigLoader:
     return ConfigLoader(os.path.join("aideas", CONFIG_DIR), variable_source)
 
 
-def get_test_config_loader(variable_source: Union[dict[str, any], None] = None) -> ConfigLoader:
+def get_test_config_loader(variable_source: Union[dict[str, Any], None] = None) -> ConfigLoader:
     return ConfigLoader(os.path.join("test", CONFIG_DIR), variable_source)
 
 
-def load_app_config() -> dict[str, any]:
+def load_app_config() -> dict[str, Any]:
     return get_main_config_loader().load_app_config()
 
 
-def load_agent_config(agent_name: str, check_replaced: bool = True) -> dict[str, any]:
+def load_agent_config(agent_name: str, check_replaced: bool = True) -> dict[str, Any]:
     return get_main_config_loader().load_agent_config(agent_name, check_replaced)
 
 
@@ -49,7 +49,7 @@ def init_logging(config, dict_config: Union[dict, None] = None):
     config.dictConfig(__get_logging_config() if dict_config is None else dict_config)
 
 
-def __get_logging_config() -> dict[str, any]:
+def __get_logging_config() -> dict[str, Any]:
     return {
         'version': 1,
         'formatters': {'simple': {'format': '%(asctime)s %(name)s %(levelname)s %(message)s'}},

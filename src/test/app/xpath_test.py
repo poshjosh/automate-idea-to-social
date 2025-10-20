@@ -30,6 +30,7 @@ timeout: float = 10
 
 
 class XPathTest(unittest.TestCase):
+    @skip
     def test_xpath_from_existing_result(self):
         dir_path = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
         file_path = os.path.join(

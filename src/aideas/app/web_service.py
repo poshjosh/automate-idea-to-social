@@ -1,7 +1,7 @@
 import logging
-from typing import Callable
+from typing import Callable, Any
 
-from .action.content_publisher_action_handler import ContentPublisherActionHandler
+from .action.actions import PublishContentAction
 from .config import AppConfig
 from .config_loader import ConfigLoader
 from .env import has_env_value
@@ -30,7 +30,7 @@ class WebService:
             supported_languages[language.code] = language.display_name
 
         platforms = {}
-        for platform in ContentPublisherActionHandler.get_supported_platforms():
+        for platform in PublishContentAction.get_supported_platforms():
             platforms[platform] = HtmlFormat.display(platform)
 
         self.default_page_variables = {
@@ -38,28 +38,29 @@ class WebService:
             'title': self.app_config.get_title(),
             'heading': self.app_config.get_title(),
             'supported_languages': supported_languages,
+            # TODO - rename to supported_platforms
             'platforms': platforms
         }
 
-    def index(self, page_variables: dict[str, any] = None) -> dict[str, str]:
+    def index(self, page_variables: dict[str, Any] = None) -> dict[str, str]:
         return self._with_default_page_variables(page_variables)
 
-    def automation_index(self, page_variables: dict[str, any] = None) -> dict[str, any]:
+    def automation_index(self, page_variables: dict[str, Any] = None) -> dict[str, Any]:
         return self._with_default_page_variables(page_variables)
 
-    def select_automation_agents(self, tag) -> dict[str, any]:
+    def select_automation_agents(self, tag) -> dict[str, Any]:
         agents = {}
         for agent_name in self.__config_loader.get_agent_names(tag):
             agents[agent_name] = HtmlFormat.display(agent_name)
         return self._with_default_page_variables({'tag': tag, 'agents': agents})
 
-    def api_get_automation_agent_names(self, tag) -> dict[str, any]:
+    def api_get_automation_agent_names(self, tag) -> dict[str, Any]:
         return {'tag': tag, 'agents': self.__config_loader.get_agent_names(tag)}
 
-    def api_get_automation_agent_config(self, agent_name: str) -> dict[str, any]:
+    def api_get_automation_agent_config(self, agent_name: str) -> dict[str, Any]:
         return {'agent_name': agent_name, 'agent': self.__config_loader.get_agent_config_with_unreplaced_variables(agent_name)}
 
-    def enter_automation_details(self, data: dict[str, any]) -> dict[str, any]:
+    def enter_automation_details(self, data: dict[str, Any]) -> dict[str, Any]:
         tag = data['tag']
         agent_names = data['agents']
 
@@ -83,7 +84,7 @@ class WebService:
         return self._with_default_page_variables(
             {'tag': tag, 'agents': agents, 'form_fields': all_form_fields})
 
-    def start_automation_async(self, task_id: str, data: dict[str, any]) -> Task:
+    def start_automation_async(self, task_id: str, data: dict[str, Any]) -> Task:
         try:
             task = AgentTask.of_defaults(self.__config_loader, data)
             submit_task(task_id, task)
@@ -92,7 +93,7 @@ class WebService:
             logger.exception(ex)
             raise ex
 
-    def start_automation(self, task_id: str, data: dict[str, any]) -> Task:
+    def start_automation(self, task_id: str, data: dict[str, Any]) -> Task:
         try:
             task = AgentTask.of_defaults(self.__config_loader, data)
             add_task(task_id, task).start()
@@ -102,14 +103,14 @@ class WebService:
             raise ex
 
     def tasks(self,
-              get_task_links: Callable[[str], dict[str, any]],
-              info: str = None) -> dict[str, any]:
+              get_task_links: Callable[[str], dict[str, Any]],
+              info: str = None) -> dict[str, Any]:
         return self._with_default_page_variables(self.api_tasks(get_task_links, info))
 
     @staticmethod
     def api_tasks(
-              get_task_links: Callable[[str], dict[str, any]],
-              info: str = None) -> dict[str, any]:
+              get_task_links: Callable[[str], dict[str, Any]],
+              info: str = None) -> dict[str, Any]:
         task_ids: list[str] = get_task_ids()
         tasks = []
         for task_id in task_ids:
@@ -117,7 +118,7 @@ class WebService:
         return {'tasks': tasks, 'info': info}
 
     @staticmethod
-    def api_task(get_task_links: Callable[[str], dict[str, any]], task_id: str) -> dict[str, any]:
+    def api_task(get_task_links: Callable[[str], dict[str, Any]], task_id: str) -> dict[str, Any]:
         task: AgentTask = require_task(task_id)
         return {
             'id': task_id,
@@ -127,7 +128,7 @@ class WebService:
             'links': get_task_links(task_id)
         }
 
-    def _with_default_page_variables(self, variables: dict[str, any] = None):
+    def _with_default_page_variables(self, variables: dict[str, Any] = None):
         if variables is None:
             variables = {}
         for key, value in self.default_page_variables.items():

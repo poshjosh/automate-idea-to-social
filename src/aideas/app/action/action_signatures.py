@@ -1,20 +1,18 @@
 from collections import OrderedDict
-from typing import TypeVar, Union
+from typing import Union, Any
 
 from ..config import AgentConfig, ACTIONS_KEY, DEFAULT_ACTIONS_KEY, Name, check_for_typo
-
-STR_OR_DICT = TypeVar("STR_OR_DICT", bound=Union[str, dict])
-STR_OR_LIST = TypeVar("STR_OR_LIST", bound=Union[str, list[str]])
 
 DEFAULT_ACTIONS: list[str] = ['click']
 
 
-def element_action_signatures(config: dict[str, any], element_name: str) -> list[str]:
+def element_action_signatures(config: dict[str, Any], element_name: str) -> list[str]:
     if AgentConfig.is_default_actions_key(element_name):
         raise ValueError(f'The provided key (i.e {element_name}) is a reserved word.')
     default_actions: list[str] = __element_action_signatures(
         config, DEFAULT_ACTIONS_KEY, DEFAULT_ACTIONS)
-    element_config: STR_OR_DICT = config[element_name]
+    element_config: Union[str, dict] = config[element_name]
+    # print(f'\n\n\tElement config for {element_name}: {element_config}')
     if isinstance(element_config, str):
         return default_actions if len(default_actions) > 0 else DEFAULT_ACTIONS
     elif isinstance(element_config, dict):
@@ -44,11 +42,11 @@ def parse_agent_to_stages(action_signature: str,
     return action_name, agent_to_stages
 
 
-def __element_action_signatures(config: dict[str, any],
+def __element_action_signatures(config: dict[str, Any],
                                 name: str,
                                 result_if_none: list[str]) -> list[str]:
     check_for_typo(config, name)
-    default_actions: STR_OR_LIST = result_if_none if not config \
+    default_actions: Union[str, list[str]] = result_if_none if not config \
         else config.get(name, result_if_none)
     return __to_list(default_actions)
 

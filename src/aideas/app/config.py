@@ -5,7 +5,7 @@ import sys
 from collections import OrderedDict
 from collections.abc import Iterable
 from enum import Enum, unique
-from typing import Union, TypeVar, Callable
+from typing import Union, TypeVar, Callable, Any
 
 from pyu.io.file import read_content
 
@@ -24,9 +24,9 @@ def __default_get_keys(main: dict, fallback: dict) -> Iterable:
     return main_keys
 
 
-def update_config(src: dict[str, any],
-                  tgt: dict[str, any],
-                  keys: Iterable = None) -> dict[str, any]:
+def update_config(src: dict[str, Any],
+                  tgt: dict[str, Any],
+                  keys: Iterable = None) -> dict[str, Any]:
     if keys is None:
         keys = __default_get_keys(src, tgt)
 
@@ -41,11 +41,11 @@ def update_config(src: dict[str, any],
     return output
 
 
-def merge_configs(main: dict[str, any],
-                  fallback: dict[str, any],
+def merge_configs(main: dict[str, Any],
+                  fallback: dict[str, Any],
                   merge_lists: bool = False,
                   get_keys: Callable[[dict, dict], Iterable] = __default_get_keys) \
-        -> dict[str, any]:
+        -> dict[str, Any]:
     main = OrderedDict(copy.deepcopy(main)) if main else main
     fallback = OrderedDict(copy.deepcopy(fallback)) if fallback else fallback
     if not main:
@@ -79,13 +79,13 @@ def merge_configs(main: dict[str, any],
 
 
 class AppConfig:
-    def __init__(self, config: dict[str, any]):
+    def __init__(self, config: dict[str, Any]):
         self.__config = config if config is not None else {}
 
-    def to_dict(self) -> dict[str, any]:
+    def to_dict(self) -> dict[str, Any]:
         return {**self.__config}
 
-    def app(self) -> dict[str, any]:
+    def app(self) -> dict[str, Any]:
         return self.__config.get('app', {})
 
     def get_app_name(self) -> str:
@@ -99,13 +99,13 @@ class AppConfig:
 
 
 class RunConfig:
-    def __init__(self, config: dict[str, any]):
+    def __init__(self, config: dict[str, Any]):
         self.__config = config if config is not None else {}
 
-    def to_dict(self) -> dict[str, any]:
+    def to_dict(self) -> dict[str, Any]:
         return {**self.__config}
 
-    def get_agents(self, default: [str] = None) -> list[str]:
+    def get_agents(self, default: list[str] = None) -> list[str]:
         return self.__config.get('agents', [] if default is None else default)
 
     def is_continue_on_error(self, default: bool = False) -> bool:
@@ -113,7 +113,7 @@ class RunConfig:
 
 
 class BrowserConfig:
-    def __init__(self, config: dict[str, any]):
+    def __init__(self, config: dict[str, Any]):
         self.__config = config if config is not None else {}
 
     def get_executable_path(self, default: Union[str, None] = None) -> str:
@@ -239,7 +239,7 @@ class SearchBy(Enum):
 
 class SearchConfig:
     @staticmethod
-    def of(config: dict[str, any], key: str) -> Union['SearchConfig', None]:
+    def of(config: dict[str, Any], key: str) -> Union['SearchConfig', None]:
         """
          Example inputs:
 
@@ -292,7 +292,7 @@ class SearchConfig:
     def reorder_queries(self, preferred_query_index: int) -> bool:
         if preferred_query_index < 1:
             return False
-        result = [e for e in self.__queries]
+        result = list(self.__queries)
         preferred_query: str = result.pop(preferred_query_index)
         logger.info(f"\n{'X=' * 32}\nPreferred query: {preferred_query}\n{'X=' * 32}")
         result.insert(0, preferred_query)
@@ -307,7 +307,7 @@ class SearchConfig:
 
 class SearchConfigs:
     @staticmethod
-    def of(config: dict[str, any]) -> 'SearchConfigs':
+    def of(config: dict[str, Any]) -> 'SearchConfigs':
         return SearchConfigs(SearchConfig.of(config, 'search-for'),
                              SearchConfig.of(config, 'search-from'))
 
@@ -357,15 +357,15 @@ class AgentType(str, Enum):
     API = "api"
 
 
-def check_for_typo(config: dict[str, any], valid_key: str) -> dict[str, any]:
+def check_for_typo(config: dict[str, Any], valid_key: str) -> dict[str, Any]:
     """
-    Check if the config contains any key with a typo in its spelling.
+    Check if the config contains Any key with a typo in its spelling.
     :param config: The dict to check
     :param valid_key: The valid key for which misspelled variants are to be checked
     :return: None
     """
     last_char_missing: str = valid_key[:-1]
-    if config.get(last_char_missing):
+    if config.get(last_char_missing, None) is not None:
         raise ValueError(f'Invalid key: "{last_char_missing}", use "{valid_key}" instead.')
     return config
 
@@ -375,10 +375,10 @@ class AgentConfig:
     def is_default_actions_key(stage_item: Union[str, Name]) -> bool:
         return AgentConfig.__value(stage_item) == DEFAULT_ACTIONS_KEY
 
-    def __init__(self, config: dict[str, any]):
+    def __init__(self, config: dict[str, Any]):
         self.__config = check_for_typo(config, STAGES_KEY)
 
-    def to_dict(self) -> dict[str, any]:
+    def to_dict(self) -> dict[str, Any]:
         return {**self.__config}
 
     def get_agent_type(self) -> AgentType:
@@ -387,16 +387,16 @@ class AgentConfig:
     def get_agent_tags(self) -> list[str]:
         return self.__config.get('agent-tags', [])
 
-    def stages(self, result_if_none=Union[dict[str, any], None]) -> Union[dict[str, any], None]:
+    def stages(self, result_if_none: Union[dict[str, Any], None] = None) -> Union[dict[str, Any], None]:
         return self.__config.get(STAGES_KEY, result_if_none)
 
     def get_stage_names(self) -> list[Name]:
         return Name.of_lists(list(self.stages().keys()))
 
-    def stage(self, stage: Union[str, Name], result_if_none=None) -> any:
+    def stage(self, stage: Union[str, Name], result_if_none=None) -> Any:
         return self.stages().get(self.__value(stage), result_if_none)
 
-    def stage_items(self, stage: Union[str, Name], result_if_none=None) -> any:
+    def stage_items(self, stage: Union[str, Name], result_if_none=None) -> Any:
         """
             #################################
             #   stage-items config format   #
@@ -408,6 +408,8 @@ class AgentConfig:
             # element-1: //*[@id="element-1"]
         """
         stage: dict = self.stage(self.__value(stage), {})
+        if not stage:
+            return result_if_none
         check_for_typo(stage, STAGE_ITEMS_KEY)
         return stage.get(STAGE_ITEMS_KEY, result_if_none)
 
@@ -422,22 +424,22 @@ class AgentConfig:
         return result
 
     def stage_item(
-            self, stage: Union[str, Name], item: Union[str, Name], result_if_none=None) -> any:
+            self, stage: Union[str, Name], item: Union[str, Name], result_if_none=None) -> Any:
         return self.stage_items(stage, {}).get(self.__value(item), result_if_none)
 
     def search(
-            self, stage: Union[str, Name], stage_item: Union[str, Name]) -> Union[dict[str, any], None]:
-        dict[str, any]: dict[str, any] = self.__search_parent(stage, stage_item)
-        if not isinstance(dict[str, any], dict):
+            self, stage: Union[str, Name], stage_item: Union[str, Name]) -> Union[dict[str, Any], None]:
+        dict[str, Any]: dict[str, Any] = self.__search_parent(stage, stage_item)
+        if not isinstance(dict[str, Any], dict):
             return None
         search_by_list: list[str] = [e.value for e in SearchBy]
         for search_by in search_by_list:
-            search_config = dict[str, any].get(search_by)
+            search_config = dict[str, Any].get(search_by)
             if search_config is not None:
                 return search_config
         return None
 
-    def events(self, config_path: ConfigPath, default: dict = None) -> dict[str, any]:
+    def events(self, config_path: ConfigPath, default: dict = None) -> dict[str, Any]:
         return self.get(config_path, {}).get(EVENTS, default)
 
     def get_iteration_index_variable(self, config_path: ConfigPath, default: str = 'index') -> str:
@@ -467,7 +469,7 @@ class AgentConfig:
         iteration: dict = self.iteration(config_path, {})
         return iteration.get('end', default)
 
-    def iteration(self, config_path: ConfigPath, default: dict = None) -> dict[str, any]:
+    def iteration(self, config_path: ConfigPath, default: dict = None) -> dict[str, Any]:
         return self.get(config_path, {}).get("iteration", default)
 
     def get_event_actions(self, config_path: ConfigPath, event_name: str) -> Union[str, list]:
@@ -533,11 +535,11 @@ class AgentConfig:
 
     def expected(self,
                  path: Union[str, list[str], list[Name], tuple[Name]],
-                 default: dict[str, any] = None) -> dict[str, any]:
+                 default: dict[str, Any] = None) -> dict[str, Any]:
         return self.get(path, {}).get('expected', default)
 
-    def get(self, path: Union[str, list[str], list[Name], tuple[Name]], result_if_none=None) -> any:
-        path: [str] = self.__value_list(path)
+    def get(self, path: Union[str, list[str], list[Name], tuple[Name]], result_if_none=None) -> Any:
+        path: list[str] = self.__value_list(path)
         result = self.__config
         for k in path:
             result = result.get(k, None)
@@ -546,7 +548,7 @@ class AgentConfig:
         return result if result else result_if_none
 
     def __search_parent(
-            self, stage: Union[str, Name], stage_item: Union[str, Name]) -> dict[str, any]:
+            self, stage: Union[str, Name], stage_item: Union[str, Name]) -> dict[str, Any]:
         stage: str = self.__value(stage)
         stage_item: str = self.__value(stage_item)
         if not stage_item:
@@ -555,7 +557,7 @@ class AgentConfig:
             return self.stage_item(stage, stage_item, None)
 
     @staticmethod
-    def __value_list(path: Union[str, list[str], list[Name], tuple[Name]]) -> [str]:
+    def __value_list(path: Union[str, list[str], list[Name], tuple[Name]]) -> list[str]:
         if isinstance(path, str):
             return [path]
         result = []
@@ -603,7 +605,7 @@ T = TypeVar("T", bound=any)
 @unique
 class RunArg(str, Enum):
     def __new__(cls, value: str, alias: str = None, kind: str = 'str',
-                optional: bool = False, path: bool = False, default_value: any = None):
+                optional: bool = False, path: bool = False, default_value: Any = None):
         obj = str.__new__(cls, [value])
         obj._value_ = value
         obj.__alias = alias
@@ -630,7 +632,7 @@ class RunArg(str, Enum):
         return self.__path
 
     @property
-    def default_value(self) -> any:
+    def default_value(self) -> Any:
         return self.__default_value
 
     AGENTS = ('agents', 'a', 'list')
@@ -656,7 +658,7 @@ class RunArg(str, Enum):
         return [str(RunArg(e).value) for e in RunArg]
 
     @staticmethod
-    def of_dict(source: dict[str, any], add_to: dict[str, any] = None) -> dict[str, any]:
+    def of_dict(source: dict[str, Any], add_to: dict[str, Any] = None) -> dict[str, Any]:
         if add_to is None:
             add_to = {}
         for k, v in source.items():
@@ -666,7 +668,7 @@ class RunArg(str, Enum):
         return RunArg._update_defaults(add_to)
 
     @staticmethod
-    def of_defaults(add_to: dict[str, any] = None) -> dict[str, any]:
+    def of_defaults(add_to: dict[str, Any] = None) -> dict[str, Any]:
         add_to = RunArg.of_env(add_to)
 
         add_to = RunArg.of_sys_argv(add_to)
@@ -684,7 +686,7 @@ class RunArg(str, Enum):
 
 
     @staticmethod
-    def of_env(add_to: dict[str, any] = None) -> dict[str, any]:
+    def of_env(add_to: dict[str, Any] = None) -> dict[str, Any]:
         if add_to is None:
             add_to = {}
 
@@ -696,11 +698,11 @@ class RunArg(str, Enum):
         return RunArg.__of_list(run_args_from_env.split(" "), add_to)
 
     @staticmethod
-    def of_sys_argv(add_to: dict[str, any] = None) -> dict[str, any]:
+    def of_sys_argv(add_to: dict[str, Any] = None) -> dict[str, Any]:
         return RunArg.__of_list(sys.argv, add_to)
 
     @staticmethod
-    def __of_list(source: list[str], add_to: dict[str, any] = None) -> dict[str, any]:
+    def __of_list(source: list[str], add_to: dict[str, Any] = None) -> dict[str, Any]:
 
         RunArg.of_list(source, add_to)
 
@@ -710,7 +712,7 @@ class RunArg(str, Enum):
         return RunArg._update_defaults(add_to)
 
     @staticmethod
-    def of_list(source: list[str], add_to: dict[str, any] = None) -> dict[str, any]:
+    def of_list(source: list[str], add_to: dict[str, Any] = None) -> dict[str, Any]:
         if add_to is None:
             add_to = {}
 
@@ -738,7 +740,7 @@ class RunArg(str, Enum):
         return add_to
 
     @staticmethod
-    def _update_defaults(result: dict[str, any]) -> dict[str, any]:
+    def _update_defaults(result: dict[str, Any]) -> dict[str, Any]:
         # If target is empty, then no need update defaults,
         # To update defaults, we expect some values to be present
         if not result:
@@ -758,7 +760,7 @@ class RunArg(str, Enum):
                     = result[RunArg.IMAGE_FILE_LANDSCAPE._value_]
         return result
 
-    def get_sys_argv_value(self, result_if_none: Union[any, None] = None) -> any:
+    def get_sys_argv_value(self, result_if_none: Union[any, None] = None) -> Any:
         """
         Get the value of the argument with the given name from the system arguments (sys.argv).
         Arguments have aliases that can be used to refer to them.
@@ -768,7 +770,7 @@ class RunArg(str, Enum):
         """
         return self._get_arg_value(sys.argv, result_if_none)
 
-    def _get_arg_value(self, args: list[str], result_if_none: Union[any, None] = None) -> any:
+    def _get_arg_value(self, args: list[str], result_if_none: Union[any, None] = None) -> Any:
         """
         Get the value of the argument with the given name.
         Arguments have aliases that can be used to refer to them.
@@ -786,7 +788,7 @@ class RunArg(str, Enum):
         return result_if_none
 
     @staticmethod
-    def value_of(key: str, value: any) -> any:
+    def value_of(key: str, value: Any) -> Any:
         try:
             for run_arg in RunArg:
                 if run_arg.value == key or run_arg.alias == key:
@@ -796,7 +798,7 @@ class RunArg(str, Enum):
             return value
 
     @staticmethod
-    def _parse(run_arg: 'RunArg', value: str) -> any:
+    def _parse(run_arg: 'RunArg', value: str) -> Any:
         if not value:
             return run_arg.default_value
         if run_arg.type == "bool":

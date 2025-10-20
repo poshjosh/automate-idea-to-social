@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Union, Callable
+from typing import Union, Callable, Any
 
 from pyu.io.variable_parser import contains_variable, get_scoped_value, \
     get_scoped_value_for_name_having_prefix, replace_all_variables as replace_all, \
@@ -31,7 +31,7 @@ NODES_TO_SKIP = [STAGES_KEY, STAGE_ITEMS_KEY]
 logger = logging.getLogger(__name__)
 
 
-def contains_action_variable(value: any) -> bool:
+def contains_action_variable(value: Any) -> bool:
     if not isinstance(value, str):
         return False
     """Action variables are only available while the actions are being run"""
@@ -49,9 +49,9 @@ def __contains_variable_with_prefix(value: str, prefix: str) -> bool:
 
 
 def replace_all_variables(
-        target: dict[str, any],
-        source: Union[dict[str, any], None] = None,
-        check_replaced: bool = True) -> dict[str, any]:
+        target: dict[str, Any],
+        source: Union[dict[str, Any], None] = None,
+        check_replaced: bool = True) -> dict[str, Any]:
     if not source:
         source = dict(os.environ)
 
@@ -65,11 +65,11 @@ def replace_all_variables(
     return replace_all(target, source, check_variables_replaced, NODES_TO_SKIP)
 
 
-def get_run_arg_replacement(curr_path: list[str], arg: str, run_context: 'RunContext' = None) -> any:
+def get_run_arg_replacement(curr_path: list[str], arg: str, run_context: 'RunContext' = None) -> Any:
     if len(curr_path) != 3:
         raise ValueError(f'Expected 3 elements, found: {curr_path}')
 
-    def replace(name: str) -> any:
+    def replace(name: str) -> Any:
         return __get_run_arg_replacement(curr_path, name, run_context, None)
 
     replacement = replace_variables(arg, replace)
@@ -87,7 +87,7 @@ def get_run_arg_replacement(curr_path: list[str], arg: str, run_context: 'RunCon
     return replacement
 
 
-def get_variables(config: dict[str, any], include_scoped_variables: bool = True) -> list[str]:
+def get_variables(config: dict[str, Any], include_scoped_variables: bool = True) -> list[str]:
 
     variables = []
 
@@ -102,7 +102,7 @@ def get_variables(config: dict[str, any], include_scoped_variables: bool = True)
             variables.append(variable)
         return variable
 
-    def visit(text: str, _: [str]) -> str:
+    def visit(text: str, _: list[str]) -> str:
         replace_variables(text, collect_variable)
         return text
 
@@ -136,7 +136,7 @@ def __get_run_arg_replacement(curr_path: list[str],
 def __get_results_value(curr_path: list[str],
                         name: str,
                         run_context: 'RunContext' = None) -> Union[any, None]:
-    def get_value(scope: any, key: str) -> any:
+    def get_value(scope: Any, key: str) -> Any:
         if scope is None:
             return None if run_context is None else run_context.get_stage_results(key, None)
         else:
@@ -157,17 +157,17 @@ def __get_result(value):
         return value
 
 
-def to_variable(paths: [str]) -> str:
+def to_variable(paths: list[str]) -> str:
     return __to_variable(paths)
 
 
-def to_results_variable(paths: [str]) -> str:
+def to_results_variable(paths: list[str]) -> str:
     paths = paths[0:]  # We use a copy of the list argument
     paths.insert(0, RESULTS_KEY)
     return __to_variable(paths)
 
 
-def __to_variable(paths: [str], prefix: str = VARIABLE_ANCHOR, suffix: str = '') -> str:
+def __to_variable(paths: list[str], prefix: str = VARIABLE_ANCHOR, suffix: str = '') -> str:
     result = None
     for name in paths:
         if result is None:
@@ -178,20 +178,20 @@ def __to_variable(paths: [str], prefix: str = VARIABLE_ANCHOR, suffix: str = '')
 
 
 # TODO - Make this method public in pyu.io.variable_parser and use the public method here
-def __visit_all_variables(target: dict[str, any],
-                          visit: Callable[[str, [str]], str],
-                          path: [str] = None):
-    def iter_dict(d: dict[str, any], _, curr_path: [str]):
+def __visit_all_variables(target: dict[str, Any],
+                          visit: Callable[[str, list[str]], str],
+                          path: list[str] = None):
+    def iter_dict(d: dict[str, Any], _, curr_path: list[str]):
         for k, v in d.items():
             d[k] = iter_value(v, d, curr_path)
         return d
 
-    def iter_list(e_list: list[any], _, curr_path: [str]):
+    def iter_list(e_list: list[Any], _, curr_path: list[str]):
         for i, e in enumerate(e_list):
             e_list[i] = iter_value(e, e_list, curr_path)
         return e_list
 
-    def iter_value(e: any, parent: any, curr_path: [str]):
+    def iter_value(e: Any, parent: Any, curr_path: list[str]):
         if isinstance(e, dict):
             return iter_dict(e, parent, curr_path)
         elif isinstance(e, list):

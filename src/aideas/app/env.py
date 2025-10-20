@@ -55,6 +55,8 @@ class Env(str, Enum):
     PICTORY_VOICE_NAME = 'PICTORY_VOICE_NAME'
     PICTORY_TEXT_STYLE = 'PICTORY_TEXT_STYLE'
 
+    TRANSLATION_SERVICE_ENDPOINT = ('TRANSLATION_SERVICE_ENDPOINT',
+                                    False, False, 'https://translate.googleapis.com/translate_a/single')
     TRANSLATION_OUTPUT_LANGUAGE_CODES = ('TRANSLATION_OUTPUT_LANGUAGE_CODES',
                                          False, False, 'ar,bn,de,es,fr,hi,it,ja,ko,ru,tr,uk,zh')
     SUBTITLES_FILE_EXTENSION = ('SUBTITLES_FILE_EXTENSION', False, False, 'vtt')
@@ -197,7 +199,14 @@ def has_env_value(name: str) -> bool:
     return name in Env.values() and get_env_value(name) is not None
 
 
-def get_env_value(name: Union[str, Enum], default: str = None) -> Union[str, None]:
+def require_env_value(name: Union[str, Enum]) -> Union[str, None]:
+    value = get_env_value(name, None)
+    if value is None:
+        raise ValueError(f"Environment variable '{name}' is required")
+    return value
+
+
+def get_env_value(name: Union[str, Enum], default: Union[str, None] = None) -> Union[str, None]:
     if not name:
         return default
     if isinstance(name, Env):

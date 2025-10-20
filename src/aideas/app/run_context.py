@@ -1,7 +1,7 @@
 import logging
 
 from enum import Enum
-from typing import Union
+from typing import Union, Any
 
 from .action.action_result import ActionResult
 from .action.variable_parser import replace_all_variables
@@ -22,8 +22,8 @@ class RunContext:
         return RunContext({}, {})
 
     @staticmethod
-    def of_config(app_config: dict[str, any],
-                  run_config: dict[str, any]) -> 'RunContext':
+    def of_config(app_config: dict[str,  Any],
+                  run_config: dict[str,  Any]) -> 'RunContext':
         app_name = app_config['app']['name']
 
         run_opts = {'app.name': app_name}
@@ -35,18 +35,19 @@ class RunContext:
         return RunContext(app_config, run_opts)
 
     def __init__(self,
-                 app_config: dict[str, any],
-                 run_config: dict[str, any]):
+                 app_config: dict[str,  Any],
+                 run_config: dict[str,  Any]):
         self.__app_config = AppConfig(app_config)
         self.__run_config = RunConfig(run_config)
         self.__agent_names = self.__run_config.get_agents()
-        self.__args: dict[str, any] = run_config
+        self.__args: dict[str,  Any] = run_config
         self.__args_formatted = {}
         for k, v in self.__args.items():
             self.__args_formatted[RunContext._format_key(k)] = v
         self.__result_set: AgentResultSet = AgentResultSet()
         self.__values = {}
 
+    # TODO - Make blog agent an action and then remove this
     def get_language_codes_str(self) -> str:
         str_or_array = self.get_arg(RunArg.LANGUAGE_CODES, None)
         if str_or_array:
@@ -54,7 +55,7 @@ class RunContext:
         else:
             return self.get_env(Env.TRANSLATION_OUTPUT_LANGUAGE_CODES, "")
 
-    def replace_variables(self, agent_name: str, config: dict[str, any]) -> dict[str, any]:
+    def replace_variables(self, agent_name: str, config: dict[str,  Any]) -> dict[str,  Any]:
         config = replace_all_variables(config, self.__args)
         self.__values[agent_name] = config
         return config
@@ -86,35 +87,43 @@ class RunContext:
     def _format_key(key: str):
         return key if not key else key.replace('_', '').replace('-', '').lower()
 
-    def get_env(self, key: Enum, result_if_none: Union[any, None] = None) -> any:
-        return self.get_arg(key.value, result_if_none)
+    def values(self, keys: list[Union[str, Enum]]) -> dict[str,  Any]:
+        result = {}
+        run_config = self.__run_config.to_dict()
+        for key in keys:
+            key_str: str = str(key.value) if isinstance(key, Enum) else str(key)
+            result[key_str] = self.get_arg(key, self.get(key_str, run_config.get(key_str, None)))
+        return result    
 
-    def get_arg(self, key: Union[str, Enum], result_if_none: Union[any, None] = None) -> any:
-        key_str = key.value if isinstance(key, Enum) else key
+    def get_env(self, key: Enum, result_if_none: Union[Any, None] = None) ->  Any:
+        return self.get_arg(key, result_if_none)
+
+    def get_arg(self, key: Union[str, Enum], result_if_none: Union[Any, None] = None) ->  Any:
+        key_str: str = str(key.value) if isinstance(key, Enum) else str(key)
         return self.__args_formatted.get(RunContext._format_key(key_str), result_if_none)
 
-    def get(self, key: str, result_if_none: Union[any, None] = None) -> any:
+    def get(self, key: str, result_if_none: Union[Any, None] = None) ->  Any:
         return self.__values.get(key, result_if_none)
 
     def get_current_url(self, result_if_none: str = None) -> str:
         return self.get(CURRENT_URL, result_if_none)
 
-    def set(self, key: str, value: any) -> Union[any, None]:
+    def set(self, key: str, value:  Any) -> Union[Any, None]:
         result = self.get(key)
         self.__values[key] = value
         return result
 
-    def remove(self, key: str) -> Union[any, None]:
+    def remove(self, key: str) -> Union[Any, None]:
         return self.__values.pop(key, None)
 
     def set_current_url(self, value: str) -> 'RunContext':
         self.__values[CURRENT_URL] = value
         return self
 
-    def get_current_element(self, result_if_none: any = None) -> any:
+    def get_current_element(self, result_if_none:  Any = None) ->  Any:
         return self.get(CURRENT_ELEMENT, result_if_none)
 
-    def set_current_element(self, value: any) -> 'RunContext':
+    def set_current_element(self, value:  Any) -> 'RunContext':
         self.__values[CURRENT_ELEMENT] = value
         return self
 

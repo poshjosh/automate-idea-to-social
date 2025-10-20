@@ -50,6 +50,9 @@ class AutomatorAgent(Agent):
         return self.__class__(self.get_name(), self.get_config().to_dict(),
                               self._get_dependencies(), self.__automator, self.get_interval_seconds())
 
+    def create_dependency(self, name: str, config: dict[str, any]) -> 'AutomatorAgent':
+        return self.__class__(name, config, None, self.__automator, self.get_interval_seconds())
+
     def _execute(self,
                  config: AgentConfig,
                  stage: Name,

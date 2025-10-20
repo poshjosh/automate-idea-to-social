@@ -1,5 +1,5 @@
 from collections.abc import Iterable
-from typing import Callable, Union
+from typing import Callable, Union, Any
 
 import logging
 import os
@@ -25,7 +25,7 @@ def resolve_config_path(config_path: Union[str, Iterable, None]) -> str:
 class ConfigLoader(YamlLoader):
     def __init__(self,
                  config_path: Union[str, Iterable, None] = None,
-                 variable_source: Union[dict[str, any], None] = None):
+                 variable_source: Union[dict[str, Any], None] = None):
         super().__init__(resolve_config_path(config_path), suffix=_SUFFIX)
         self.__config_path = resolve_config_path(config_path)
         if variable_source:
@@ -33,13 +33,13 @@ class ConfigLoader(YamlLoader):
         else:
             self.__variable_source = dict(os.environ)
             self.__variable_source.update(Env.collect())
+            # Only load this when we are about to run an agent.
+            # self.__variable_source.update(self.load_run_config()) # run properties
+            self.__variable_source.update(RunArg.of_defaults()) # sys.argv and environment variable RUN_ARGs
         self.__external_config_dir = Paths.get_path(self.__variable_source.get(Env.EXTERNAL_CONFIG_DIR.value))
-        # Only load this when we are about to run an agent.
-        # self.__variable_source.update(self.load_run_config()) # run properties
-        self.__variable_source.update(RunArg.of_defaults()) # sys.argv and environment variable RUN_ARGs
         self.__agent_configs_with_un_replaced_variables = self.__load_agent_config_with_variables()
 
-    def get_agent_config_with_unreplaced_variables(self, agent_name: str) -> dict[str, any]:
+    def get_agent_config_with_unreplaced_variables(self, agent_name: str) -> dict[str, Any]:
         """
         Returns the agent config with variables not replaced.
         :param agent_name: The name of the agent.
@@ -47,7 +47,7 @@ class ConfigLoader(YamlLoader):
         """
         return self.__agent_configs_with_un_replaced_variables.get(agent_name, {})
 
-    def with_added_variable_source(self, source: dict[str, any]) -> 'ConfigLoader':
+    def with_added_variable_source(self, source: dict[str, Any]) -> 'ConfigLoader':
         return ConfigLoader(self.__config_path, {**self.__variable_source, **source})
 
     def get_agent_variable_names(self, agent_name: str) -> list[str]:
@@ -55,7 +55,7 @@ class ConfigLoader(YamlLoader):
         return get_variables(config, False)
 
     def get_agent_names(self, tag: Union[str , None] = None) -> list[str]:
-        def config_filter(config: dict[str, any]) -> bool:
+        def config_filter(config: dict[str, Any]) -> bool:
             agent_tags = AgentConfig(config).get_agent_tags()
             if 'unlisted' in agent_tags and tag != 'unlisted':
                 return False
@@ -63,14 +63,14 @@ class ConfigLoader(YamlLoader):
                 return False
             return not tag or tag in agent_tags
 
-        def config_sort(config: dict[str, any]) -> int:
+        def config_sort(config: dict[str, Any]) -> int:
             return AgentConfig(config).get_sort_order()
 
         return self.get_sorted_agent_names(config_filter, config_sort)
 
     def get_sorted_agent_names(self,
-                               config_filter: Callable[[dict[str, any]], bool],
-                               config_sort: Callable[[dict[str, any]], int]) -> list[str]:
+                               config_filter: Callable[[dict[str, Any]], bool],
+                               config_sort: Callable[[dict[str, Any]], int]) -> list[str]:
         keys = []
         values = []
         for k, v in self.__agent_configs_with_un_replaced_variables.items():
@@ -85,17 +85,17 @@ class ConfigLoader(YamlLoader):
     def get_logging_config_path(self) -> str:
         return self.get_path('logging-prod') if is_production() else self.get_path('logging')
 
-    def load_run_config(self, check_replaced: bool = True) -> dict[str, any]:
+    def load_run_config(self, check_replaced: bool = True) -> dict[str, Any]:
         result = self.load_from_path(self.get_path("run"), check_replaced)
         result = RunArg.of_dict(result)
         result.update(RunArg.of_defaults())
         return result
 
-    def load_browser_config(self, check_replaced: bool = True) -> dict[str, any]:
+    def load_browser_config(self, check_replaced: bool = True) -> dict[str, Any]:
         browser_type = self.load_run_config().get(RunArg.BROWSER_MODE.value, None)
         return self._load_browser_config_for_type(browser_type, check_replaced)
 
-    def add_browser_config_to_agent_config(self, agent_config: dict[str, any], check_replaced: bool = True) -> dict[str, any]:
+    def add_browser_config_to_agent_config(self, agent_config: dict[str, Any], check_replaced: bool = True) -> dict[str, Any]:
         browser_type = self.load_run_config().get(RunArg.BROWSER_MODE.value, None)
         if browser_type is None:
             browser_type = agent_config.get(RunArg.BROWSER_MODE.value, None)
@@ -106,10 +106,10 @@ class ConfigLoader(YamlLoader):
             agent_config.get('browser', {}), browser_config, False)
         return agent_config
 
-    def load_agent_config(self, agent_name: str, check_replaced: bool = True) -> dict[str, any]:
+    def load_agent_config(self, agent_name: str, check_replaced: bool = True) -> dict[str, Any]:
         return self.load_from_path(self.get_agent_config_path(agent_name), check_replaced)
 
-    def load_from_path(self, path: str, check_replaced: bool = True) -> dict[str, any]:
+    def load_from_path(self, path: str, check_replaced: bool = True) -> dict[str, Any]:
         return self.__load_from_path(path, self.__variable_source, check_replaced)
 
     def get_agent_config_path(self, agent_name: str) -> str:
@@ -118,7 +118,7 @@ class ConfigLoader(YamlLoader):
     def get_variable_source(self):
         return {**self.__variable_source}
 
-    def _load_browser_config_for_type(self, browser_type: str, check_replaced: bool = True) -> dict[str, any]:
+    def _load_browser_config_for_type(self, browser_type: str, check_replaced: bool = True) -> dict[str, Any]:
         if browser_type == 'visible':
             config_name = 'browser-visible'
         elif browser_type == 'undetected':
@@ -127,7 +127,7 @@ class ConfigLoader(YamlLoader):
             config_name = 'browser'
         return self.load_from_path(self.get_path(config_name), check_replaced)
 
-    def __load_agent_config_with_variables(self) -> dict[str, dict[str, any]]:
+    def __load_agent_config_with_variables(self) -> dict[str, dict[str, Any]]:
         configs = {}
         for name in self.__get_all_agent_names():
             configs[name] = self.__load_from_path(self.get_agent_config_path(name), {}, False)
@@ -143,9 +143,9 @@ class ConfigLoader(YamlLoader):
 
     def __load_from_path(self,
                          path: str,
-                         variables: Union[dict[str, any], None] = None,
-                         check_replaced: bool = True) -> dict[str, any]:
-        loaded: dict[str, any] = self.__load_from_path_with_variables_replaced(
+                         variables: Union[dict[str, Any], None] = None,
+                         check_replaced: bool = True) -> dict[str, Any]:
+        loaded: dict[str, Any] = self.__load_from_path_with_variables_replaced(
             path, variables, check_replaced)
         if self.__external_config_dir:
             external_config = self._load_from_external_path(path, variables, check_replaced)
@@ -155,8 +155,8 @@ class ConfigLoader(YamlLoader):
 
     def _load_from_external_path(self,
                                   path: str,
-                                  variables: Union[dict[str, any], None] = None,
-                                  check_replaced: bool = True) -> dict[str, any]:
+                                  variables: Union[dict[str, Any], None] = None,
+                                  check_replaced: bool = True) -> dict[str, Any]:
         if not self.__external_config_dir:
             return {}
         external_path = os.path.join(self.__external_config_dir, os.path.split(path)[1])
@@ -166,16 +166,16 @@ class ConfigLoader(YamlLoader):
     def __load_from_path_with_variables_replaced(
             self,
             path: str,
-            variables: Union[dict[str, any], None] = None,
-            check_replaced: bool = True, log: bool = True) -> dict[str, any]:
+            variables: Union[dict[str, Any], None] = None,
+            check_replaced: bool = True, log: bool = True) -> dict[str, Any]:
         try:
             return replace_all_variables(self.__load_from_yaml(path), variables, check_replaced)
         except FileNotFoundError:
             if log:
-                print(f'Could not find config file for: {path}')
+                logger.warning(f'Could not find config file for: {path}')
             return {}
 
-    def __load_from_yaml(self, path: str) -> dict[str, any]:
+    def __load_from_yaml(self, path: str) -> dict[str, Any]:
         loaded = load_yaml(path)
         parent_name = loaded.pop("extends", "")
         if parent_name:

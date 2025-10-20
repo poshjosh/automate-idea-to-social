@@ -5,17 +5,18 @@ import shutil
 import subprocess
 import time
 from enum import Enum, unique
-from typing import Union, TypeVar
+from typing import Union, TypeVar, Any
 
 from pyu.io.file import read_content, write_content
 from .action import Action
 from .action_result import ActionResult
+from .actions import PublishContentAction, TranslateAction, TranslateSubtitlesAction
 from ..config import parse_query
 from ..run_context import RunContext
 
 logger = logging.getLogger(__name__)
 
-TARGET = TypeVar("TARGET", bound=Union[any, None])
+TARGET = TypeVar("TARGET", bound=Union[Any, None])
 
 
 class ActionError(Exception):
@@ -44,6 +45,7 @@ class ActionId(BaseActionId):
     GET_FIRST_FILE = 'get_first_file'
     GET_NEWEST_FILE_IN_DIR = 'get_newest_file_in_dir'
     LOG = ('log', False)
+    PUBLISH_CONTENT = ('publish_content', True)
     RETURN = 'return'
     # TODO - Implement this here and move run_stages event to this class from EventHandler
     # RUN_STAGES = ('run_stages', False)
@@ -51,6 +53,8 @@ class ActionId(BaseActionId):
     SAVE_FILE = 'save_file'
     SAVE_TEXT = 'save_text'
     STARTS_WITH = 'starts_with'
+    TRANSLATE = 'translate'
+    TRANSLATE_SUBTITLES = 'translate_subtitles'
     WAIT = ('wait', False)
 
 
@@ -126,6 +130,8 @@ class ActionHandler:
             result: ActionResult = self.get_newest_file_in_dir(action)
         elif key == ActionId.LOG.value:
             result: ActionResult = self.log(action)
+        elif key == ActionId.PUBLISH_CONTENT.value:
+            result: ActionResult = self.publish_content(run_context, action)
         elif key == ActionId.RETURN.value:
             result: ActionResult = ActionResult.success(action, action.get_args())
         elif key == ActionId.RUN_SUBPROCESS.value:
@@ -136,12 +142,30 @@ class ActionHandler:
             result: ActionResult = self.save_text(action)
         elif key == ActionId.STARTS_WITH.value:
             result: ActionResult = self.starts_with(action)
+        elif key == ActionId.TRANSLATE.value:
+            result: ActionResult = self.translate(run_context, action)
+        elif key == ActionId.TRANSLATE_SUBTITLES.value:
+            result: ActionResult = self.translate_subtitles(run_context, action)
         elif key == ActionId.WAIT.value:
             result: ActionResult = self.wait(action)
         else:
             raise ValueError(f'Unsupported: {action}')
         logger.debug(f'{result}')
         return result
+
+    @staticmethod
+    def publish_content(run_context: RunContext, action: Action) -> ActionResult:
+        return PublishContentAction().execute(run_context, action)
+
+    @staticmethod
+    def translate(run_context: RunContext, action: Action) -> ActionResult:
+        translation_cfg = run_context.values(['service-url', 'chunk-size', 'user-agent', 'verbose'])
+        return TranslateAction.of_config(translation_cfg).execute(run_context, action)
+
+    @staticmethod
+    def translate_subtitles(run_context: RunContext, action: Action) -> ActionResult:
+        translation_cfg = run_context.values(['service-url', 'chunk-size', 'user-agent', 'verbose'])
+        return TranslateSubtitlesAction.of_config(translation_cfg).execute(run_context, action)
 
     @staticmethod
     def wait(action: Action) -> ActionResult:

@@ -5,7 +5,7 @@ import shutil
 import subprocess
 import tempfile
 import uuid
-from typing import Union
+from typing import Union, Any
 
 from pyu.io.file import extract_zip_file, prepend_line, read_content, visit_dirs, write_content
 from pyu.io.shell import execute_command, run_command, run_commands_from_dir, run_script
@@ -26,12 +26,12 @@ logger = logging.getLogger(__name__)
 class BlogAutomatorAgent(AutomatorAgent):
     def __init__(self,
                  name: str,
-                 agent_config: dict[str, any],
+                 agent_config: dict[str, Any],
                  dependencies: dict[str, 'AutomatorAgent'] = None,
                  automator: Automator = None,
                  interval_seconds: int = 0):
         super().__init__(name, agent_config, dependencies, automator, interval_seconds)
-        self.__translator = Translator.of_config(agent_config)
+        self.__translator = Translator.of_config(agent_config.get('net', {}))
 
     def run_stage(self,
                   run_context: RunContext,

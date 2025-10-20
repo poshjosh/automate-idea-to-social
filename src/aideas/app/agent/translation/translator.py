@@ -1,8 +1,10 @@
 import logging
 import os
-from typing import Union
+from typing import Union, Any
 
 import requests
+
+from aideas.app.env import Env, get_env_value
 
 logger = logging.getLogger(__name__)
 
@@ -10,8 +12,8 @@ class TextLines:
     def __init__(self, text: str):
         if not text:
             raise ValueError("Text is required")
-        self.__lines_without_breaks: [str] = []
-        self.__breaks: [int] = []
+        self.__lines_without_breaks: list[str] = []
+        self.__breaks: list[int] = []
         self.__len = 0
         for line in text.splitlines(False):
             line = line.strip()
@@ -24,17 +26,17 @@ class TextLines:
     def is_multiline(self):
         return len(self.__lines_without_breaks) > 1
 
-    def compose(self, lines: [str]) -> str:
+    def compose(self, lines: list[str]) -> str:
         return '\n'.join(self.with_breaks(lines))
 
-    def with_breaks(self, lines: [str]) -> [str]:
+    def with_breaks(self, lines: list[str]) -> list[str]:
         result = [*lines]
         for break_idx in self.__breaks:
             result.insert(break_idx, "")
         return result
 
-    def get_lines_without_breaks(self) -> [str]:
-        return [e for e in self.__lines_without_breaks]
+    def get_lines_without_breaks(self) -> list[str]:
+        return list(self.__lines_without_breaks)
 
     def get_break_count(self) -> int:
         return len(self.__breaks)
@@ -45,11 +47,28 @@ class TextLines:
 
 class Translator:
     @classmethod
-    def of_config(cls, agent_config: dict[str, any]) -> 'Translator':
-        net_config = agent_config['net']
-        return cls(net_config['service-url'],
-                   net_config.get('chunk-size', 10000),
-                   net_config.get('user-agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36'))
+    def of_config(cls, config: Union[dict[str, Any], None] = None) -> 'Translator':
+        if config is None:
+            config = {}
+
+        # TODO Find out why config.get(k, default) does not work here?
+        service_url = config.get('service-url')
+        if not service_url:
+            service_url= get_env_value(Env.TRANSLATION_SERVICE_ENDPOINT, None)
+            if not service_url:
+                raise ValueError("Translation service URL is required")
+
+        chunk_size_str = config.get('chunk-size')
+        if not chunk_size_str:
+            chunk_size_str = '10000'
+        chunk_size = int(chunk_size_str)
+
+        user_agent = config.get('user-agent')
+        if not user_agent:
+            user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36'
+
+        logger.info(f"Chunk size: {chunk_size}, user agent: {user_agent}")
+        return cls(service_url, chunk_size, user_agent)
 
     __verbose = True
 
@@ -62,9 +81,10 @@ class Translator:
         self.__chunk_size = chunk_size
         # Do not put letters here, they may be translated or cause other inconsistencies.
         self.__separator: str = "~~~"
+        logger.info(f"Chunk size: {chunk_size}, user agent: {user_agent}, service URL: {service_url}")
 
     @staticmethod
-    def _chunkify(text_list: list[str], chunk_size: int) -> [str]:
+    def _chunkify(text_list: list[str], chunk_size: int) -> list[str]:
         text_size = 0
         result_list = []
         chunk = []
@@ -104,7 +124,7 @@ class Translator:
         name_translated: str = self.translate(name, from_lang, to_lang)
         if name_translated and name_translated != name:
             return os.path.join(os.path.dirname(filepath), f'{name_translated}{ext}')
-        parts: [str] = filepath.rsplit('.', 1)
+        parts: list[str] = filepath.rsplit('.', 1)
         if len(parts) < 2:
             return filepath + "." + to_lang
         else:

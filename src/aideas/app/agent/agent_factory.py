@@ -1,13 +1,9 @@
 import logging
-from typing import Union
+from typing import Union, Any
 
 from .automator_agent import AutomatorAgent
-from .agent_name import AgentName
 from .blog_automator_agent import BlogAutomatorAgent
 from .browser_automator_agent import BrowserAutomatorAgent
-from .translation.subtitles_translation_agent import SubtitlesTranslationAutomatorAgent
-from .translation.translation_agent import TranslationAutomatorAgent
-from ..action.content_publisher_action_handler import ContentPublisherActionHandler
 from ..config import AgentConfig, AgentType
 from ..config_loader import ConfigLoader
 
@@ -15,32 +11,25 @@ logger = logging.getLogger(__name__)
 
 
 class AgentFactory:
-    def __init__(self, config_loader: ConfigLoader, app_config: dict[str, any] = None):
+    def __init__(self, config_loader: ConfigLoader, app_config: dict[str, Any] = None):
         self.__config_loader = config_loader
         self.__app_config = config_loader.load_app_config() if app_config is None else app_config
 
-    def with_added_variable_source(self, variable_source: dict[str, any]) -> 'AgentFactory':
+    def with_added_variable_source(self, variable_source: dict[str, Any]) -> 'AgentFactory':
         return AgentFactory(self.__config_loader.with_added_variable_source(variable_source), self.__app_config)
 
     def get_agent(self, agent_name: str) -> AutomatorAgent:
-        agent_config: dict[str, any] = self.__load_agent_config(agent_name)
+        agent_config: dict[str, Any] = self.__load_agent_config(agent_name)
         return self.__create_agent(agent_name, agent_config)
 
     def __create_agent(self,
                        agent_name: str,
-                       agent_config: dict[str, any]) -> AutomatorAgent:
+                       agent_config: dict[str, Any]) -> AutomatorAgent:
         agent_type = AgentConfig(agent_config).get_agent_type()
-        if agent_name == AgentName.TRANSLATION:
-            agent = self.create_translation_agent(agent_name, agent_config)
-        elif agent_name == AgentName.SUBTITLES_TRANSLATION:
-            agent = self.create_subtitles_translation_agent(agent_name, agent_config)
-        elif agent_type == AgentType.BLOG:
+        if agent_type == AgentType.BLOG:
             agent = self.create_blog_agent(agent_name, agent_config)
         elif agent_type == AgentType.GENERIC:
             agent = self.create_generic_agent(agent_name, agent_config)
-            if agent_name == AgentName.CONTENT_PUBLISHER:
-                action_handler = ContentPublisherActionHandler()
-                agent = agent.with_automator(agent.get_automator().with_action_handler(action_handler))
         elif agent_type == AgentType.LLM:
             raise NotImplementedError(f'{agent_type} is not yet implemented')
         elif agent_type == AgentType.BROWSER:
@@ -71,24 +60,10 @@ class AgentFactory:
             dependencies: Union[dict[str, AutomatorAgent], None] = None) -> AutomatorAgent:
         return AutomatorAgent.of_config(agent_name, self.__app_config, agent_config, dependencies)
 
-    def create_translation_agent(
-            self,
-            agent_name: str,
-            agent_config,
-            dependencies: Union[dict[str, AutomatorAgent], None] = None) -> TranslationAutomatorAgent:
-        return TranslationAutomatorAgent.of_config(agent_name, self.__app_config, agent_config, dependencies)
-
-    def create_subtitles_translation_agent(
-            self,
-            agent_name: str,
-            agent_config,
-            dependencies: Union[dict[str, AutomatorAgent], None] = None) -> SubtitlesTranslationAutomatorAgent:
-        return SubtitlesTranslationAutomatorAgent.of_config(agent_name, self.__app_config, agent_config, dependencies)
-
     def __add_dependencies(self, author: Union[AutomatorAgent, None]):
         author_name = author.get_name()
         author_config: AgentConfig = author.get_config()
-        dependencies: [str] = author_config.get_depends_on()
+        dependencies: list[str] = author_config.get_depends_on()
         for dep_name in dependencies:
 
             # We choose not to check if variables in the dependencies config have been replaced.
@@ -114,7 +89,7 @@ class AgentFactory:
             author.add_dependency(dep_name, dep)
 
     @staticmethod
-    def __create_dependency(author: AutomatorAgent, dep_config: dict[str, any]) -> AutomatorAgent:
+    def __create_dependency(author: AutomatorAgent, dep_config: dict[str, Any]) -> AutomatorAgent:
         # We create the agent's dependency using the author's agent.
         # We do this so that agents and their dependencies share the same resources.
         # For example, browser agents and their dependencies share the same webdriver.
@@ -123,11 +98,11 @@ class AgentFactory:
         #
         return author.create_dependency(author.get_name(), dep_config)
 
-    def get_app_config(self) -> dict[str, any]:
+    def get_app_config(self) -> dict[str, Any]:
         return self.__app_config
 
     def get_config_loader(self) -> ConfigLoader:
         return self.__config_loader
 
-    def __load_agent_config(self, agent_name: str, check_variables_replaced = True) -> dict[str, any]:
+    def __load_agent_config(self, agent_name: str, check_variables_replaced = True) -> dict[str, Any]:
         return self.__config_loader.load_agent_config(agent_name, check_variables_replaced)

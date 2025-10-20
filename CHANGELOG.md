@@ -9,10 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Actions: `translate` and `translate_subtitles`.
 - Action `run_stages` which runs the name stages.
 - Action `return`, which simply returns the provided arguments as output.
 - Options `platforms` and `image-file-portrait`.
-- Integrate [content-publisher](https://github.com/poshjosh/content-publisher.git) as an agent.
+- Action `publish_content` based on [content-publisher](https://github.com/poshjosh/content-publisher.git).
+
+### Removed
+
+- Agents: `TranslationAgent` and `SubtitlesTranslationAgent`. Use actions `translate` and `translate_subtitles`.
 
 ### Changed
 

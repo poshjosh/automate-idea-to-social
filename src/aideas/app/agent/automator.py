@@ -2,7 +2,7 @@ from collections import OrderedDict
 import logging
 from enum import unique, Enum
 
-from typing import Callable
+from typing import Callable, Any
 
 from selenium.webdriver.remote.webelement import WebElement
 
@@ -91,9 +91,9 @@ class AutomationListener:
 class Automator:
     @classmethod
     def of(cls,
-           app_config: dict[str, any],
+           app_config: dict[str, Any],
            agent_name: str,
-           agent_config: dict[str, any] = None,
+           agent_config: dict[str, Any] = None,
            run_stages: Callable[[RunContext, OrderedDict[str, list[Name]]], None] = None) \
             -> 'Automator':
         timeout_seconds = Automator.get_agent_timeout(app_config, agent_config)
@@ -103,7 +103,7 @@ class Automator:
         return cls(timeout_seconds, agent_name, action_handler, event_handler, listener, run_stages)
 
     @staticmethod
-    def get_agent_timeout(app_config: dict[str, any], agent_config: dict[str, any] = None) -> float:
+    def get_agent_timeout(app_config: dict[str, Any], agent_config: dict[str, Any] = None) -> float:
         return agent_config.get(
             TIMEOUT_KEY, app_config.get('agent', {}).get(TIMEOUT_KEY, 20))
 
@@ -243,7 +243,7 @@ class Automator:
                          run_context: RunContext,
                          trials: int = 1) -> ElementResultSet:
 
-        target_config: dict[str, any] = config.get(config_path)
+        target_config: dict[str, Any] = config.get(config_path)
         logger.debug(f"Acting on {config_path}")
 
         element_actions: list[str] = self.__get_actions(config, config_path)
@@ -331,7 +331,7 @@ class Automator:
                 logger.warning(f"Expectation failed. {expectation_actions} of {config_path}")
 
     def __select_target(self,
-                        target_config: dict[str, any],
+                        target_config: dict[str, Any],
                         config_path: ConfigPath,
                         run_context: RunContext,
                         timeout: float = None) -> TARGET:
@@ -346,7 +346,7 @@ class Automator:
                                   f"Caused by: {str(ex)}") from ex
 
     def _select_target(self,
-                       target_config: dict[str, any],
+                       target_config: dict[str, Any],
                        config_path: ConfigPath,
                        run_context: RunContext,
                        timeout: float = None) -> TARGET:
@@ -362,7 +362,7 @@ class Automator:
         """
         return None
 
-    def _get_timeout(self, target_config: dict[str, any]) -> float:
+    def _get_timeout(self, target_config: dict[str, Any]) -> float:
         return self.__timeout_seconds if not isinstance(target_config, dict) \
             else target_config.get(TIMEOUT_KEY, self.__timeout_seconds)
 

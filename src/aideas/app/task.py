@@ -3,7 +3,7 @@ import shutil
 import logging
 import time
 from concurrent.futures import Future, ThreadPoolExecutor
-from typing import Union, TypeVar, Callable
+from typing import Union, TypeVar, Callable, Any
 
 from pyu.io.file import create_file
 from .action.action import Action
@@ -17,7 +17,7 @@ from .run_context import RunContext
 
 logger = logging.getLogger(__name__)
 
-RESULT = TypeVar("RESULT", bound=Union[any, None])
+RESULT = TypeVar("RESULT", bound=Union[Any, None])
 
 
 _STATUS_PENDING = "PENDING"
@@ -79,15 +79,17 @@ class AgentTask(Task):
     secrets_masking_log_filter = SecretsMaskingLogFilter()
 
     @staticmethod
-    def of_defaults(config_loader: ConfigLoader, run_config: dict[str, any] = None) -> 'AgentTask':
+    def of_defaults(config_loader: ConfigLoader, run_config: dict[str, Any] = None) -> 'AgentTask':
+        config = {}
+        config.update(config_loader.load_run_config())
         if run_config:
-            config_loader = config_loader.with_added_variable_source(run_config)
+            config.update(run_config)
         app_config = config_loader.load_app_config()
+        run_context = RunContext.of_config(app_config, config)
+        config.update(run_context.get_run_config().to_dict())
+        config_loader = config_loader.with_added_variable_source(config)
         agent_factory = AgentFactory(config_loader, app_config)
-        combined_run_config = config_loader.load_run_config()
-        if run_config:
-            combined_run_config.update(run_config)
-        return AgentTask(agent_factory, RunContext.of_config(app_config, combined_run_config))
+        return AgentTask(agent_factory, run_context)
 
     def __init__(self, agent_factory: AgentFactory, run_context: RunContext):
         super().__init__()

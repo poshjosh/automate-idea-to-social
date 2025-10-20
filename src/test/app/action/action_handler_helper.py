@@ -41,11 +41,13 @@ class ActionHandlerHelper:
     @staticmethod
     def collect_stage_actions(stage_name: str, stage_config: dict) -> dict[str, list[str]]:
         collect_into: dict[str, list[str]] = {}
-        stage_items_config: dict[str, any] = stage_config[STAGE_ITEMS_KEY]
+        if not stage_config:
+            return collect_into
+        stage_items_config: dict[str, any] = stage_config.get(STAGE_ITEMS_KEY, {})
         for key in stage_items_config.keys():
             if AgentConfig.is_default_actions_key(key):
                 continue
             actions = element_action_signatures(stage_items_config, key)
-            print(f'element: {key}, actions: {actions}')
+            # print(f'element: {key}, actions: {actions}')
             collect_into[f'{stage_name}.{key}'] = actions
         return collect_into
