@@ -44,7 +44,7 @@ stages:
           - eval ${context.test-agent.variables}
           - eval ${results.me[0]}[${context.idx}]
           - log INFO ||| Number at ${context.idx} is ${results.me[1]}
-          - set_context_values number=${results.me[1]}
+          - context number=${results.me[1]}
           - log INFO ||| Number from context ${context.number}
   # Logs INFO ||| Number at ['Zero', 'One', 'Two', 'Three'][3]
   #          - log INFO ||| Number at ${context.test-agent.variables}[${context.idx}]
@@ -54,7 +54,7 @@ stages:
     stage-items:
       set-values:
         actions:
-          - set_context_values name=Test-Agent type=generic
+          - context name=Test-Agent type=generic
       get-values:
         actions:
           - log INFO ||| Name=${context.name} Type=${context.type}

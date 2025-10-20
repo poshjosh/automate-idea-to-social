@@ -226,12 +226,12 @@ stages:
 #          - get_file_content ${CONTENT_DIR}/youtube-video-link.txt
 #          - eval importlib.import_module('urllib.parse').urlparse('${results.me[0]}').path
 #          - eval importlib.import_module('os').path.basename('${results.me[1]}')
-#          - set_context_values youtube-edit-subtitles-link=https://studio.youtube.com/video/${results.me[2]}/translations
+#          - context youtube-edit-subtitles-link=https://studio.youtube.com/video/${results.me[2]}/translations
 #          - eval ${self.stages.subtitles.languages}[${context.youtube-subtitles-idx}]
 #          - eval ${results.me[4]}['code']
 #          - eval ${results.me[4]}['name']
-#          - set_context_values youtube-edit-subtitles-code=${results.me[5]}
-#          - set_context_values youtube-edit-subtitles-name=${results.me[6]}
+#          - context youtube-edit-subtitles-code=${results.me[5]}
+#          - context youtube-edit-subtitles-name=${results.me[6]}
 #      open-page:
 #        actions: browse_to $context.youtube-edit-subtitles-link
 #      click-add-language-button:

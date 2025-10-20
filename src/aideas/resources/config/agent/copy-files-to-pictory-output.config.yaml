@@ -30,11 +30,11 @@ stages:
       copy-videos:
         actions:
           - eval ${self.stages.copy-files.layouts}[${context.copy-files_idx}]
-          - set_context_values copy-files_typ=${results.me[0]}
+          - context copy-files_typ=${results.me[0]}
           - eval importlib.import_module('os').makedirs('${self.output-dir}/results/video-${context.copy-files_typ}/save-file')
-          - set_context_values copy-files_filename=video-${context.copy-files_typ}.${VIDEO_FILE_EXTENSION}
-          - set_context_values copy-files_src=${CONTENT_DIR}/${context.copy-files_filename}
-          - set_context_values copy-files_tgt=${self.output-dir}/results/video-${context.copy-files_typ}/save-file/${context.copy-files_filename}
+          - context copy-files_filename=video-${context.copy-files_typ}.${VIDEO_FILE_EXTENSION}
+          - context copy-files_src=${CONTENT_DIR}/${context.copy-files_filename}
+          - context copy-files_tgt=${self.output-dir}/results/video-${context.copy-files_typ}/save-file/${context.copy-files_filename}
           - log INFO source = ${context.copy-files_src}
           - log INFO target = ${context.copy-files_tgt}
           - eval importlib.import_module('shutil').copy2('${context.copy-files_src}', '${context.copy-files_tgt}')

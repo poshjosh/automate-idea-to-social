@@ -19,7 +19,7 @@ Actions may be global, browser or element specific.
 | run_subprocess         | str with multiple values separated by space | subprocess.run with the provided str values as args                             |
 | save_file              | str                                         | Save arg[0] (file) to the action's result dir, app input dir and user input dir |
 | save_text              | str                                         | Save arg[0] (text) to the action's result dir, app input dir and user input dir |
-| set_context_values     | str (key-value pairs)                       | Example `set_context_values k0=v0 k1="value with space"`                        |
+| context     | str (key-value pairs)                       | Example `context k0=v0 k1="value with space"`                        |
 | starts_with            |                                             |                                                                                 |
 | wait                   | None                                        |                                                                                 |
 

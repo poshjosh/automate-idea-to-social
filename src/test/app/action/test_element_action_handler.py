@@ -30,7 +30,7 @@ class TestElementActionHandler(ElementActionHandler):
                 or key == ActionId.RUN_SUBPROCESS.value
                 or key == ActionId.EVAL.value
                 or key == ActionId.EXEC.value
-                or key == ActionId.SET_CONTEXT_VALUES.value):
+                or key == ActionId.CONTEXT.value):
             return super()._execute_by_key(run_context, action, key)
 
         if (key == BrowserActionId.BROWSE_TO.value

@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Rename action `set_context_values` to `context`.
 - Bump [content-publisher](https://github.com/poshjosh/content-publisher.git) to v0.0.5.
 - Use `pyproject.toml`
 - No longer fail if action `ask_for_help` is invoked in a headless browser mode. 

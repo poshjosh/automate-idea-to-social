@@ -36,6 +36,7 @@ class BaseActionId(str, Enum):
 @unique
 class ActionId(BaseActionId):
     ASK_FOR_HELP = 'ask_for_help'
+    CONTEXT = ('context', False)
     EVAL = 'eval'
     EXEC = 'exec'
     GET_FILE_CONTENT = 'get_file_content'
@@ -49,7 +50,6 @@ class ActionId(BaseActionId):
     RUN_SUBPROCESS = 'run_subprocess'
     SAVE_FILE = 'save_file'
     SAVE_TEXT = 'save_text'
-    SET_CONTEXT_VALUES = ('set_context_values', False)
     STARTS_WITH = 'starts_with'
     WAIT = ('wait', False)
 
@@ -110,6 +110,8 @@ class ActionHandler:
             result = ActionResult.none()
         elif key == ActionId.ASK_FOR_HELP.value:
             result: ActionResult = self.ask_for_help(action)
+        elif key == ActionId.CONTEXT.value:
+            result: ActionResult = self.context(run_context, action)
         elif key == ActionId.EVAL.value:
             result: ActionResult = self.eval(action)
         elif key == ActionId.EXEC.value:
@@ -132,8 +134,6 @@ class ActionHandler:
             result: ActionResult = self.save_file(action)
         elif key == ActionId.SAVE_TEXT.value:
             result: ActionResult = self.save_text(action)
-        elif key == ActionId.SET_CONTEXT_VALUES.value:
-            result: ActionResult = self.set_context_values(run_context, action)
         elif key == ActionId.STARTS_WITH.value:
             result: ActionResult = self.starts_with(action)
         elif key == ActionId.WAIT.value:
@@ -218,7 +218,7 @@ class ActionHandler:
         return ActionResult.success(action, result)
 
     @staticmethod
-    def set_context_values(run_context: RunContext, action: Action) -> ActionResult:
+    def context(run_context: RunContext, action: Action) -> ActionResult:
         query: str = action.get_arg_str()
         values: dict = parse_query(query)
         for key, value in values.items():
