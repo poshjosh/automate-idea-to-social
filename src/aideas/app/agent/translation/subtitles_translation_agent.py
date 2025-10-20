@@ -117,7 +117,7 @@ class SubtitlesTranslationAutomatorAgent(AutomatorAgent):
 
     def __do_translate_subtitle(self,
                                 filepath_in: str,
-                                filepaths_out: [str],
+                                filepaths_out: list[str],
                                 input_language_code: str,
                                 output_language_code: str):
 
