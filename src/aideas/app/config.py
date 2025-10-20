@@ -411,7 +411,7 @@ class AgentConfig:
         check_for_typo(stage, STAGE_ITEMS_KEY)
         return stage.get(STAGE_ITEMS_KEY, result_if_none)
 
-    def stage_item_names(self, stage: Union[str, Name]) -> [str]:
+    def stage_item_names(self, stage: Union[str, Name]) -> list[str]:
         stage_items = self.stage_items(stage)
         if not stage_items:
             return []

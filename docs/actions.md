@@ -14,6 +14,8 @@ Actions may be global, browser or element specific.
 | get_first_file         | str, str (file path, file extension)        |                                                                                 |
 | get_newest_file_in_dir | str, int (directory, timeout)               | Example: `get_newest_file_in_dir /path/to/dir 30`                               |
 | log                    | str, str (log level, log message)           |                                                                                 |
+| return                 | str with multiple values separated by space | return the provided str values                                                  |
+| run_stages             | str with multiple values separated by space | run the named stages, example: `run_stages <agent-1>.<stage> <agent-2>.<stage>` |
 | run_subprocess         | str with multiple values separated by space | subprocess.run with the provided str values as args                             |
 | save_file              | str                                         | Save arg[0] (file) to the action's result dir, app input dir and user input dir |
 | save_text              | str                                         | Save arg[0] (text) to the action's result dir, app input dir and user input dir |

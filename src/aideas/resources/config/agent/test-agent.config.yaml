@@ -8,6 +8,10 @@ variables:
   - Two
   - Three
 stages:
+  stage-0:
+    stage-items:
+      item-0:
+        actions: log INFO ||| stage-0.item-0
   stage-1:
     url: https://www.google.com/
     events:
@@ -22,8 +26,8 @@ stages:
   stage-2_run-other-stage-with-different-config:
     stage-items:
       item-1:
-#        events:
-#          onstart: run_stages open-home-page
+        events:
+          onstart: run_stages stage-0
         actions:
           - eval importlib.import_module('urllib.parse').urlparse('https://test.com/abc/def?k=v').path
           - eval importlib.import_module('os').path.basename('${results.me[0]}')
@@ -42,10 +46,10 @@ stages:
           - log INFO ||| Number at ${context.idx} is ${results.me[1]}
           - set_context_values number=${results.me[1]}
           - log INFO ||| Number from context ${context.number}
-# Logs INFO ||| Number at ['Zero', 'One', 'Two', 'Three'][3]
-#          - log INFO ||| Number at ${context.test-agent.variables}[${context.idx}]
-# Variable parsing will fail. We don't support nested variables at the moment,
-#          - log INFO ||| Number at ${context.test-agent.variables[${context.idx}]}
+  # Logs INFO ||| Number at ['Zero', 'One', 'Two', 'Three'][3]
+  #          - log INFO ||| Number at ${context.test-agent.variables}[${context.idx}]
+  # Variable parsing will fail. We don't support nested variables at the moment,
+  #          - log INFO ||| Number at ${context.test-agent.variables[${context.idx}]}
   stage-4-context-values:
     stage-items:
       set-values:
@@ -54,6 +58,19 @@ stages:
       get-values:
         actions:
           - log INFO ||| Name=${context.name} Type=${context.type}
-
+  stage-5:
+    stage-items:
+      starts-with:
+        actions:
+          - starts_with Johnson John
+  stage-6-runs-stage-5:
+    stage-items:
+      delegate:
+        actions:
+          - run_stages stage-5
+          # access the result from stage-5
+          - log INFO ||| ${results.test-agent.stage-5.starts-with[0]}
+          # access the result from stage-6's run of stage-5
+          - log INFO ||| ${results.test-agent.stage-6-runs-stage-5.starts-with[0]}
 
 

@@ -8,7 +8,7 @@ from selenium.webdriver.remote.webelement import WebElement
 
 from ..action.action import Action
 from ..action.action_result import ActionResult
-from ..action.action_signatures import element_action_signatures
+from ..action.action_signatures import element_action_signatures, parse_agent_to_stages
 from ..action.action_handler import ActionError, ActionHandler, TARGET
 from ..agent.event_handler import EventHandler
 from ..config import AgentConfig, ConfigPath, Name, TIMEOUT_KEY, WHEN_KEY, ON_START
@@ -94,7 +94,7 @@ class Automator:
            app_config: dict[str, any],
            agent_name: str,
            agent_config: dict[str, any] = None,
-           run_stages: Callable[[RunContext, OrderedDict[str, [Name]]], None] = None) \
+           run_stages: Callable[[RunContext, OrderedDict[str, list[Name]]], None] = None) \
             -> 'Automator':
         timeout_seconds = Automator.get_agent_timeout(app_config, agent_config)
         action_handler = ActionHandler()
@@ -113,7 +113,7 @@ class Automator:
                  action_handler: ActionHandler,
                  event_handler: EventHandler,
                  listener: AutomationListener,
-                 run_stages: Callable[[RunContext, OrderedDict[str, [Name]]], None] = None):
+                 run_stages: Callable[[RunContext, OrderedDict[str, list[Name]]], None] = None):
         self.__timeout_seconds = 0 if timeout_seconds is None else timeout_seconds
         self.__agent_name = agent_name
         self.__action_handler = action_handler
@@ -148,7 +148,7 @@ class Automator:
         return clone
 
     def with_stage_runner(
-            self, run_stages: Callable[[RunContext, OrderedDict[str, [Name]]], None]) \
+            self, run_stages: Callable[[RunContext, OrderedDict[str, list[Name]]], None]) \
             -> 'Automator':
         clone: Automator = self.clone()
         clone.__run_stages = run_stages
@@ -257,7 +257,7 @@ class Automator:
             logger.debug(f"Retrying {config_path}")
             return self.__act_on_element(config, config_path, run_context, _trials)
 
-        def do_run_stages(context: RunContext, agent_to_stages: OrderedDict[str, [Name]]):
+        def do_run_stages(context: RunContext, agent_to_stages: OrderedDict[str, list[Name]]):
             if not self.__run_stages:
                 raise ValueError(f'Event: run_stages is not supported for {config_path}')
             self.__run_stages(context, agent_to_stages)
@@ -378,17 +378,26 @@ class Automator:
 
         result_set: ElementResultSet = ElementResultSet()
         for action_signature in action_signatures:
+
+            if action_signature.startswith('run_stages'):
+
+                _, agent_to_stages = parse_agent_to_stages(
+                    action_signature, self.__agent_name, config_path.stage())
+                self.__run_stages(run_context, agent_to_stages)
+
+                continue
+
             action = Action.of(
                 self.__agent_name, stage_id, target_id, action_signature, run_context)
 
             result: ActionResult = action_handler.execute_on(run_context, action, target)
 
-            if self.__populate_result_set is True:
+            if self.__populate_result_set:
                 run_context.add_action_result(result)
             else:
                 result_set.add_action_result(result)
 
-        if self.__populate_result_set is True:
+        if self.__populate_result_set:
             return run_context.get_element_results(self.__agent_name, stage_id)
         else:
             return result_set
@@ -405,7 +414,7 @@ class Automator:
     def get_action_handler(self) -> ActionHandler:
         return self.__action_handler
 
-    def get_run_stages(self) -> Callable[[RunContext, OrderedDict[str, [Name]]], None]:
+    def get_run_stages(self) -> Callable[[RunContext, OrderedDict[str, list[Name]]], None]:
         return self.__run_stages
 
     def get_listener(self) -> AutomationListener:

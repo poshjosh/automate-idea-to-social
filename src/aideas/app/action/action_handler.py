@@ -43,6 +43,9 @@ class ActionId(BaseActionId):
     GET_FIRST_FILE = 'get_first_file'
     GET_NEWEST_FILE_IN_DIR = 'get_newest_file_in_dir'
     LOG = ('log', False)
+    RETURN = 'return'
+    # TODO - Implement this here and move run_stages event to this class from EventHandler
+    # RUN_STAGES = ('run_stages', False)
     RUN_SUBPROCESS = 'run_subprocess'
     SAVE_FILE = 'save_file'
     SAVE_TEXT = 'save_text'
@@ -121,6 +124,8 @@ class ActionHandler:
             result: ActionResult = self.get_newest_file_in_dir(action)
         elif key == ActionId.LOG.value:
             result: ActionResult = self.log(action)
+        elif key == ActionId.RETURN.value:
+            result: ActionResult = ActionResult.success(action, action.get_args())
         elif key == ActionId.RUN_SUBPROCESS.value:
             result: ActionResult = self.run_subprocess(action)
         elif key == ActionId.SAVE_FILE.value:

@@ -114,7 +114,7 @@ class Agent(ABC):
 
     def _run_agent_stages(self,
                           run_context: RunContext,
-                          agent_to_stages: OrderedDict[str, [Name]]):
+                          agent_to_stages: OrderedDict[str, list[Name]]):
         for agent_name in agent_to_stages.keys():
             agent: Agent = self if agent_name == self.__name else self.get_dependency(agent_name)
             stage_names: list[Name] = agent_to_stages[agent_name]
@@ -219,7 +219,7 @@ class Agent(ABC):
         return True
 
     def _run_stages_without_events(
-            self, context: RunContext, agent_to_stages: OrderedDict[str, [Name]]):
+            self, context: RunContext, agent_to_stages: OrderedDict[str, list[Name]]):
         logger.debug(f"Running stages {agent_to_stages}")
         # We don't want an infinite loop, so we run this event without events.
         self.without_events()._run_agent_stages(context, agent_to_stages)

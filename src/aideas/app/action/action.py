@@ -141,7 +141,7 @@ class Action:
         return dir_path
 
     @staticmethod
-    def __split_into_name_and_args(parts: list[str]) -> tuple[str, [str]]:
+    def __split_into_name_and_args(parts: list[str]) -> tuple[str, list[str]]:
         """
         Input: wait 3
         Output: (wait, [3])
@@ -161,4 +161,4 @@ class Action:
                 and self.__args == other.__args)
 
     def __str__(self) -> str:
-        return f'Action({self.__stage_item_id}.{self.__name})'
+        return f'Action({self.__stage_item_id}.{self.__name} {self.__args})'

@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Action `run_stages` which runs the name stages.
+- Action `return`, which simply returns the provided arguments as output.
 - Options `platforms` and `image-file-portrait`.
 - Integrate [content-publisher](https://github.com/poshjosh/content-publisher.git) as an agent.
 

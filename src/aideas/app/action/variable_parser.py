@@ -75,11 +75,14 @@ def get_run_arg_replacement(curr_path: list[str], arg: str, run_context: 'RunCon
     replacement = replace_variables(arg, replace)
 
     if replacement is None:
-        raise ValueError(f'Unsupported argument: {arg}, @ {".".join(curr_path)}')
+        raise ValueError(f'Unsupported variable: {arg}, @ {".".join(curr_path)}')
 
     if contains_variable(replacement):
-        raise ValueError(
-            f'Invalid replacement: {replacement} for: {arg}, @ {".".join(curr_path)}')
+        if replacement == arg:
+            raise ValueError(f'Unsupported variable: {arg}, @ {".".join(curr_path)}')
+        else:
+            raise ValueError(
+                f'Invalid replacement: {replacement} for: {arg}, @ {".".join(curr_path)}')
 
     return replacement
 
@@ -130,7 +133,7 @@ def __get_run_arg_replacement(curr_path: list[str],
     return result_if_none if replacement is None else replacement
 
 
-def __get_results_value(curr_path: [str],
+def __get_results_value(curr_path: list[str],
                         name: str,
                         run_context: 'RunContext' = None) -> Union[any, None]:
     def get_value(scope: any, key: str) -> any:

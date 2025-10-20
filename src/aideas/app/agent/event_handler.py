@@ -107,6 +107,31 @@ class EventHandler:
         action_signature_list = config.get_event_actions(config_path, event_name)
         logger.debug(f'Handling {event_name} event for {config_path}, actions: {action_signature_list}')
 
+        index: int = -1
+
+        for action_signature in action_signature_list:
+
+            index += 1
+
+            self.__do_handle_event(
+                action_signature, index, agent_name, config_path, event_name,
+                run_context, run_stages, retry, exception, result, trials)
+
+        return run_context.get_element_results(agent_name, config_path.stage().id)
+
+    def __do_handle_event(self,
+                          action_signature: str,
+                          index: int,
+                          agent_name: str,
+                          config_path: ConfigPath,
+                          event_name: str,
+                          run_context: RunContext,
+                          run_stages: Callable[[RunContext, OrderedDict[str, list[Name]]], None],
+                          retry: Callable[[int], ElementResultSet] = None,
+                          exception: Exception = None,
+                          result: ElementResultSet = None,
+                          trials: int = 1):
+
         stage_id = config_path.stage().id
         target_id = config_path.name().id
 
@@ -115,45 +140,41 @@ class EventHandler:
                 agent_name, stage_id, target_id, index,
                 event_name, signature, run_context)
 
-        index: int = -1
-        for action_signature in action_signature_list:
-            index += 1
-            if action_signature == 'continue':
-                if event_name == ON_ERROR:
-                    logger.warning(
-                        f'For {config_path}, will continue despite error: {type(exception)}!')
-                    logger.exception(exception)
-            elif action_signature.startswith(ActionId.ASK_FOR_HELP.value):
-                result = self.__execute_action(run_context, create_action(action_signature))
-                if not result.is_success():
-                    raise ActionError(str(result.get_result()))
-            elif action_signature == 'fail':
-                error_msg: str = f'Error {config_path}, result: {result}'
+        if action_signature == 'continue':
+            if event_name == ON_ERROR:
+                logger.warning(
+                    f'For {config_path}, will continue despite error: {type(exception)}!')
+                logger.exception(exception)
+        elif action_signature.startswith(ActionId.ASK_FOR_HELP.value):
+            result = self.__execute_action(run_context, create_action(action_signature))
+            if not result.is_success():
+                raise ActionError(str(result.get_result()))
+        elif action_signature == 'fail':
+            error_msg: str = f'Error {config_path}, result: {result}'
+            run_context.add_action_result(ActionResult.failure(create_action(action_signature), error_msg))
+            raise ActionError(error_msg) from exception
+        elif action_signature.startswith('retry'):
+            max_trials: int = self.__max_trials(action_signature)
+            logger.debug(f'Attempted: {trials} of {max_trials} '
+                         f'for "{action_signature}" of {config_path}')
+            if trials < max_trials:
+                retry(trials + 1)
+            else:
+                error_msg: str = f'Max retries exceeded {config_path}, result: {result}'
                 run_context.add_action_result(ActionResult.failure(create_action(action_signature), error_msg))
                 raise ActionError(error_msg) from exception
-            elif action_signature.startswith('retry'):
-                max_trials: int = self.__max_trials(action_signature)
-                logger.debug(f'Attempted: {trials} of {max_trials} '
-                             f'for "{action_signature}" of {config_path}')
-                if trials < max_trials:
-                    retry(trials + 1)
-                else:
-                    error_msg: str = f'Max retries exceeded {config_path}, result: {result}'
-                    run_context.add_action_result(ActionResult.failure(create_action(action_signature), error_msg))
-                    raise ActionError(error_msg) from exception
-            elif action_signature.startswith('run_stages'):
-                _, agent_to_stages = parse_agent_to_stages(
-                    action_signature, agent_name, config_path.stage())
-                run_stages(run_context, agent_to_stages)
-            else:
-                action = create_action(action_signature)
-                try:
-                    self.__execute_action(run_context, action)
-                except ActionError as ex:
-                    run_context.add_action_result(ActionResult.failure(action))
-                    raise ex
-
-        return run_context.get_element_results(agent_name, stage_id)
+        # TODO Move this to ActionHandler
+        elif action_signature.startswith('run_stages'):
+            _, agent_to_stages = parse_agent_to_stages(
+                action_signature, agent_name, config_path.stage())
+            run_stages(run_context, agent_to_stages)
+        else:
+            action = create_action(action_signature)
+            try:
+                self.__execute_action(run_context, action)
+            except ActionError as ex:
+                run_context.add_action_result(ActionResult.failure(action))
+                raise ex
 
     def __execute_action(self, run_context: RunContext, action: Action) -> ActionResult:
         logger.debug(f"Executing event action: {action}")
