@@ -7,13 +7,13 @@ depends-on:
 
 form-field-image-file-landscape: $IMAGE_FILE_LANDSCAPE
 form-field-image-file-portrait: $IMAGE_FILE_PORTRAIT
-form-field-image-file-square: $IMAGE_FILE_SQUARE
+#form-field-image-file-square: $IMAGE_FILE_SQUARE
 form-field-text-content: $TEXT_CONTENT
 form-field-text-file: $TEXT_FILE
 form-field-text-title: $TEXT_TITLE
 form-field-video-file-landscape: $VIDEO_FILE_LANDSCAPE
 form-field-video-file-portrait: $VIDEO_FILE_PORTRAIT
-form-field-video-file-square: $VIDEO_FILE_SQUARE
+#form-field-video-file-square: $VIDEO_FILE_SQUARE
 
 stages:
   default:
@@ -26,5 +26,5 @@ stages:
         actions:
           - context subtitles-files=${results.social-media-poster.default.generate-subtitles[0]}
           - publish_content -p youtube -o landscape
-      reddit:
-        actions: publish_content -p reddit -o landscape
+#      reddit:
+#        actions: publish_content -p reddit -o landscape

@@ -26,7 +26,6 @@ class ActionHandlerTest(unittest.TestCase):
             for actions in stage_actions.values():
                 self.assertIsInstance(actions, list)
                 self.assertNotEqual(0, len(actions))
-        pass
 
     def test_publish_content(self):
         agent_name = AgentName.SOCIAL_MEDIA_POSTER
@@ -43,6 +42,17 @@ class ActionHandlerTest(unittest.TestCase):
                                 '-p youtube -o portrait -t fake-title -d /fake/dir'.split(' '))
                 result = action_handler.execute(run_context, action)
                 self.assertEqual(result.get_result(), expected_result)
+
+    def test_context_given_list_format_string(self):
+        agent_name = "test-agent"
+        key = "subtitles-files"
+        value = "['/Users/chinomso/.aideas/content/subtitles/subtitles_b4b0b5ab-e30b-4533-972d-c9f6078efcf6.ar.vtt', '/Users/chinomso/.aideas/content/subtitles/subtitles_b4b0b5ab-e30b-4533-972d-c9f6078efcf6.bn.vtt', '/Users/chinomso/.aideas/content/subtitles/subtitles_b4b0b5ab-e30b-4533-972d-c9f6078efcf6.de.vtt', '/Users/chinomso/.aideas/content/subtitles/subtitles_b4b0b5ab-e30b-4533-972d-c9f6078efcf6.es.vtt', '/Users/chinomso/.aideas/content/subtitles/subtitles_b4b0b5ab-e30b-4533-972d-c9f6078efcf6.fr.vtt', '/Users/chinomso/.aideas/content/subtitles/subtitles_b4b0b5ab-e30b-4533-972d-c9f6078efcf6.hi.vtt', '/Users/chinomso/.aideas/content/subtitles/subtitles_b4b0b5ab-e30b-4533-972d-c9f6078efcf6.it.vtt', '/Users/chinomso/.aideas/content/subtitles/subtitles_b4b0b5ab-e30b-4533-972d-c9f6078efcf6.ja.vtt', '/Users/chinomso/.aideas/content/subtitles/subtitles_b4b0b5ab-e30b-4533-972d-c9f6078efcf6.ko.vtt', '/Users/chinomso/.aideas/content/subtitles/subtitles_b4b0b5ab-e30b-4533-972d-c9f6078efcf6.ru.vtt', '/Users/chinomso/.aideas/content/subtitles/subtitles_b4b0b5ab-e30b-4533-972d-c9f6078efcf6.tr.vtt', '/Users/chinomso/.aideas/content/subtitles/subtitles_b4b0b5ab-e30b-4533-972d-c9f6078efcf6.uk.vtt', '/Users/chinomso/.aideas/content/subtitles/subtitles_b4b0b5ab-e30b-4533-972d-c9f6078efcf6.zh.vtt']"
+        action_signature = f"context {key}={value}"
+        run_context = get_run_context([agent_name])
+        action = Action.of(agent_name, "test-stage", "test-stage-item",
+                           action_signature, run_context)
+        ActionHandler.context(run_context, action)
+        self.assertEqual(value, run_context.get(key))
 
 
 if __name__ == '__main__':

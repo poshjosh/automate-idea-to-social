@@ -1,3 +1,24 @@
+import uuid
+import re
+from re import Match
+
+
+def list_from_str(value: str) -> list[str]:
+    """
+    Converts a string representation of a list into an actual list.
+    Examples:
+    - "['a', 'b', 'c']" -> ["a", "b", "c"]
+    - 'a', 'b', 'c' -> ["a", "b", "c"]
+    :param value: the string to convert
+    :return: the list created from the string
+    """
+    if not value:
+        return []
+    if value.startswith('[') or value.endswith(']'):
+        value = value[1:-1]
+    return [e.strip() for e in split_preserving_quotes(value, ',', True)]
+
+
 def split_preserving_quotes(text: str, separator: str = ' ', remove_quotes: bool = False) -> list:
     """
     Split a string around separators, but preserve quoted groups.
@@ -41,7 +62,11 @@ def split_preserving_quotes(text: str, separator: str = ' ', remove_quotes: bool
     if not text:
         return ['']
 
-    result = []
+    replacements = {}
+
+    text = _replace_all_list_format_strings(text, replacements)
+
+    result_list = []
     current = ""
     in_single_quotes = False
     in_double_quotes = False
@@ -59,7 +84,7 @@ def split_preserving_quotes(text: str, separator: str = ' ', remove_quotes: bool
             current += char
         elif char == separator and not in_single_quotes and not in_double_quotes:
             # We found a separator outside of quotes
-            result.append(current)
+            result_list.append(current)
             current = ""
             # Skip consecutive separators
             while i + 1 < len(text) and text[i + 1] == separator:
@@ -70,11 +95,30 @@ def split_preserving_quotes(text: str, separator: str = ' ', remove_quotes: bool
         i += 1
 
     # Add the last part
-    result.append(current)
+    result_list.append(current)
 
-    result = __handle_special_case_of_only_separators(text, result, separator)
+    result_list = __handle_special_case_of_only_separators(text, result_list, separator)
 
-    return __check_and_remove_quotes(result, remove_quotes)
+    result_list = __check_and_remove_quotes(result_list, remove_quotes)
+
+    return _return_all_list_format_strings(result_list, replacements)
+
+
+def _replace_all_list_format_strings(text: str, replacements: dict[str, str]) -> str:
+    def get_replacement(match: Match) -> str:
+        replacement = str(uuid.uuid4().hex)
+        replacements[replacement] = match.group()
+        return replacement
+
+    # both r'\[.*?]' and r'\[[^]]*]' work; compiler prefers later
+    return re.sub(r'\[[^]]*]', get_replacement, text)
+
+
+def _return_all_list_format_strings(target: list, replacements: dict[str, str]) -> list:
+    for replacement, original in replacements.items():
+        for idx, e in enumerate(target):
+            target[idx] = e.replace(replacement, original)
+    return target
 
 
 def __handle_special_case_of_only_separators(text: str, result: list, separator: str) -> list:

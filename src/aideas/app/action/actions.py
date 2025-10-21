@@ -7,7 +7,7 @@ from enum import Enum
 from typing import Union, Any
 
 from content_publisher.app.app import App
-from content_publisher.app.content_publisher import Content, SocialPlatformType
+from content_publisher.app.content_publisher import Content, PostResult, SocialPlatformType
 from content_publisher.app.run_arg import RunArg as PublisherArg
 from pyu.io.file import read_content, write_content
 
@@ -18,24 +18,9 @@ from ..agent.translation.translator import Translator
 from ..config import RunArg
 from ..env import Env, require_env_value
 from ..run_context import RunContext
-from ..text import split_preserving_quotes
+from ..text import list_from_str
 
 logger = logging.getLogger(__name__)
-
-def _list_from_str(value: str) -> list[str]:
-    """
-    Converts a string representation of a list into an actual list.
-    Examples:
-    - "['a', 'b', 'c']" -> ["a", "b", "c"]
-    - 'a', 'b', 'c' -> ["a", "b", "c"]
-    :param value: the string to convert
-    :return: the list created from the string
-    """
-    if not value:
-        return []
-    if value.startswith('[') or value.endswith(']'):
-        value = value[1:-1]
-    return [e.strip() for e in split_preserving_quotes(value, ',', True)]
 
 
 def _detect_language_code_from_filename(filename: str) -> Union[str, None]:
@@ -68,14 +53,23 @@ class PublishContentAction:
         if not platforms:
             return ActionResult.failure(action, "No platforms specified")
         if isinstance(platforms, str):
-            platforms: list[str] = _list_from_str(platforms)
+            platforms: list[str] = list_from_str(platforms)
 
         content: Content = self.__to_content(run_context, args)
         logger.debug(f"Publishing to platforms: {platforms}, content:\n{content}")
 
-        result = App().publish_content(platforms, content)
+        result: dict[str, Any] = App().publish_content(platforms, content)
 
-        return ActionResult.success(action, result)
+        def is_success(r: Any) -> bool:
+            if isinstance(r, PostResult):
+                return r.success
+            elif isinstance(r, bool):
+                return r
+            raise ValueError(f"Unknown result type: {type(r)}")
+
+        success = len([e for e in result.values() if not is_success(e)]) == 0
+
+        return ActionResult(action, success, result)
 
     def __to_content(self, run_context: RunContext, args: dict[PublisherArg, Any]) -> Content:
         dir_path = self._get_value(run_context, args, PublisherArg.DIR)
@@ -105,7 +99,7 @@ class PublishContentAction:
 
         if subtitle_files:
             if not isinstance(subtitle_files, list):
-                subtitle_files: list[str] = _list_from_str(subtitle_files)
+                subtitle_files: list[str] = list_from_str(subtitle_files)
             for subtitle_file in subtitle_files:
                 lang_code = _detect_language_code_from_filename(subtitle_file)
                 if lang_code:
@@ -136,7 +130,7 @@ class TranslateAction:
 
         filepath_in: str = args[0]
         from_lang: str = args[1]
-        output_language_codes: list[str] = _list_from_str(args[2])
+        output_language_codes: list[str] = list_from_str(args[2])
         if from_lang in output_language_codes:
             output_language_codes.remove(from_lang)
 
