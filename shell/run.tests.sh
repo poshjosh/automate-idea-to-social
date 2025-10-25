@@ -12,4 +12,4 @@ printf "\nWorking from: %s\n" "$(pwd)"
 
 printf "\nStarting tests\n\n"
 
-python3 -m unittest discover -s test/app -p "automation_agent_test.py"
+python3 -m unittest discover -s test/app -p "*test.py"

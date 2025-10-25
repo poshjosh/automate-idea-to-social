@@ -131,7 +131,7 @@ class ConfigLoader(YamlLoader):
         configs = {}
         for name in self.__get_all_agent_names():
             configs[name] = self.__load_from_path(self.get_agent_config_path(name), {}, False)
-        logger.debug(f"Config names: {configs.keys()}")
+        # logger.debug(f"Config names: {configs.keys()}")
         return configs
 
     def __get_all_agent_names(self) -> list[str]:

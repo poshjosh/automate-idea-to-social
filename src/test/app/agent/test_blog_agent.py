@@ -45,10 +45,10 @@ class TestBlogAgent(BlogAutomatorAgent):
             # ['git', 'push']
         ]
 
-    def _get_build_update_blog_image_command_args(self) -> [str]:
+    def _get_build_update_blog_image_command_args(self) -> list[str]:
         return ['echo', '"Test mode: Skipping actual build of blog update image."']
 
-    def _get_update_blog_command_args(self, run_context: RunContext) -> [str]:
+    def _get_update_blog_command_args(self, run_context: RunContext) -> list[str]:
         return ['echo', '"Test mode: Skipping actual blog update."']
 
     def __delete_dirs(self, run_context: RunContext):
