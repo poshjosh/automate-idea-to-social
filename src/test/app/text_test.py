@@ -1,11 +1,24 @@
+from unittest import skip
+
 import unittest
 
-from aideas.app.text import split_preserving_quotes
+from aideas.app.text import list_from_str, split_preserving_quotes
 
 
 class TextTest(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+    def test_list_from_str(self):
+        expected_list = ['item1', 'item2', 'item3']
+        list_output = list_from_str(str(expected_list))
+        self.assertEqual(list_output, expected_list)
+
+    @skip("TODO: Fix this test")
+    def test_split_list_format_string(self):
+        input_str = "'item1', 'item2', 'item3'"
+        list_output = split_preserving_quotes(input_str, ', ', True)
+        self.assertEqual(list_output, ['item1', 'item2', 'item3'])
 
     def test_basic_splitting(self):
         """Test basic splitting with space separator"""

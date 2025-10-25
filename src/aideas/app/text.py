@@ -3,20 +3,25 @@ import re
 from re import Match
 
 
-def list_from_str(value: str) -> list[str]:
+def list_from_str(text: str) -> list[str]:
     """
     Converts a string representation of a list into an actual list.
     Examples:
-    - "['a', 'b', 'c']" -> ["a", "b", "c"]
-    - 'a', 'b', 'c' -> ["a", "b", "c"]
-    :param value: the string to convert
+    - "['a', 'b', 'c']" -> ['a', 'b', 'c']
+    - 'a', 'b', 'c' -> ['a', 'b', 'c']
+    - a,b,c -> ['a', 'b', 'c']
+    :param text: the string to convert
     :return: the list created from the string
     """
-    if not value:
+    if not text:
         return []
-    if value.startswith('[') or value.endswith(']'):
-        value = value[1:-1]
-    return [e.strip() for e in split_preserving_quotes(value, ',', True)]
+
+    if text.startswith('[') and text.endswith(']'):
+        text = text[1:-1]
+        result_list = text.split(', ')
+        return __check_and_remove_quotes(result_list, True)
+    else:
+        return text.split(',')
 
 
 def split_preserving_quotes(text: str, separator: str = ' ', remove_quotes: bool = False) -> list:

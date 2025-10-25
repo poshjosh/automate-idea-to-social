@@ -99,7 +99,7 @@ class PublishContentAction:
 
         if subtitle_files:
             if not isinstance(subtitle_files, list):
-                subtitle_files: list[str] = list_from_str(subtitle_files)
+                subtitle_files: list[str] = list_from_str(str(subtitle_files))
             for subtitle_file in subtitle_files:
                 lang_code = _detect_language_code_from_filename(subtitle_file)
                 if lang_code:
@@ -131,6 +131,7 @@ class TranslateAction:
         filepath_in: str = args[0]
         from_lang: str = args[1]
         output_language_codes: list[str] = list_from_str(args[2])
+
         if from_lang in output_language_codes:
             output_language_codes.remove(from_lang)
 
