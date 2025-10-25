@@ -4,6 +4,8 @@ import os
 import shutil
 import subprocess
 import time
+# If removed we get ImportError for eval(action: Action) function below
+import importlib
 from enum import Enum, unique
 from typing import Union, TypeVar, Any
 
@@ -119,7 +121,7 @@ class ActionHandler:
         elif key == ActionId.EVAL.value:
             result: ActionResult = self.eval(action)
         elif key == ActionId.EXEC.value:
-            result: ActionResult = self.exec(action)
+            result: ActionResult = self.execX(action)
         elif key == ActionId.GET_FILE_CONTENT.value:
             result: ActionResult = self.get_file_content(action)
         elif key == ActionId.GET_FILES.value:
@@ -285,7 +287,7 @@ class ActionHandler:
 
     @staticmethod
     def eval(action: Action) -> ActionResult:
-        exec("import importlib")
+        # exec("import importlib") # caused errors, so we moved it to the import section above
         result = eval(action.get_arg_str())
         return ActionResult.success(action, result)
 

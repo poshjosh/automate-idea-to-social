@@ -1,8 +1,7 @@
-from unittest import skip
-
 import logging.config
 import unittest
 
+from aideas.app.agent.agent_name import AgentName
 from test.app.agent.test_browser_automator_agent import TestBrowserAutomatorAgent
 from test.app.test_functions import init_logging, load_agent_config, get_run_context, run_agent
 from aideas.app.action.element_action_handler import ElementActionHandler
@@ -68,15 +67,13 @@ stages:
 
         self.assertEqual(1, result.size())
 
-    @skip("TODO - fix eval action, which is now failing")
     def test_agent(self):
         agent_name = "test-agent"
         self._named_agent_should_run_successfully(agent_name, get_run_context([agent_name]))
 
-    # TODO Fix this
-    # def test_pictory(self):
-    #     run_context: RunContext = get_run_context([AgentName.PICTORY])
-    #     self._named_agent_should_run_successfully(AgentName.PICTORY, run_context)
+    def test_pictory(self):
+        run_context: RunContext = get_run_context([AgentName.PICTORY])
+        self._named_agent_should_run_successfully(AgentName.PICTORY, run_context)
 
     def _named_agent_should_run_successfully(self, agent_name: str, run_context: RunContext):
 
