@@ -45,7 +45,7 @@ class ConfigLoaderTest(unittest.TestCase):
             _load_from_external_path.return_value = { RunArg.SHARE_COVER_IMAGE.value: not config_1_val }
             config_2 = get_main_config_loader().load_run_config()
             config_2_val = config_2[RunArg.SHARE_COVER_IMAGE.value]
-            self.assertNotEquals(config_1_val, config_2_val)
+            self.assertNotEqual(config_1_val, config_2_val)
 
 if __name__ == '__main__':
     unittest.main()

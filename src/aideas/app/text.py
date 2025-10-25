@@ -3,6 +3,22 @@ import re
 from re import Match
 
 
+def list_from_object(value: object) -> list[str]:
+    """
+    Converts an object into a list of strings.
+    If the object is already a list, it is returned as is (with elements converted to strings).
+    If the object is a string, it is parsed into a list using `list_from_str`.
+    Otherwise, the object is converted to a string and parsed into a list using `list_from_str`.
+    :param value: the object to convert
+    :return: the list created from the object
+    """
+    if isinstance(value, list):
+        return [str(e) for e in value]
+    elif isinstance(value, str):
+        return list_from_str(value)
+    else:
+        return list_from_str(str(value))
+
 def list_from_str(text: str) -> list[str]:
     """
     Converts a string representation of a list into an actual list.

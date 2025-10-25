@@ -60,7 +60,7 @@ class AutomationAgentTest(unittest.TestCase):
                         'stage-item-0': {
                             'actions': [
                                 "context verbose=true",
-                                "context service-url=https://translate.googleapis.com/translate_a/single",
+                                "context service-url=https://fake.translation-service.url",
                                 f"{action_name} {file_path} en de,es,fr"
                             ]
                         }

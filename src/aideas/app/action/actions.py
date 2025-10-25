@@ -18,7 +18,7 @@ from ..agent.translation.translator import Translator
 from ..config import RunArg
 from ..env import Env, require_env_value
 from ..run_context import RunContext
-from ..text import list_from_str
+from ..text import list_from_object
 
 logger = logging.getLogger(__name__)
 
@@ -52,8 +52,7 @@ class PublishContentAction:
         platforms = self._get_value(run_context, args, PublisherArg.PLATFORMS)
         if not platforms:
             return ActionResult.failure(action, "No platforms specified")
-        if isinstance(platforms, str):
-            platforms: list[str] = list_from_str(platforms)
+        platforms: list[str] = list_from_object(platforms)
 
         content: Content = self.__to_content(run_context, args)
         logger.debug(f"Publishing to platforms: {platforms}, content:\n{content}")
@@ -75,9 +74,13 @@ class PublishContentAction:
         dir_path = self._get_value(run_context, args, PublisherArg.DIR)
         text_title = self._get_value(run_context, args, PublisherArg.TEXT_TITLE)
         media_orientation = self._get_value(run_context, args, PublisherArg.MEDIA_ORIENTATION)
+        language_code = self._get_value(run_context, args, PublisherArg.LANGUAGE_CODE)
+        language_code = language_code if language_code else "en"
+        tags = self._get_value(run_context, args, PublisherArg.TAGS)
+        tags: Union[list[str], bool] = list_from_object(tags) if tags else True
 
         if dir_path:
-            return Content.of_dir(dir_path, text_title, media_orientation)
+            return Content.of_dir(dir_path, text_title, media_orientation, language_code, tags)
         else:
 
             def media_file_arg(media_type: str) -> RunArg:
@@ -90,7 +93,18 @@ class PublishContentAction:
             subtitle_files_by_lang: Union[dict[str, str], None] = PublishContentAction.__subtitles_files_by_lang(subtitle_files)
             logger.debug(f"Subtitle files by lang: {subtitle_files_by_lang}")
 
-            return Content(description, video_file, image_file, text_title, subtitle_files_by_lang)
+            if not tags or tags is True:
+                tags = PublishContentAction.__extract_hashtags_from_text(description)
+                logger.debug(f"Extracted hashtags from text: {tags}")
+
+            return Content(description, video_file, image_file, text_title,
+                           language_code, tags, subtitle_files_by_lang)
+
+    @staticmethod
+    def __extract_hashtags_from_text(text: str) -> list[str]:
+        import re
+        hashtags = re.findall(r'#\w+', text)
+        return [tag.lstrip('#') for tag in hashtags]
 
     @staticmethod
     def __subtitles_files_by_lang(subtitle_files: Any) -> dict[str, str]:
@@ -98,8 +112,7 @@ class PublishContentAction:
         subtitle_files_by_lang: Union[dict[str, str], None] = {}
 
         if subtitle_files:
-            if not isinstance(subtitle_files, list):
-                subtitle_files: list[str] = list_from_str(str(subtitle_files))
+            subtitle_files: list[str] = list_from_object(subtitle_files)
             for subtitle_file in subtitle_files:
                 lang_code = _detect_language_code_from_filename(subtitle_file)
                 if lang_code:
@@ -130,7 +143,7 @@ class TranslateAction:
 
         filepath_in: str = args[0]
         from_lang: str = args[1]
-        output_language_codes: list[str] = list_from_str(args[2])
+        output_language_codes: list[str] = list_from_object(args[2])
 
         if from_lang in output_language_codes:
             output_language_codes.remove(from_lang)

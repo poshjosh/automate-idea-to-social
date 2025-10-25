@@ -21,10 +21,10 @@ stages:
       generate-subtitles:
         actions: translate_subtitles $SUBTITLES_FILE $INPUT_LANGUAGE_CODE $LANGUAGE_CODES
       youtube-shorts:
-        actions: publish_content -p youtube -o portrait
+        actions: publish_content -p youtube -o portrait -l $INPUT_LANGUAGE_CODE
       youtube:
         actions:
           - context subtitles-files=${results.social-media-poster.default.generate-subtitles[0]}
-          - publish_content -p youtube -o landscape
+          - publish_content -p youtube -o landscape -l $INPUT_LANGUAGE_CODE
 #      reddit:
 #        actions: publish_content -p reddit -o landscape

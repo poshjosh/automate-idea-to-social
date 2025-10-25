@@ -46,7 +46,7 @@ Run options may be provided in various ways and are resolved in the following or
 ### Development
 
 - If you want to do some development or run tests, run the [shell/install.dev.sh](shell/install.dev.sh) script (only once).
-- &#10060; &#9888; Do not update `requirements.txt` directly. Rather update `requirements.in` and run [shell/install.sh](shell/install.sh)
+- &#10060; &#9888; Do not update `requirements.txt` directly. Rather update the dependencies section of `pyproject.toml` and run [shell/install.sh](shell/install.sh)
 - &#9989; Update the [CHANGELOG.md](CHANGELOG.md) file, with your changes.
 
 ### Testing

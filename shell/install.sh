@@ -15,14 +15,14 @@ printf "\nActivating virtual environment: %s\n" "$VIRTUAL_ENV_DIR"
 
 source "${VIRTUAL_ENV_DIR}/bin/activate"
 
-python3 -m pip install --upgrade pip
+# We use a specific version, as newer versions have been known to cause issues with pip-compile
+python3 -m pip install pip==25.2
 
-python3 -m pip install pip-tools
-
-cd "src/aideas"
+# We use a specific version, as newer versions have been known to cause issues with pip-compile
+python3 -m pip install pip-tools==7.5.0
 
 printf "\nCompiling dependencies to requirements.txt\n"
-pip-compile requirements.in > requirements.txt
+pip-compile -o src/aideas/requirements.txt pyproject.toml
 
 printf "\nInstalling dependencies from requirements.txt\n"
-python3 -m pip install -r requirements.txt
+python3 -m pip install -r src/aideas/requirements.txt
