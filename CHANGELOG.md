@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Explicitly specify dependency: `standard-imghdr`.
 - Agent `social-media-poster`.
 - Actions: `translate` and `translate_subtitles`.
 - Action `run_stages` which runs the name stages.

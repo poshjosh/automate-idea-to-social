@@ -28,6 +28,7 @@ dependencies = [
     "content-publisher @ git+https://github.com/poshjosh/content-publisher.git@v0.0.6#egg=content-publisher",
     "flask",
     "flask-cors",
+    "standard-imghdr",
     "pyu @ git+https://github.com/poshjosh/pyu.git@v0.1.9#egg=pyu",
     "requests",
     "ruamel-yaml",
