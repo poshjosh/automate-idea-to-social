@@ -27,6 +27,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Use `pyproject.toml`
 - No longer fail if action `ask_for_help` is invoked in a headless browser mode. 
 
+### Fixed
+
+- BlogAgentTest doing actual translation, by mocking the translation part.
+
 ## [0.3.4] - 2025-08-21
 
 ### Fixed
