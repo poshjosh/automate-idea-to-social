@@ -276,7 +276,13 @@ class BlogAutomatorAgent(AutomatorAgent):
 
 
     @staticmethod
-    def __prepend_image_link_to_file_content(src_image_path: str, target_file: str, share_cover_image: bool = False):
+    def __prepend_image_link_to_file_content(src_image_path: str, target_file: str, share_cover_image: bool = False) -> bool:
+        if not src_image_path:
+            return False
+
+        if not os.path.exists(src_image_path):
+            raise ValueError(f"Blog image does not exist at: {src_image_path}")
+
         # Move cover image to the same directory as the output file
         tgt_image_name = os.path.basename(src_image_path)
         parent_dir = os.path.dirname(target_file)
@@ -292,6 +298,8 @@ class BlogAutomatorAgent(AutomatorAgent):
 
         # Add the cover image at the top of the file
         prepend_line(target_file, f"![Video cover image]({image_dir}/{tgt_image_name})\n")
+
+        return True
 
     def _get_update_blog_content_commands(self, run_context: RunContext) -> list[list[str]]:
         return [
