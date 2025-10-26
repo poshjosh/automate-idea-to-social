@@ -1,15 +1,12 @@
-# Custom to this application
-google_oauth_tokens.pickle
+# Custom to this application - Saved results from running the application
+output/
+results/
 src/test/resources/test-content/subtitles/
 src/test/resources/test-content/translations/
 
 # Downloaded video/subtitle files
 .mp4
 .vtt
-
-# Saved results from running the application
-output/
-results/
 
 .DS_Store
 
