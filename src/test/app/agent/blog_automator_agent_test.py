@@ -5,7 +5,7 @@ import logging.config
 import unittest
 
 from aideas.app.agent.translation.translator import Translator
-from test.app.agent.test_blog_agent import TestBlogAgent
+from test.app.agent.test_blog_automator_agent import TestBlogAutomatorAgent
 from test.app.test_functions import init_logging, load_agent_config, get_run_context, run_agent
 from aideas.app.agent.agent_name import AgentName
 from aideas.app.run_context import RunContext
@@ -13,11 +13,11 @@ from aideas.app.run_context import RunContext
 init_logging(logging.config)
 
 
-class BlogAgentTest(unittest.TestCase):
+class BlogAutomatorAgentTest(unittest.TestCase):
     def test_run(self):
         agent_name = AgentName.BLOG
         run_context: RunContext = get_run_context([agent_name])
-        agent = TestBlogAgent.of_config(
+        agent = TestBlogAutomatorAgent.of_config(
             agent_name,
             run_context.get_app_config().to_dict(),
             load_agent_config(agent_name, False))

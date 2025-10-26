@@ -9,7 +9,7 @@ from aideas.app.result.result_set import StageResultSet
 from aideas.app.run_context import RunContext
 
 
-class TestBlogAgent(BlogAutomatorAgent):
+class TestBlogAutomatorAgent(BlogAutomatorAgent):
     def run(self, run_context: RunContext) -> StageResultSet:
         try:
             return super().run(run_context)
