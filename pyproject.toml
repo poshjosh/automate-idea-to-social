@@ -25,7 +25,7 @@ classifiers = [
 ]
 keywords = ["publish content", "automation", "ai", "artificial intelligence"]
 dependencies = [
-    "content-publisher @ git+https://github.com/poshjosh/content-publisher.git@v0.0.6#egg=content-publisher",
+    "content-publisher @ git+https://github.com/poshjosh/content-publisher.git@v0.0.7#egg=content-publisher",
     "flask",
     "flask-cors",
     "standard-imghdr",

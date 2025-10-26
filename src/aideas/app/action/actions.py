@@ -77,9 +77,9 @@ class PublishContentAction:
         language_code = self._get_value(run_context, args, PublisherArg.LANGUAGE_CODE)
         language_code = language_code if language_code else "en"
         tags = self._get_value(run_context, args, PublisherArg.TAGS)
-        tags: Union[list[str], bool] = list_from_object(tags) if tags else True
 
         if dir_path:
+            tags: Union[list[str], bool] = list_from_object(tags) if tags else True
             return Content.of_dir(dir_path, text_title, media_orientation, language_code, tags)
         else:
 
@@ -93,18 +93,30 @@ class PublishContentAction:
             subtitle_files_by_lang: Union[dict[str, str], None] = PublishContentAction.__subtitles_files_by_lang(subtitle_files)
             logger.debug(f"Subtitle files by lang: {subtitle_files_by_lang}")
 
-            if not tags or tags is True:
-                tags = PublishContentAction.__extract_hashtags_from_text(description)
+            if not tags:
+                # TODO - determine max length based on platform
+                #  currently we use 500, which applies to youtube and subtract some margin
+                tags = PublishContentAction.__extract_hashtags_from_text(description, 450)
                 logger.debug(f"Extracted hashtags from text: {tags}")
 
             return Content(description, video_file, image_file, text_title,
                            language_code, tags, subtitle_files_by_lang)
 
+    # TODO - Remove this method and use Content.extract_hashtags_from_text(str, int) instead.
     @staticmethod
-    def __extract_hashtags_from_text(text: str) -> list[str]:
+    def __extract_hashtags_from_text(text: str, max_tags_length: int) -> list[str]:
         import re
         hashtags = re.findall(r'#\w+', text)
-        return [tag.lstrip('#') for tag in hashtags]
+        all_tags = [tag.lstrip('#') for tag in hashtags]
+        total_len = 0
+        result = []
+        for tag in all_tags:
+            tag_len = len(tag) + (1 if result else 0) # add one for comma
+            if total_len + tag_len > max_tags_length:
+                break
+            result.append(tag)
+            total_len += tag_len
+        return result
 
     @staticmethod
     def __subtitles_files_by_lang(subtitle_files: Any) -> dict[str, str]:
