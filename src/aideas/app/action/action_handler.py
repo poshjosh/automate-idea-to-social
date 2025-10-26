@@ -121,7 +121,7 @@ class ActionHandler:
         elif key == ActionId.EVAL.value:
             result: ActionResult = self.eval(action)
         elif key == ActionId.EXEC.value:
-            result: ActionResult = self.execX(action)
+            result: ActionResult = self.exec(action)
         elif key == ActionId.GET_FILE_CONTENT.value:
             result: ActionResult = self.get_file_content(action)
         elif key == ActionId.GET_FILES.value:
