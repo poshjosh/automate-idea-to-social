@@ -96,27 +96,11 @@ class PublishContentAction:
             if not tags:
                 # TODO - determine max length based on platform
                 #  currently we use 500, which applies to youtube and subtract some margin
-                tags = PublishContentAction.__extract_hashtags_from_text(description, 450)
+                tags = Content.extract_hashtags_from_text(description, 450)
                 logger.debug(f"Extracted hashtags from text: {tags}")
 
             return Content(description, video_file, image_file, text_title,
                            language_code, tags, subtitle_files_by_lang)
-
-    # TODO - Remove this method and use Content.extract_hashtags_from_text(str, int) instead.
-    @staticmethod
-    def __extract_hashtags_from_text(text: str, max_tags_length: int) -> list[str]:
-        import re
-        hashtags = re.findall(r'#\w+', text)
-        all_tags = [tag.lstrip('#') for tag in hashtags]
-        total_len = 0
-        result = []
-        for tag in all_tags:
-            tag_len = len(tag) + (1 if result else 0) # add one for comma
-            if total_len + tag_len > max_tags_length:
-                break
-            result.append(tag)
-            total_len += tag_len
-        return result
 
     @staticmethod
     def __subtitles_files_by_lang(subtitle_files: Any) -> dict[str, str]:
