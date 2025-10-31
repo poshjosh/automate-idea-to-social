@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Bump content-publisher to v0.0.8.
+
 ### Added
 
 - Explicitly specify dependency: `standard-imghdr`.
