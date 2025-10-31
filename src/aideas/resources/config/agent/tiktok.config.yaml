@@ -4,6 +4,7 @@
 agent-type: browser
 # Optional [generate-video|generate-text|post|test|custom|unlisted]
 agent-tags: post
+sort-order: 1
 interval-seconds: 1
 # Optional [visible|undetected]
 browser-mode: undetected
@@ -67,20 +68,24 @@ stages:
           - //input[@type="file" and @accept="video/*"]
         actions:
           - enter_text $VIDEO_FILE_PORTRAIT
-          - wait 5 # It takes a while but the default wait will cover the rest
+          - wait 10 # It takes a while but the default wait will cover the rest
       click-upload-button:
+        events:
+          onerror: continue
         timeout-seconds: 5
         search-for:
           - /html/body/div[1]/div/div[2]/div[1]/div/div[1]/button
           - //*[@id="root"]//*[@data-tt="Sidebar_index_UploadButtonContainer"]//button[contains(text(), "Upload")]
           - //*[@id="root"]//button[contains(text(), "Upload")]
       enter-video-caption:
-        when:
-          search-for:
-            - //*[@id="root"]//div[contains(@class, "edit-card")]//button[contains(text(), "Edit video")]
-            - //*[@id="root"]//button[contains(text(), "Edit video")]
-          actions: is_displayed
+#        when:
+#          search-for:
+#            - //*[@id="root"]//div[contains(@class, "edit-card")]//button[contains(text(), "Edit video")]
+#            - //*[@id="root"]//button[contains(text(), "Edit video")]
+#            - //*[@id="root"]/div/div/div[2]/div[2]/div/div/div/div[4]/div[2]/div/div[3]/div/button/div/div[2]
+#          actions: is_displayed
         search-for:
+#<div class="DraftEditor-editorContainer"><div aria-autocomplete="list" aria-expanded="false" class="notranslate public-DraftEditor-content" contenteditable="true" role="combobox" spellcheck="false" style="outline: none; user-select: text; white-space: pre-wrap; overflow-wrap: break-word;"><div data-contents="true"><div class="" data-block="true" data-editor="cks97" data-offset-key="19fqd-0-0"><div data-offset-key="19fqd-0-0" class="public-DraftStyleDefault-block public-DraftStyleDefault-ltr"><span data-offset-key="19fqd-0-0"><span data-text="true">video-portrait</span></span></div></div></div></div></div>
           - //*[@id="root"]//*[starts-with(@class, "DraftEditor-root")]//*[@data-contents="true"]//span[@data-text="true"]
           - //*[@id="root"]//*[@data-contents="true"]//span[@data-text="true"]
           - //*[@id="root"]//*[@data-text="true"]
