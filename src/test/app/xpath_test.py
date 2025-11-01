@@ -73,6 +73,7 @@ class XPathTest(unittest.TestCase):
                  "//*[@id=\"root\"]/div[1]/div[4]/div[1]/div[3]/div[1]/div[1]/div[3]/button")))
         print("Found button: ", False if button is None else True)
 
+    @skip("Website was not reachable, fix and un-skip")
     def test_chinomsoikwuagwu_xpath(self):
         webdriver = create_webdriver()
         webdriver.get('http://chinomsoikwuagwu.com/')

@@ -57,7 +57,12 @@ class PublishContentAction:
         content: Content = self.__to_content(run_context, args)
         logger.debug(f"Publishing to platforms: {platforms}, content:\n{content}")
 
-        result: dict[str, Any] = App().publish_content(platforms, content)
+        configs = {
+            "facebook": { "credentials_scopes": ['business_management', 'pages_show_list'] },
+            "tiktok": { "callback_path": '/callback' }
+        }
+
+        result: dict[str, Any] = App().publish_content(platforms, content, configs)
 
         def is_success(r: Any) -> bool:
             if isinstance(r, PostResult):

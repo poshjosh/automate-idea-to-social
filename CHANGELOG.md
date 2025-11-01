@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Fix bug with TikTok posting.
-- Bump content-publisher to v0.0.8.
+- Bump content-publisher to v0.0.9.
 
 ### Added
 
