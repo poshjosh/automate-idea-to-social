@@ -57,7 +57,7 @@ class PublishContentAction:
         content: Content = self.__to_content(run_context, args)
         logger.debug(f"Publishing to platforms: {platforms}\n{content}")
 
-        configs = self.__action_configs(run_context)
+        configs = self.__action_configs(run_context, content)
 
         results: dict[str, PostResult] = App().publish_content(platforms, content, configs)
 
@@ -98,10 +98,24 @@ class PublishContentAction:
                            language_code, tags, subtitle_files_by_lang)
 
     @staticmethod
-    def __action_configs(run_context: RunContext) -> dict[str, dict[str, Any]]:
+    def __action_configs(run_context: RunContext, content: Content) -> dict[str, dict[str, Any]]:
         configs = {
-            SocialPlatformType.FACEBOOK.value: { "credentials_scopes": ['business_management', 'pages_show_list'] },
-            SocialPlatformType.TIKTOK.value: { "callback_path": '/callback' }
+            SocialPlatformType.FACEBOOK.value: {
+                "credentials_scopes": ['business_management', 'pages_show_list']
+            },
+            SocialPlatformType.TIKTOK.value: {
+                "callback_path": '/callback',
+                # TODO - Remove this post_info, when we are able to post to TikTok
+                #  with privacy PUBLIC TO EVERYONE (i.e the default)
+                "post_info": {
+                    "language": content.language_code or 'en',
+                    "privacy_level": 'SELF_ONLY',
+                    "disable_duet": False,
+                    "disable_comment": False,
+                    "disable_stitch": False,
+                    "video_cover_timestamp_ms": 250
+                }
+            }
         }
 
         filenames = {
