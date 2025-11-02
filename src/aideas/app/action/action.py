@@ -1,7 +1,7 @@
 import logging
 import os
 import uuid
-from typing import Union
+from typing import Union, Any
 
 from .variable_parser import get_run_arg_replacement
 from ..config import split_preserving_quotes
@@ -101,25 +101,25 @@ class Action:
         return name.split(' ')[1] if self.is_negation() else name
 
     def require_first_arg_as_str(self) -> str:
-        arg: any = self.get_first_arg()
+        arg: Any = self.get_first_arg()
         if not arg:
             raise ValueError(f'No argument provided for: {self}')
         return str(arg)
 
-    def get_first_arg_as_str(self, default: any = None) -> str:
-        arg: any = self.get_first_arg(default)
+    def get_first_arg_as_str(self, default: Any = None) -> str:
+        arg: Any = self.get_first_arg(default)
         return None if arg is None else str(arg)
 
-    def get_first_arg(self, default: any = None) -> any:
+    def get_first_arg(self, default: Any = None) -> Any:
         arg = None if len(self.__args) == 0 else self.__args[0]
         return default if arg is None else arg
 
     def get_first_arg_as_bool(self, default: bool = False) -> bool:
-        arg: any = self.get_first_arg('')
+        arg: Any = self.get_first_arg('')
         return default if not arg else bool(arg)
 
     def get_first_arg_as_float(self, default: float) -> float:
-        arg: any = self.get_first_arg('')
+        arg: Any = self.get_first_arg('')
         return default if not arg else float(arg)
 
     def get_args(self) -> list:
@@ -152,7 +152,7 @@ class Action:
         """
         args_offset: int = 2 if parts[0] == NOT else 1
         name = ' '.join(parts[0:args_offset])
-        args: [str] = parts[args_offset:] if len(parts) > args_offset else []
+        args: list[str] = parts[args_offset:] if len(parts) > args_offset else []
         return name, args
 
     def __eq__(self, other) -> bool:
@@ -161,4 +161,5 @@ class Action:
                 and self.__args == other.__args)
 
     def __str__(self) -> str:
-        return f'Action({self.__stage_item_id}.{self.__name} {self.__args})'
+        return (f'{self.__class__.__name__}({self.__stage_item_id}.{self.__name} '
+                f'{", ".join([str(arg)[:100] for arg in self.__args])})')

@@ -27,4 +27,6 @@ stages:
           - context subtitles-files=${results.social-media-poster.default.generate-subtitles[0]}
           - publish_content -p youtube -o landscape -l $INPUT_LANGUAGE_CODE
       reddit:
-        actions: publish_content -p reddit -o landscape
+        actions: publish_content -p reddit -o landscape -l $INPUT_LANGUAGE_CODE
+      x:
+        actions: publish_content -p x -o landscape -t "${results.social-media-poster.default.youtube-shorts[0]} ${TEXT_TITLE} ${TEXT_CONTENT}" -l $INPUT_LANGUAGE_CODE

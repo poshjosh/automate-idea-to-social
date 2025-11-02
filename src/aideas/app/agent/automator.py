@@ -284,7 +284,7 @@ class Automator:
 
         except (ActionError, AutomationError) as ex:
             # Error should be logged with more details at the agent level.
-            logger.debug(f"Error acting on {config_path} {type(ex)}")
+            logger.debug(f"Error at {config_path} {type(ex)}")
             exception = ex
 
         result = self.__event_handler.handle_result_event(

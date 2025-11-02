@@ -1,3 +1,5 @@
+from typing import Any
+
 import logging
 from .action import Action
 
@@ -10,14 +12,14 @@ class ActionResult:
         return ActionResult.success(Action.none())
 
     @staticmethod
-    def success(action: Action, result: any = None) -> 'ActionResult':
+    def success(action: Action, result: Any = None) -> 'ActionResult':
         return ActionResult(action, True, result)
 
     @staticmethod
-    def failure(action: Action, result: any = None) -> 'ActionResult':
+    def failure(action: Action, result: Any = None) -> 'ActionResult':
         return ActionResult(action, False, result)
 
-    def __init__(self, action: Action, success: bool, result: any = None):
+    def __init__(self, action: Action, success: bool, result: Any = None):
         self.__action = action
         self.__result = result
         self.__success = success
@@ -29,10 +31,10 @@ class ActionResult:
     def get_action(self) -> Action:
         return self.__action
 
-    def get_result(self) -> any:
+    def get_result(self) -> Any:
         return self.__result
 
-    def is_success(self) -> any:
+    def is_success(self) -> Any:
         return self.__success
 
     def __eq__(self, other) -> bool:
@@ -40,4 +42,4 @@ class ActionResult:
             and self.__success == other.__success
 
     def __str__(self) -> str:
-        return f'ActionResult(success={self.__success}, {self.__action}, result={self.__result})'
+        return f'{self.__class__.__name__}(success={self.__success}, {self.__action}, result={self.__result})'

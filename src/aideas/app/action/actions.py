@@ -55,25 +55,15 @@ class PublishContentAction:
         platforms: list[str] = list_from_object(platforms)
 
         content: Content = self.__to_content(run_context, args)
-        logger.debug(f"Publishing to platforms: {platforms}, content:\n{content}")
+        logger.debug(f"Publishing to platforms: {platforms}\n{content}")
 
-        configs = {
-            "facebook": { "credentials_scopes": ['business_management', 'pages_show_list'] },
-            "tiktok": { "callback_path": '/callback' }
-        }
+        configs = self.__action_configs(run_context)
 
-        result: dict[str, Any] = App().publish_content(platforms, content, configs)
+        results: dict[str, PostResult] = App().publish_content(platforms, content, configs)
 
-        def is_success(r: Any) -> bool:
-            if isinstance(r, PostResult):
-                return r.success
-            elif isinstance(r, bool):
-                return r
-            raise ValueError(f"Unknown result type: {type(r)}")
+        self.__log_results(results)
 
-        success = len([e for e in result.values() if not is_success(e)]) == 0
-
-        return ActionResult(action, success, result)
+        return self.__to_action_result(action, results)
 
     def __to_content(self, run_context: RunContext, args: dict[PublisherArg, Any]) -> Content:
         dir_path = self._get_value(run_context, args, PublisherArg.DIR)
@@ -106,6 +96,45 @@ class PublishContentAction:
 
             return Content(description, video_file, image_file, text_title,
                            language_code, tags, subtitle_files_by_lang)
+
+    @staticmethod
+    def __action_configs(run_context: RunContext) -> dict[str, dict[str, Any]]:
+        configs = {
+            SocialPlatformType.FACEBOOK.value: { "credentials_scopes": ['business_management', 'pages_show_list'] },
+            SocialPlatformType.TIKTOK.value: { "callback_path": '/callback' }
+        }
+
+        filenames = {
+            SocialPlatformType.FACEBOOK.value: run_context.get_env(Env.FACEBOOK_USER_EMAIL),
+            SocialPlatformType.REDDIT.value: run_context.get_env(Env.REDDIT_USER_NAME),
+            SocialPlatformType.TIKTOK.value: run_context.get_env(Env.TWITTER_USER_EMAIL),
+            SocialPlatformType.X.value: run_context.get_env(Env.TWITTER_USER_EMAIL),
+            SocialPlatformType.YOUTUBE.value: run_context.get_env(Env.YOUTUBE_USER_EMAIL)
+        }
+
+        for platform, filename in filenames.items():
+            filename = os.path.join("aideas", filename, f"{platform}.pickle")
+            configs.setdefault(platform, {})["credentials_filename"] = filename
+
+        return configs
+
+    @staticmethod
+    def __log_results(results: dict[str, PostResult]):
+        for platform, result in results.items():
+            steps_log = '\n'.join(result.steps_log)
+            logger.debug(f"*** {platform} ***\n{steps_log}\n{platform} => success: {result.success}, post url: {result.post_url}")
+            if not result.success:
+                logger.warning(f"message: {result.message}\nResponse from {platform}: {result.platform_response}")
+
+    @staticmethod
+    def __to_action_result(action: Action, results: dict[str, PostResult]) -> ActionResult:
+
+        success = False if len(results) == 0 else \
+                len([result for result in results.values() if not result.success]) == 0
+
+        post_urls = [e.post_url for e in results.values()]
+
+        return ActionResult(action, success, post_urls)
 
     @staticmethod
     def __subtitles_files_by_lang(subtitle_files: Any) -> dict[str, str]:

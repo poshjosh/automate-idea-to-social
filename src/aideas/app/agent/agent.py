@@ -1,3 +1,5 @@
+from typing import Any
+
 from abc import ABC, abstractmethod
 
 import logging
@@ -27,8 +29,8 @@ class Agent(ABC):
     @classmethod
     def of_config(cls,
                   agent_name: str,
-                  app_config: dict[str, any],
-                  agent_config: dict[str, any],
+                  app_config: dict[str, Any],
+                  agent_config: dict[str, Any],
                   dependencies: dict[str, 'Agent'] = None) -> 'Agent':
         interval_seconds: int = agent_config.get(INTERVAL_KEY, 0)
         action_handler = ActionHandler()
@@ -37,7 +39,7 @@ class Agent(ABC):
 
     def __init__(self,
                  name: str,
-                 agent_config: dict[str, any],
+                 agent_config: dict[str, Any],
                  dependencies: dict[str, 'Agent'] = None,
                  event_handler: EventHandler = EventHandler(),
                  interval_seconds: int = 0):
@@ -59,7 +61,7 @@ class Agent(ABC):
         raise NotImplementedError
 
     def close(self):
-        """Close any resources held by the agent."""
+        """Close Any resources held by the agent."""
         pass
 
     def without_events(self) -> 'Agent':
@@ -67,7 +69,7 @@ class Agent(ABC):
         clone.__event_handler = EventHandler.noop()
         return clone
 
-    def with_config(self, config: dict[str, any]) -> 'Agent':
+    def with_config(self, config: dict[str, Any]) -> 'Agent':
         clone: Agent = self.clone()
         clone.__config = AgentConfig(config)
         return clone
@@ -84,7 +86,7 @@ class Agent(ABC):
         self.__dependencies[agent_name] = agent
         return self
 
-    def create_dependency(self, name: str, config: dict[str, any]) -> 'Agent':
+    def create_dependency(self, name: str, config: dict[str, Any]) -> 'Agent':
         return self.__class__(name, config, None, self.__event_handler, self.__interval_seconds)
 
     def run(self, run_context: RunContext) -> StageResultSet:
@@ -203,7 +205,7 @@ class Agent(ABC):
             result: ElementResultSet = self._execute(config, stage, run_context)
 
         except (ActionError, ExecutionError) as ex:
-            logger.debug(f"Error acting on {config_path}\n{str(ex)}")
+            logger.debug(f"Error at {config_path}\n{str(ex)}")
             exception = ex
 
         result = self.__event_handler.handle_result_event(
