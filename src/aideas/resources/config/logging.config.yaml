@@ -26,6 +26,10 @@ loggers:
     level: *log_level
     handlers: [console, file]
     propagate: false
+  content_publisher:
+    level: *log_level
+    handlers: [console, file]
+    propagate: false
 root:
   level: *log_level
   handlers: [console, file]
