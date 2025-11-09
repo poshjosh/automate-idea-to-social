@@ -29,17 +29,11 @@ class WebService:
         for language in I18n.get_supported_languages():
             supported_languages[language.code] = language.display_name
 
-        platforms = {}
-        for platform in PublishContentAction.get_supported_platforms():
-            platforms[platform] = HtmlFormat.display(platform)
-
         self.default_page_variables = {
             'app_name': self.app_config.get_app_name(),
             'title': self.app_config.get_title(),
             'heading': self.app_config.get_title(),
-            'supported_languages': supported_languages,
-            # TODO - rename to supported_platforms
-            'platforms': platforms
+            'supported_languages': supported_languages
         }
 
     def index(self, page_variables: dict[str, Any] = None) -> dict[str, str]:

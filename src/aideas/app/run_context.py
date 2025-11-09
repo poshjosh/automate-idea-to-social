@@ -92,8 +92,17 @@ class RunContext:
         run_config = self.__run_config.to_dict()
         for key in keys:
             key_str: str = str(key.value) if isinstance(key, Enum) else str(key)
-            result[key_str] = self.get_arg(key, self.get(key_str, run_config.get(key_str, None)))
-        return result    
+            result[key_str] = self._value(key, run_config.get(key_str, None))
+        return result
+
+    def value(self, key: Union[str, Enum], result_if_none: Union[Any, None] = None) ->  Any:
+        run_config = self.__run_config.to_dict()
+        key_str: str = str(key.value) if isinstance(key, Enum) else str(key)
+        return self.get_arg(key, self.get(key_str, run_config.get(key_str, result_if_none)))
+
+    def _value(self, key: Union[str, Enum], result_if_none: Union[Any, None] = None) ->  Any:
+        key_str: str = str(key.value) if isinstance(key, Enum) else str(key)
+        return self.get_arg(key, self.get(key_str, result_if_none))
 
     def get_env(self, key: Enum, result_if_none: Union[Any, None] = None) ->  Any:
         return self.get_arg(key, result_if_none)

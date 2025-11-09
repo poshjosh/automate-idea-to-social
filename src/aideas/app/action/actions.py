@@ -37,16 +37,11 @@ def _copy_to_dir(src: str, tgt_dir):
         os.makedirs(tgt_dir)
         logger.debug(f'Created dir: {tgt_dir}')
     tgt = os.path.join(tgt_dir, os.path.basename(src))
-    logger.debug(f"Copied to: {tgt} from: {src}")
+    logger.debug(f"Copying to: {tgt} from: {src}")
     shutil.copy2(src, tgt)
 
 
 class PublishContentAction:
-    @staticmethod
-    def get_supported_platforms() -> list[str]:
-        return [SocialPlatformType.YOUTUBE.value, SocialPlatformType.X.value,
-                SocialPlatformType.FACEBOOK.value, SocialPlatformType.REDDIT.value]
-
     def execute(self, run_context: RunContext, action: Action) -> ActionResult:
         args: dict[PublisherArg, Any] = PublisherArg.of_list({}, action.get_args())
         platforms = self._get_value(run_context, args, PublisherArg.PLATFORMS)
@@ -57,9 +52,13 @@ class PublishContentAction:
         content: Content = self.__to_content(run_context, args)
         logger.debug(f"Publishing to platforms: {platforms}\n{content}")
 
-        configs = self.__action_configs(run_context, content)
+        media_orientation = self._get_value(run_context, args, PublisherArg.MEDIA_ORIENTATION)
+        configs = self.__action_configs(run_context, content, media_orientation)
 
         results: dict[str, PostResult] = App().publish_content(platforms, content, configs)
+        # results: dict[str, PostResult] = {}
+        # for platform in platforms:
+        #     results[platform] = PostResult(success=True, post_url="https://example.com")
 
         self.__log_results(results)
 
@@ -84,7 +83,7 @@ class PublishContentAction:
             description: str = self._get_value(run_context, args, RunArg.TEXT_CONTENT)
             video_file: Union[str, None] = self._get_value(run_context, args, media_file_arg("video"))
             image_file: Union[str, None] = self._get_value(run_context, args, media_file_arg("image"))
-            subtitle_files = self._get_value(run_context, args, f'{RunArg.SUBTITLES_FILE.value}s')
+            subtitle_files = run_context.get('subtitles-files', None)
             subtitle_files_by_lang: Union[dict[str, str], None] = PublishContentAction.__subtitles_files_by_lang(subtitle_files)
             logger.debug(f"Subtitle files by lang: {subtitle_files_by_lang}")
 
@@ -98,7 +97,7 @@ class PublishContentAction:
                            language_code, tags, subtitle_files_by_lang)
 
     @staticmethod
-    def __action_configs(run_context: RunContext, content: Content) -> dict[str, dict[str, Any]]:
+    def __action_configs(run_context: RunContext, content: Content, media_orientation: str) -> dict[str, dict[str, Any]]:
         configs = {
             SocialPlatformType.FACEBOOK.value: {
                 "credentials_scopes": ['business_management', 'pages_show_list']
@@ -117,6 +116,11 @@ class PublishContentAction:
                 }
             }
         }
+
+        if media_orientation == 'portrait':
+            configs.update({SocialPlatformType.YOUTUBE.value: {
+                "add_thumbnail": False, "add_subtitles": False
+            }})
 
         filenames = {
             SocialPlatformType.FACEBOOK.value: run_context.get_env(Env.FACEBOOK_USER_EMAIL),
@@ -155,18 +159,19 @@ class PublishContentAction:
 
         subtitle_files_by_lang: Union[dict[str, str], None] = {}
 
-        if subtitle_files:
-            subtitle_files: list[str] = list_from_object(subtitle_files)
-            for subtitle_file in subtitle_files:
-                lang_code = _detect_language_code_from_filename(subtitle_file)
-                if lang_code:
-                    subtitle_files_by_lang[lang_code] = subtitle_file
+        if not subtitle_files:
+            return subtitle_files_by_lang
+
+        subtitle_files: list[str] = list_from_object(subtitle_files)
+        for subtitle_file in subtitle_files:
+            lang_code = _detect_language_code_from_filename(subtitle_file)
+            if lang_code:
+                subtitle_files_by_lang[lang_code] = subtitle_file
         return subtitle_files_by_lang
 
     @staticmethod
     def _get_value(run_context: RunContext, args: dict[PublisherArg, Any], key: Union[str, Enum]) -> Any:
-        key_str = key.value if isinstance(key, Enum) else key
-        return run_context.get_arg(key, args.get(key, run_context.get(key_str, None)))
+        return args.get(key, run_context.value(key, None))
 
 
 class TranslateAction:

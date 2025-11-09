@@ -1,0 +1,15 @@
+# [llm|browser|blog|generic]  llm is not yet supported
+agent-type: generic
+# Optional [generate-video|generate-text|post|test|custom|unlisted]
+agent-tags: post
+form-field-input-language-code: $INPUT_LANGUAGE_CODE
+form-field-text-content: $TEXT_CONTENT
+form-field-text-file: $TEXT_FILE
+form-field-text-title: $TEXT_TITLE
+form-field-video-file-portrait: $VIDEO_FILE_PORTRAIT
+
+stages:
+  post-to-youtube-shorts:
+    stage-items:
+      default:
+        actions: publish_content -p youtube -o portrait

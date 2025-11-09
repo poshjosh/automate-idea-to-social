@@ -15,11 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Explicitly specify dependency: `standard-imghdr`.
-- Agent `social-media-poster`.
+- Agents: reddit-api, twitter-api, youtube-api, youtube-api-shorts, youtube-api-shorts-and-x, youtube-api-with-subtitles.
 - Actions: `translate` and `translate_subtitles`.
 - Action `run_stages` which runs the name stages.
 - Action `return`, which simply returns the provided arguments as output.
-- Options `platforms` and `image-file-portrait`.
 - Action `publish_content` based on [content-publisher](https://github.com/poshjosh/content-publisher.git).
 
 ### Removed

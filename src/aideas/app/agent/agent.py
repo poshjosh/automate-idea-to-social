@@ -91,7 +91,7 @@ class Agent(ABC):
 
     def run(self, run_context: RunContext) -> StageResultSet:
         """Run all the stages of the agent and return True if successful, False otherwise."""
-        logger.debug(f"Starting agent: {self.get_name()}")
+        logger.debug(f"\n{'='*64}\nStarting agent: {self.get_name()}\n{'='*64}")
         try:
 
             self.__config = AgentConfig(
