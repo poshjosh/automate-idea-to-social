@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "automate-idea-to-social"
-version = "0.3.4"
+version = "0.4.0"
 description = "Automate generating and publishing content from ideas to social media."
 authors = [
     {name = "Chinomso Ikwuagwu"}
