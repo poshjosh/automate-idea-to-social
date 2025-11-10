@@ -22,6 +22,8 @@ text-file: test/resources/test-content/video.txt
 
 image-file-landscape: test/resources/test-content/cover.jpg
 
+image-file-portrait: test/resources/test-content/cover-portrait.jpg
+
 # Optional. If not set, image-file-landscape will be used
 image-file-square: test/resources/test-content/cover-square.jpg
 

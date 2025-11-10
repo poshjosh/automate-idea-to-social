@@ -3,7 +3,7 @@ from unittest import mock
 import unittest
 
 from content_publisher.app.app import App
-from content_publisher.app.content_publisher import Content
+from content_publisher.app.content_publisher import Content, PostResult
 
 from aideas.app.action.action import Action
 from aideas.app.action.action_handler import ActionHandler, ActionId
@@ -28,12 +28,13 @@ class ActionHandlerTest(unittest.TestCase):
                 self.assertNotEqual(0, len(actions))
 
     def test_publish_content(self):
-        agent_name = AgentName.SOCIAL_MEDIA_POSTER
-        expected_result = { "success": True }
+        agent_name = AgentName.REDDIT_API
+        post_url = "https://test.post.url.com"
+        post_result = { "success": PostResult(success=True, post_url=post_url) }
         action_handler = ActionHandler()
         with mock.patch.object(App, 'publish_content') as mock_publish_content:
             with mock.patch.object(Content, 'of_dir'):
-                mock_publish_content.return_value = expected_result
+                mock_publish_content.return_value = post_result
                 run_context: RunContext = get_run_context([agent_name])
                 action = Action(agent_name,
                                 "main",
@@ -41,7 +42,7 @@ class ActionHandlerTest(unittest.TestCase):
                                 ActionId.PUBLISH_CONTENT.value,
                                 '-p youtube -o portrait -t fake-title -d /fake/dir'.split(' '))
                 result = action_handler.execute(run_context, action)
-                self.assertEqual(result.get_result(), expected_result)
+                self.assertEqual(result.get_result(), [post_url])
 
     def test_context_given_list_format_string(self):
         agent_name = "test-agent"

@@ -113,9 +113,6 @@ class VariableParserTest(unittest.TestCase):
     def test_replace_all_variables(self):
         agents: list[str] = get_main_config_loader().get_agent_names()
         for agent in agents:
-            # TODO: Remove this exclusion and fix the test for the named agent
-            if AgentName.SOCIAL_MEDIA_POSTER == agent:
-                continue
             agent_config = load_agent_config(agent, False)
             variable_source = get_run_context([agent]).get_run_config().to_dict()
             replace_all_variables(agent_config, variable_source)
