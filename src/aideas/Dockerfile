@@ -1,4 +1,4 @@
-FROM python:3.9-slim-bookworm AS builder
+FROM python:3.10-slim-bookworm AS builder
 
 # We only need this during build time, so we use ARG instead of ENV
 ARG DEBIAN_FRONTEND=noninteractive
@@ -29,7 +29,7 @@ COPY . .
 RUN python3 -m pip install --no-cache-dir -r "requirements.txt" \
     && rm -rf ~/.cache/pip
 
-FROM python:3.9-slim-bookworm
+FROM python:3.10-slim-bookworm
 
 WORKDIR /
 

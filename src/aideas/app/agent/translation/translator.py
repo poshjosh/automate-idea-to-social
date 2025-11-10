@@ -4,7 +4,7 @@ from typing import Union, Any
 
 import requests
 
-from aideas.app.env import Env, get_env_value
+from ...env import Env, get_env_value
 
 logger = logging.getLogger(__name__)
 
