@@ -52,8 +52,7 @@ class PublishContentAction:
         content: Content = self.__to_content(run_context, args)
         logger.debug(f"Publishing to platforms: {platforms}\n{content}")
 
-        media_orientation = self._get_value(run_context, args, PublisherArg.MEDIA_ORIENTATION)
-        configs = self.__action_configs(run_context, content, media_orientation)
+        configs = self.__action_configs(run_context, content)
 
         results: dict[str, PostResult] = App().publish_content(platforms, content, configs)
         # results: dict[str, PostResult] = {}
@@ -74,7 +73,8 @@ class PublishContentAction:
 
         if dir_path:
             tags: Union[list[str], bool] = list_from_object(tags) if tags else True
-            return Content.of_dir(dir_path, text_title, media_orientation, language_code, tags)
+            return Content.of_dir(dir_path, title=text_title, media_orientation=media_orientation,
+                                  language_code=language_code, tags=tags)
         else:
 
             def media_file_arg(media_type: str) -> RunArg:
@@ -94,10 +94,11 @@ class PublishContentAction:
                 logger.debug(f"Extracted hashtags from text: {tags}")
 
             return Content(description, video_file, image_file, text_title,
-                           language_code, tags, subtitle_files_by_lang)
+                           language_code, tags, subtitle_files_by_lang,
+                           {"media_orientation": media_orientation})
 
     @staticmethod
-    def __action_configs(run_context: RunContext, content: Content, media_orientation: str) -> dict[str, dict[str, Any]]:
+    def __action_configs(run_context: RunContext, content: Content) -> dict[str, dict[str, Any]]:
         configs = {
             SocialPlatformType.FACEBOOK.value: {
                 "credentials_scopes": ['business_management', 'pages_show_list']
@@ -116,11 +117,6 @@ class PublishContentAction:
                 }
             }
         }
-
-        if media_orientation == 'portrait':
-            configs.update({SocialPlatformType.YOUTUBE.value: {
-                "add_thumbnail": False, "add_subtitles": False
-            }})
 
         filenames = {
             SocialPlatformType.FACEBOOK.value: run_context.get_env(Env.FACEBOOK_USER_EMAIL),

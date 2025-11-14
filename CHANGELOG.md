@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### CHANGED
 
+- Bump content-publisher to v0.0.12
 - Minimum Python version from 3.9 to 3.10 (Required to build v0.4.0 of our docker image).
 
 ## [0.4.0] - 2025-11-10
