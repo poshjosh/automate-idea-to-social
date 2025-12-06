@@ -1,0 +1,19 @@
+# [llm|browser|blog|generic]  llm is not yet supported
+agent-type: generic
+# Optional [generate-video|generate-text|post|test|custom|unlisted]
+agent-tags: post
+form-field-image-file-landscape: $IMAGE_FILE_LANDSCAPE
+form-field-text-content: $TEXT_CONTENT
+form-field-text-file: $TEXT_FILE
+form-field-video-file-landscape: $VIDEO_FILE_LANDSCAPE
+
+stages:
+  post-to-youtube-with-subtitles:
+    stage-items:
+      default:
+        actions:
+          - translate_subtitles $SUBTITLES_FILE $INPUT_LANGUAGE_CODE $LANGUAGE_CODES
+          - context subtitles-files=${results.me[0]}
+          - publish_content -p youtube -o landscape
+          - publish_content -p x -o landscape -t "${results.me[2]} ${TEXT_TITLE}"
+
