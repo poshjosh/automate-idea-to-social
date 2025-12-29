@@ -297,7 +297,7 @@ class BlogAutomatorAgent(AutomatorAgent):
         image_dir = ".." if share_cover_image is True else "."
 
         # Add the cover image at the top of the file
-        prepend_line(target_file, f"![Video cover image]({image_dir}/{tgt_image_name})\n")
+        prepend_line(target_file, f"![Video cover image]({image_dir}/{tgt_image_name})\n\n")
 
         return True
 
