@@ -112,6 +112,9 @@ class PublishContentAction:
                     "disable_stitch": False,
                     "video_cover_timestamp_ms": 250
                 }
+            },
+            SocialPlatformType.YOUTUBE.value: {
+                "playlist": run_context.get_env(Env.YOUTUBE_PLAYLIST_ID)
             }
         }
 
