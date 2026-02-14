@@ -55,9 +55,6 @@ class PublishContentAction:
         configs = self.__action_configs(run_context, content)
 
         results: dict[str, PostResult] = App().publish_content(platforms, content, configs)
-        # results: dict[str, PostResult] = {}
-        # for platform in platforms:
-        #     results[platform] = PostResult(success=True, post_url="https://example.com")
 
         self.__log_results(results)
 
