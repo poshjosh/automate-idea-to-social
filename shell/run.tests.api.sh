@@ -5,6 +5,9 @@
 # First run the script shell/run.sh to start the service.
 ############################################################
 
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$ROOT_DIR"
+
 cd .. || exit 1
 
 printf "\nExporting environment\n"

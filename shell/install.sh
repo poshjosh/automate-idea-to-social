@@ -4,6 +4,9 @@ set -euo pipefail
 
 VIRTUAL_ENV_DIR=".venv"
 
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$ROOT_DIR"
+
 cd ..
 
 if [ ! -d "$VIRTUAL_ENV_DIR" ]; then

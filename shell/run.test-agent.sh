@@ -3,6 +3,9 @@
 IMAGE_FILE=${IMAGE_FILE:-"/root/.aideas/content/cover.jpg"}
 TEXT_FILE=${TEXT_FILE:-"/root/.aideas/content/content.txt"}
 
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$ROOT_DIR"
+
 cd .. || exit 1
 
 set -a

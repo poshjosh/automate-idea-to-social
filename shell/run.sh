@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$ROOT_DIR"
+
 source ./pre_run.sh
 
 WORKING_DIR="src/aideas" # The app expects to work from within the aideas directory.

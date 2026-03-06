@@ -2,6 +2,10 @@
 
 # shellcheck disable=SC2034
 ENV_FILE=".env.test"
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$ROOT_DIR"
+
 source ./pre_run.sh
 
 WORKING_DIR="src"
